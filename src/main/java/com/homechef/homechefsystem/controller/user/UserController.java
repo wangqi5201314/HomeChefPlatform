@@ -1,8 +1,9 @@
 package com.homechef.homechefsystem.controller.user;
 
 import com.homechef.homechefsystem.common.result.Result;
-import com.homechef.homechefsystem.entity.User;
+import com.homechef.homechefsystem.dto.UserUpdateDTO;
 import com.homechef.homechefsystem.service.UserService;
+import com.homechef.homechefsystem.vo.UserVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,26 +20,26 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/{id}")
-    public Result<User> getById(@PathVariable Long id) {
-        User user = userService.getById(id);
-        if (user == null) {
+    public Result<UserVO> getById(@PathVariable Long id) {
+        UserVO userVO = userService.getById(id);
+        if (userVO == null) {
             return Result.error(404, "user not found");
         }
-        return Result.success(user);
+        return Result.success(userVO);
     }
 
     @GetMapping("/me")
-    public Result<User> getCurrentUser() {
-        User user = userService.getCurrentUser();
-        if (user == null) {
+    public Result<UserVO> getCurrentUser() {
+        UserVO userVO = userService.getCurrentUser();
+        if (userVO == null) {
             return Result.error(404, "user not found");
         }
-        return Result.success(user);
+        return Result.success(userVO);
     }
 
     @PutMapping("/me")
-    public Result<User> updateCurrentUser(@RequestBody User user) {
-        User updatedUser = userService.updateCurrentUser(user);
+    public Result<UserVO> updateCurrentUser(@RequestBody UserUpdateDTO userUpdateDTO) {
+        UserVO updatedUser = userService.updateCurrentUser(userUpdateDTO);
         if (updatedUser == null) {
             return Result.error(404, "user not found");
         }

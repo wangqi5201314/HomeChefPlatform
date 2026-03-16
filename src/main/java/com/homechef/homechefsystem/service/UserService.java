@@ -1,12 +1,13 @@
 package com.homechef.homechefsystem.service;
 
-import com.homechef.homechefsystem.entity.User;
+import com.homechef.homechefsystem.dto.UserUpdateDTO;
+import com.homechef.homechefsystem.vo.UserVO;
 
 public interface UserService {
 
-    User getById(Long id);
+    UserVO getById(Long id);
 
-    User getCurrentUser();
+    UserVO getCurrentUser();
 
-    User updateCurrentUser(User user);
+    UserVO updateCurrentUser(UserUpdateDTO userUpdateDTO);
 }

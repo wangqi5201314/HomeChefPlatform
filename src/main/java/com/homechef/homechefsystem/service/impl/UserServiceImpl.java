@@ -1,8 +1,10 @@
 package com.homechef.homechefsystem.service.impl;
 
+import com.homechef.homechefsystem.dto.UserUpdateDTO;
 import com.homechef.homechefsystem.entity.User;
 import com.homechef.homechefsystem.mapper.UserMapper;
 import com.homechef.homechefsystem.service.UserService;
+import com.homechef.homechefsystem.vo.UserVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -17,37 +19,55 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
 
     @Override
-    public User getById(Long id) {
-        return userMapper.selectById(id);
+    public UserVO getById(Long id) {
+        return toUserVO(userMapper.selectById(id));
     }
 
     @Override
-    public User getCurrentUser() {
+    public UserVO getCurrentUser() {
         return getById(MOCK_CURRENT_USER_ID);
     }
 
     @Override
-    public User updateCurrentUser(User user) {
-        User existingUser = getCurrentUser();
+    public UserVO updateCurrentUser(UserUpdateDTO userUpdateDTO) {
+        User existingUser = userMapper.selectById(MOCK_CURRENT_USER_ID);
         if (existingUser == null) {
             return null;
         }
 
-        existingUser.setPhone(user.getPhone());
-        existingUser.setNickname(user.getNickname());
-        existingUser.setAvatar(user.getAvatar());
-        existingUser.setGender(user.getGender());
-        existingUser.setBirthday(user.getBirthday());
-        existingUser.setTastePreference(user.getTastePreference());
-        existingUser.setAllergyInfo(user.getAllergyInfo());
-        existingUser.setEmergencyContactName(user.getEmergencyContactName());
-        existingUser.setEmergencyContactPhone(user.getEmergencyContactPhone());
+        existingUser.setNickname(userUpdateDTO.getNickname());
+        existingUser.setAvatar(userUpdateDTO.getAvatar());
+        existingUser.setGender(userUpdateDTO.getGender());
+        existingUser.setBirthday(userUpdateDTO.getBirthday());
+        existingUser.setTastePreference(userUpdateDTO.getTastePreference());
+        existingUser.setAllergyInfo(userUpdateDTO.getAllergyInfo());
+        existingUser.setEmergencyContactName(userUpdateDTO.getEmergencyContactName());
+        existingUser.setEmergencyContactPhone(userUpdateDTO.getEmergencyContactPhone());
         existingUser.setUpdatedAt(LocalDateTime.now());
 
         int rows = userMapper.updateProfileById(existingUser);
         if (rows <= 0) {
             return null;
         }
-        return userMapper.selectById(MOCK_CURRENT_USER_ID);
+        return toUserVO(userMapper.selectById(MOCK_CURRENT_USER_ID));
+    }
+
+    private UserVO toUserVO(User user) {
+        if (user == null) {
+            return null;
+        }
+        return UserVO.builder()
+                .id(user.getId())
+                .phone(user.getPhone())
+                .nickname(user.getNickname())
+                .avatar(user.getAvatar())
+                .gender(user.getGender())
+                .birthday(user.getBirthday())
+                .tastePreference(user.getTastePreference())
+                .allergyInfo(user.getAllergyInfo())
+                .emergencyContactName(user.getEmergencyContactName())
+                .emergencyContactPhone(user.getEmergencyContactPhone())
+                .status(user.getStatus())
+                .build();
     }
 }
