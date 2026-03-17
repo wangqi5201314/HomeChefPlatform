@@ -8,6 +8,8 @@ import com.homechef.homechefsystem.dto.UserUpdateDTO;
 import com.homechef.homechefsystem.service.UserService;
 import com.homechef.homechefsystem.utils.JwtUtil;
 import com.homechef.homechefsystem.vo.UserVO;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,11 +23,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/user")
 @RequiredArgsConstructor
+@Tag(name = "用户接口")
 public class UserController {
 
     private final UserService userService;
     private final JwtUtil jwtUtil;
 
+    @Operation(summary = "用户登录")
     @PostMapping("/login")
     public Result<LoginTokenDTO> login(@Valid @RequestBody UserLoginDTO userLoginDTO) {
         UserVO userVO = userService.login(userLoginDTO);
@@ -40,6 +44,7 @@ public class UserController {
                 .build());
     }
 
+    @Operation(summary = "根据ID查询用户")
     @GetMapping("/{id}")
     public Result<UserVO> getById(@PathVariable Long id) {
         UserVO userVO = userService.getById(id);
@@ -50,6 +55,7 @@ public class UserController {
     }
 
     @RequireLogin
+    @Operation(summary = "获取当前登录用户信息")
     @GetMapping("/me")
     public Result<UserVO> getCurrentUser() {
         UserVO userVO = userService.getCurrentUser();
@@ -60,6 +66,7 @@ public class UserController {
     }
 
     @RequireLogin
+    @Operation(summary = "修改当前登录用户信息")
     @PutMapping("/me")
     public Result<UserVO> updateCurrentUser(@RequestBody UserUpdateDTO userUpdateDTO) {
         UserVO updatedUser = userService.updateCurrentUser(userUpdateDTO);

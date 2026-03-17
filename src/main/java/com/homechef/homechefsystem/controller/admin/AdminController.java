@@ -16,6 +16,8 @@ import com.homechef.homechefsystem.vo.AdminLoginVO;
 import com.homechef.homechefsystem.vo.AdminOrderVO;
 import com.homechef.homechefsystem.vo.AdminUserVO;
 import com.homechef.homechefsystem.vo.OrderDetailVO;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,11 +32,13 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
+@Tag(name = "后台管理接口")
 public class AdminController {
 
     private final AdminService adminService;
     private final JwtUtil jwtUtil;
 
+    @Operation(summary = "管理员登录")
     @PostMapping("/login")
     public Result<LoginTokenDTO> login(@Valid @RequestBody AdminLoginDTO adminLoginDTO) {
         AdminLoginVO adminLoginVO = adminService.login(adminLoginDTO);
@@ -49,6 +53,7 @@ public class AdminController {
     }
 
     @RequireAdmin
+    @Operation(summary = "查询用户列表")
     @GetMapping("/users")
     public Result<List<AdminUserVO>> getUserList(AdminUserQueryDTO queryDTO) {
         return Result.success(adminService.getUserList(queryDTO));
@@ -56,6 +61,7 @@ public class AdminController {
 
     @RequireAdmin
     @OperationLog(module = "AdminUser", operation = "Update User Status")
+    @Operation(summary = "修改用户状态")
     @PostMapping("/user/{id}/status")
     public Result<AdminUserVO> updateUserStatus(@PathVariable Long id,
                                                 @Valid @RequestBody AdminStatusUpdateDTO statusUpdateDTO) {
@@ -67,12 +73,14 @@ public class AdminController {
     }
 
     @RequireAdmin
+    @Operation(summary = "查询厨师列表")
     @GetMapping("/chefs")
     public Result<List<AdminChefVO>> getChefList(AdminChefQueryDTO queryDTO) {
         return Result.success(adminService.getChefList(queryDTO));
     }
 
     @RequireAdmin
+    @Operation(summary = "修改厨师状态")
     @PostMapping("/chef/{id}/status")
     public Result<AdminChefVO> updateChefStatus(@PathVariable Long id,
                                                 @RequestBody AdminStatusUpdateDTO statusUpdateDTO) {
@@ -84,12 +92,14 @@ public class AdminController {
     }
 
     @RequireAdmin
+    @Operation(summary = "查询订单列表")
     @GetMapping("/orders")
     public Result<List<AdminOrderVO>> getOrderList(AdminOrderQueryDTO queryDTO) {
         return Result.success(adminService.getOrderList(queryDTO));
     }
 
     @RequireAdmin
+    @Operation(summary = "查询订单详情")
     @GetMapping("/order/{id}")
     public Result<OrderDetailVO> getOrderDetail(@PathVariable Long id) {
         OrderDetailVO orderDetailVO = adminService.getOrderDetail(id);

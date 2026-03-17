@@ -6,6 +6,8 @@ import com.homechef.homechefsystem.dto.PaymentRefundDTO;
 import com.homechef.homechefsystem.service.PaymentService;
 import com.homechef.homechefsystem.vo.PaymentStatusVO;
 import com.homechef.homechefsystem.vo.PaymentVO;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,10 +19,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/pay")
 @RequiredArgsConstructor
+@Tag(name = "支付接口")
 public class PaymentController {
 
     private final PaymentService paymentService;
 
+    @Operation(summary = "创建支付单")
     @PostMapping("/create")
     public Result<PaymentVO> create(@RequestBody PaymentCreateDTO paymentCreateDTO) {
         if (!paymentService.orderExists(paymentCreateDTO.getOrderId())) {
@@ -34,6 +38,7 @@ public class PaymentController {
         return Result.success(paymentVO);
     }
 
+    @Operation(summary = "查询支付状态")
     @GetMapping("/status/{orderId}")
     public Result<PaymentStatusVO> getStatusByOrderId(@PathVariable Long orderId) {
         PaymentStatusVO paymentStatusVO = paymentService.getStatusByOrderId(orderId);
@@ -43,6 +48,7 @@ public class PaymentController {
         return Result.success(paymentStatusVO);
     }
 
+    @Operation(summary = "模拟支付成功")
     @PostMapping("/mock-success/{orderId}")
     public Result<PaymentStatusVO> mockSuccessByOrderId(@PathVariable Long orderId) {
         if (!paymentService.orderExists(orderId)) {
@@ -64,6 +70,7 @@ public class PaymentController {
         return Result.success(paymentStatusVO);
     }
 
+    @Operation(summary = "模拟退款")
     @PostMapping("/refund")
     public Result<PaymentStatusVO> refund(@RequestBody PaymentRefundDTO paymentRefundDTO) {
         if (!paymentService.orderExists(paymentRefundDTO.getOrderId())) {

@@ -5,6 +5,8 @@ import com.homechef.homechefsystem.dto.ChefCertificationAuditDTO;
 import com.homechef.homechefsystem.dto.ChefCertificationQueryDTO;
 import com.homechef.homechefsystem.service.ChefCertificationService;
 import com.homechef.homechefsystem.vo.ChefCertificationVO;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,15 +20,18 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/admin/chef/certification")
 @RequiredArgsConstructor
+@Tag(name = "后台厨师认证接口")
 public class AdminChefCertificationController {
 
     private final ChefCertificationService chefCertificationService;
 
+    @Operation(summary = "查询厨师认证列表")
     @GetMapping("/list")
     public Result<List<ChefCertificationVO>> getList(ChefCertificationQueryDTO queryDTO) {
         return Result.success(chefCertificationService.getList(queryDTO));
     }
 
+    @Operation(summary = "审核厨师认证")
     @PostMapping("/{id}/audit")
     public Result<ChefCertificationVO> auditById(@PathVariable Long id,
                                                  @RequestBody ChefCertificationAuditDTO chefCertificationAuditDTO) {

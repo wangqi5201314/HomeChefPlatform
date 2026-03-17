@@ -7,6 +7,8 @@ import com.homechef.homechefsystem.dto.ChefScheduleQueryDTO;
 import com.homechef.homechefsystem.dto.ChefScheduleUpdateDTO;
 import com.homechef.homechefsystem.service.ChefScheduleService;
 import com.homechef.homechefsystem.vo.ChefScheduleVO;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,16 +24,19 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/chef")
 @RequiredArgsConstructor
+@Tag(name = "厨师档期接口")
 public class ChefScheduleController {
 
     private final ChefScheduleService chefScheduleService;
 
+    @Operation(summary = "查询厨师档期列表")
     @GetMapping("/{chefId}/schedule")
     public Result<List<ChefScheduleVO>> getScheduleList(@PathVariable Long chefId, ChefScheduleQueryDTO queryDTO) {
         queryDTO.setChefId(chefId);
         return Result.success(chefScheduleService.getScheduleList(queryDTO));
     }
 
+    @Operation(summary = "查询档期详情")
     @GetMapping("/schedule/{id}")
     public Result<ChefScheduleVO> getById(@PathVariable Long id) {
         ChefScheduleVO chefScheduleVO = chefScheduleService.getById(id);
@@ -41,6 +46,7 @@ public class ChefScheduleController {
         return Result.success(chefScheduleVO);
     }
 
+    @Operation(summary = "新增厨师档期")
     @PostMapping("/{chefId}/schedule")
     public Result<ChefScheduleVO> create(@PathVariable Long chefId,
                                          @RequestBody ChefScheduleCreateDTO chefScheduleCreateDTO) {
@@ -58,6 +64,7 @@ public class ChefScheduleController {
         return Result.success(chefScheduleVO);
     }
 
+    @Operation(summary = "修改厨师档期")
     @PutMapping("/schedule/{id}")
     public Result<ChefScheduleVO> updateById(@PathVariable Long id,
                                              @RequestBody ChefScheduleUpdateDTO chefScheduleUpdateDTO) {
@@ -82,6 +89,7 @@ public class ChefScheduleController {
         return Result.success(chefScheduleVO);
     }
 
+    @Operation(summary = "删除厨师档期")
     @DeleteMapping("/schedule/{id}")
     public Result<ChefScheduleVO> deleteById(@PathVariable Long id) {
         ChefScheduleVO existingSchedule = chefScheduleService.getById(id);
@@ -99,6 +107,7 @@ public class ChefScheduleController {
         return Result.success(chefScheduleVO);
     }
 
+    @Operation(summary = "修改档期可预约状态")
     @PostMapping("/schedule/{id}/availability")
     public Result<ChefScheduleVO> updateAvailabilityById(@PathVariable Long id,
                                                          @RequestBody ChefScheduleAvailabilityDTO availabilityDTO) {
