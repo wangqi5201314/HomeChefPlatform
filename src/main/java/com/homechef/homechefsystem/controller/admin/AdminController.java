@@ -1,6 +1,7 @@
 package com.homechef.homechefsystem.controller.admin;
 
 import com.homechef.homechefsystem.annotation.RequireAdmin;
+import com.homechef.homechefsystem.common.annotation.OperationLog;
 import com.homechef.homechefsystem.common.result.Result;
 import com.homechef.homechefsystem.dto.AdminChefQueryDTO;
 import com.homechef.homechefsystem.dto.AdminLoginDTO;
@@ -15,6 +16,7 @@ import com.homechef.homechefsystem.vo.AdminLoginVO;
 import com.homechef.homechefsystem.vo.AdminOrderVO;
 import com.homechef.homechefsystem.vo.AdminUserVO;
 import com.homechef.homechefsystem.vo.OrderDetailVO;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,7 +36,7 @@ public class AdminController {
     private final JwtUtil jwtUtil;
 
     @PostMapping("/login")
-    public Result<LoginTokenDTO> login(@RequestBody AdminLoginDTO adminLoginDTO) {
+    public Result<LoginTokenDTO> login(@Valid @RequestBody AdminLoginDTO adminLoginDTO) {
         AdminLoginVO adminLoginVO = adminService.login(adminLoginDTO);
         if (adminLoginVO == null) {
             return Result.error(401, "username or password incorrect");
@@ -53,9 +55,10 @@ public class AdminController {
     }
 
     @RequireAdmin
+    @OperationLog(module = "AdminUser", operation = "Update User Status")
     @PostMapping("/user/{id}/status")
     public Result<AdminUserVO> updateUserStatus(@PathVariable Long id,
-                                                @RequestBody AdminStatusUpdateDTO statusUpdateDTO) {
+                                                @Valid @RequestBody AdminStatusUpdateDTO statusUpdateDTO) {
         AdminUserVO adminUserVO = adminService.updateUserStatus(id, statusUpdateDTO);
         if (adminUserVO == null) {
             return Result.error(404, "user not found");

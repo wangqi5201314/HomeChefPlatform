@@ -8,6 +8,7 @@ import com.homechef.homechefsystem.dto.UserUpdateDTO;
 import com.homechef.homechefsystem.service.UserService;
 import com.homechef.homechefsystem.utils.JwtUtil;
 import com.homechef.homechefsystem.vo.UserVO;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,7 +27,7 @@ public class UserController {
     private final JwtUtil jwtUtil;
 
     @PostMapping("/login")
-    public Result<LoginTokenDTO> login(@RequestBody UserLoginDTO userLoginDTO) {
+    public Result<LoginTokenDTO> login(@Valid @RequestBody UserLoginDTO userLoginDTO) {
         UserVO userVO = userService.login(userLoginDTO);
         if (userVO == null) {
             return Result.error(401, "user not found");
