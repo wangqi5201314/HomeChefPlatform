@@ -1,5 +1,6 @@
 package com.homechef.homechefsystem.controller.user;
 
+import com.homechef.homechefsystem.annotation.RequireLogin;
 import com.homechef.homechefsystem.common.result.Result;
 import com.homechef.homechefsystem.dto.UserUpdateDTO;
 import com.homechef.homechefsystem.service.UserService;
@@ -28,6 +29,7 @@ public class UserController {
         return Result.success(userVO);
     }
 
+    @RequireLogin
     @GetMapping("/me")
     public Result<UserVO> getCurrentUser() {
         UserVO userVO = userService.getCurrentUser();
@@ -37,6 +39,7 @@ public class UserController {
         return Result.success(userVO);
     }
 
+    @RequireLogin
     @PutMapping("/me")
     public Result<UserVO> updateCurrentUser(@RequestBody UserUpdateDTO userUpdateDTO) {
         UserVO updatedUser = userService.updateCurrentUser(userUpdateDTO);

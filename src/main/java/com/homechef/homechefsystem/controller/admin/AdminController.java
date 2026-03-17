@@ -1,5 +1,6 @@
 package com.homechef.homechefsystem.controller.admin;
 
+import com.homechef.homechefsystem.annotation.RequireAdmin;
 import com.homechef.homechefsystem.common.result.Result;
 import com.homechef.homechefsystem.dto.AdminChefQueryDTO;
 import com.homechef.homechefsystem.dto.AdminLoginDTO;
@@ -38,11 +39,13 @@ public class AdminController {
         return Result.success(adminLoginVO);
     }
 
+    @RequireAdmin
     @GetMapping("/users")
     public Result<List<AdminUserVO>> getUserList(AdminUserQueryDTO queryDTO) {
         return Result.success(adminService.getUserList(queryDTO));
     }
 
+    @RequireAdmin
     @PostMapping("/user/{id}/status")
     public Result<AdminUserVO> updateUserStatus(@PathVariable Long id,
                                                 @RequestBody AdminStatusUpdateDTO statusUpdateDTO) {
@@ -53,11 +56,13 @@ public class AdminController {
         return Result.success(adminUserVO);
     }
 
+    @RequireAdmin
     @GetMapping("/chefs")
     public Result<List<AdminChefVO>> getChefList(AdminChefQueryDTO queryDTO) {
         return Result.success(adminService.getChefList(queryDTO));
     }
 
+    @RequireAdmin
     @PostMapping("/chef/{id}/status")
     public Result<AdminChefVO> updateChefStatus(@PathVariable Long id,
                                                 @RequestBody AdminStatusUpdateDTO statusUpdateDTO) {
@@ -68,11 +73,13 @@ public class AdminController {
         return Result.success(adminChefVO);
     }
 
+    @RequireAdmin
     @GetMapping("/orders")
     public Result<List<AdminOrderVO>> getOrderList(AdminOrderQueryDTO queryDTO) {
         return Result.success(adminService.getOrderList(queryDTO));
     }
 
+    @RequireAdmin
     @GetMapping("/order/{id}")
     public Result<OrderDetailVO> getOrderDetail(@PathVariable Long id) {
         OrderDetailVO orderDetailVO = adminService.getOrderDetail(id);

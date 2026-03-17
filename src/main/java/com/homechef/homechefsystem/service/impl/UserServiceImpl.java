@@ -4,6 +4,7 @@ import com.homechef.homechefsystem.dto.UserUpdateDTO;
 import com.homechef.homechefsystem.entity.User;
 import com.homechef.homechefsystem.mapper.UserMapper;
 import com.homechef.homechefsystem.service.UserService;
+import com.homechef.homechefsystem.utils.LoginUserContext;
 import com.homechef.homechefsystem.vo.UserVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,8 +15,6 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
-    private static final Long MOCK_CURRENT_USER_ID = 1L;
-
     private final UserMapper userMapper;
 
     @Override
@@ -25,12 +24,21 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserVO getCurrentUser() {
-        return getById(MOCK_CURRENT_USER_ID);
+        Long currentUserId = LoginUserContext.getUserId();
+        if (currentUserId == null) {
+            return null;
+        }
+        return getById(currentUserId);
     }
 
     @Override
     public UserVO updateCurrentUser(UserUpdateDTO userUpdateDTO) {
-        User existingUser = userMapper.selectById(MOCK_CURRENT_USER_ID);
+        Long currentUserId = LoginUserContext.getUserId();
+        if (currentUserId == null) {
+            return null;
+        }
+
+        User existingUser = userMapper.selectById(currentUserId);
         if (existingUser == null) {
             return null;
         }
@@ -49,7 +57,7 @@ public class UserServiceImpl implements UserService {
         if (rows <= 0) {
             return null;
         }
-        return toUserVO(userMapper.selectById(MOCK_CURRENT_USER_ID));
+        return toUserVO(userMapper.selectById(currentUserId));
     }
 
     private UserVO toUserVO(User user) {
