@@ -100,6 +100,28 @@ public interface OrderMapper {
                    @Param("cancelReason") String cancelReason,
                    @Param("updatedAt") LocalDateTime updatedAt);
 
+    @Update("""
+            UPDATE orders
+            SET order_status = #{orderStatus},
+                updated_at = #{updatedAt}
+            WHERE id = #{id}
+            """)
+    int updatePaidStatusById(@Param("id") Long id,
+                             @Param("orderStatus") String orderStatus,
+                             @Param("updatedAt") LocalDateTime updatedAt);
+
+    @Update("""
+            UPDATE orders
+            SET order_status = #{orderStatus},
+                refund_reason = #{refundReason},
+                updated_at = #{updatedAt}
+            WHERE id = #{id}
+            """)
+    int updateRefundStatusById(@Param("id") Long id,
+                               @Param("orderStatus") String orderStatus,
+                               @Param("refundReason") String refundReason,
+                               @Param("updatedAt") LocalDateTime updatedAt);
+
     class OrderSqlProvider {
 
         public String buildSelectListSql(final OrderQueryDTO queryDTO) {
