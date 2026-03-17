@@ -11,6 +11,7 @@ import org.apache.ibatis.annotations.SelectProvider;
 import org.apache.ibatis.annotations.Update;
 import org.apache.ibatis.jdbc.SQL;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Mapper
@@ -91,6 +92,16 @@ public interface ChefMapper {
             WHERE id = #{id}
             """)
     int updateById(Chef chef);
+
+    @Update("""
+            UPDATE chef
+            SET cert_status = #{certStatus},
+                updated_at = #{updatedAt}
+            WHERE id = #{id}
+            """)
+    int updateCertStatusById(@Param("id") Long id,
+                             @Param("certStatus") Integer certStatus,
+                             @Param("updatedAt") LocalDateTime updatedAt);
 
     class ChefSqlProvider {
 
