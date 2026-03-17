@@ -2,12 +2,16 @@ package com.homechef.homechefsystem.controller.user;
 
 import com.homechef.homechefsystem.annotation.RequireLogin;
 import com.homechef.homechefsystem.common.result.Result;
+import com.homechef.homechefsystem.dto.LoginTokenDTO;
+import com.homechef.homechefsystem.dto.UserLoginDTO;
 import com.homechef.homechefsystem.dto.UserUpdateDTO;
 import com.homechef.homechefsystem.service.UserService;
+import com.homechef.homechefsystem.utils.JwtUtil;
 import com.homechef.homechefsystem.vo.UserVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,6 +23,21 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
     private final UserService userService;
+    private final JwtUtil jwtUtil;
+
+    @PostMapping("/login")
+    public Result<LoginTokenDTO> login(@RequestBody UserLoginDTO userLoginDTO) {
+        UserVO userVO = userService.login(userLoginDTO);
+        if (userVO == null) {
+            return Result.error(401, "user not found");
+        }
+
+        return Result.success(LoginTokenDTO.builder()
+                .token(jwtUtil.generateUserToken(userVO.getId()))
+                .userType(JwtUtil.USER_TYPE_USER)
+                .userId(userVO.getId())
+                .build());
+    }
 
     @GetMapping("/{id}")
     public Result<UserVO> getById(@PathVariable Long id) {

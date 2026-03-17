@@ -7,7 +7,9 @@ import com.homechef.homechefsystem.dto.AdminLoginDTO;
 import com.homechef.homechefsystem.dto.AdminOrderQueryDTO;
 import com.homechef.homechefsystem.dto.AdminStatusUpdateDTO;
 import com.homechef.homechefsystem.dto.AdminUserQueryDTO;
+import com.homechef.homechefsystem.dto.LoginTokenDTO;
 import com.homechef.homechefsystem.service.AdminService;
+import com.homechef.homechefsystem.utils.JwtUtil;
 import com.homechef.homechefsystem.vo.AdminChefVO;
 import com.homechef.homechefsystem.vo.AdminLoginVO;
 import com.homechef.homechefsystem.vo.AdminOrderVO;
@@ -29,14 +31,19 @@ import java.util.List;
 public class AdminController {
 
     private final AdminService adminService;
+    private final JwtUtil jwtUtil;
 
     @PostMapping("/login")
-    public Result<AdminLoginVO> login(@RequestBody AdminLoginDTO adminLoginDTO) {
+    public Result<LoginTokenDTO> login(@RequestBody AdminLoginDTO adminLoginDTO) {
         AdminLoginVO adminLoginVO = adminService.login(adminLoginDTO);
         if (adminLoginVO == null) {
             return Result.error(401, "username or password incorrect");
         }
-        return Result.success(adminLoginVO);
+        return Result.success(LoginTokenDTO.builder()
+                .token(jwtUtil.generateAdminToken(adminLoginVO.getId()))
+                .userType(JwtUtil.USER_TYPE_ADMIN)
+                .adminId(adminLoginVO.getId())
+                .build());
     }
 
     @RequireAdmin

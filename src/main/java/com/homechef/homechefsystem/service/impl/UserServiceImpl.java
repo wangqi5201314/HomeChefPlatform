@@ -1,5 +1,6 @@
 package com.homechef.homechefsystem.service.impl;
 
+import com.homechef.homechefsystem.dto.UserLoginDTO;
 import com.homechef.homechefsystem.dto.UserUpdateDTO;
 import com.homechef.homechefsystem.entity.User;
 import com.homechef.homechefsystem.mapper.UserMapper;
@@ -16,6 +17,18 @@ import java.time.LocalDateTime;
 public class UserServiceImpl implements UserService {
 
     private final UserMapper userMapper;
+
+    @Override
+    public UserVO login(UserLoginDTO userLoginDTO) {
+        User user = userMapper.selectByPhone(userLoginDTO.getPhone());
+        if (user == null) {
+            return null;
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        userMapper.updateLoginTimeById(user.getId(), now, now);
+        return toUserVO(userMapper.selectById(user.getId()));
+    }
 
     @Override
     public UserVO getById(Long id) {
