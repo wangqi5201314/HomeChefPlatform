@@ -23,10 +23,6 @@ public class UploadController {
     @Operation(summary = "上传图片")
     @PostMapping("/image")
     public Result<FileUploadVO> uploadImage(@RequestParam("file") MultipartFile file) {
-        FileUploadVO fileUploadVO = uploadService.uploadImage(file);
-        if (fileUploadVO == null) {
-            return Result.error(400, "upload image failed");
-        }
-        return Result.success(fileUploadVO);
+        return Result.success(uploadService.uploadImage(file));
     }
 }
