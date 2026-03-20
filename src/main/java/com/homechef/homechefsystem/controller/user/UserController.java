@@ -7,6 +7,7 @@ import com.homechef.homechefsystem.dto.UserChangePasswordDTO;
 import com.homechef.homechefsystem.dto.UserLoginDTO;
 import com.homechef.homechefsystem.dto.UserRegisterDTO;
 import com.homechef.homechefsystem.dto.UserUpdateDTO;
+import com.homechef.homechefsystem.dto.UserWechatLoginDTO;
 import com.homechef.homechefsystem.service.UserService;
 import com.homechef.homechefsystem.utils.JwtUtil;
 import com.homechef.homechefsystem.vo.UserVO;
@@ -35,12 +36,14 @@ public class UserController {
     @PostMapping("/login")
     public Result<LoginTokenDTO> login(@Valid @RequestBody UserLoginDTO userLoginDTO) {
         UserVO userVO = userService.login(userLoginDTO);
-        return Result.success(LoginTokenDTO.builder()
-                .token(jwtUtil.generateUserToken(userVO.getId()))
-                .userType(JwtUtil.USER_TYPE_USER)
-                .userId(userVO.getId())
-                .adminId(0L)
-                .build());
+        return Result.success(buildLoginToken(userVO.getId()));
+    }
+
+    @Operation(summary = "微信小程序快捷登录")
+    @PostMapping("/login/wechat")
+    public Result<LoginTokenDTO> loginByWechat(@Valid @RequestBody UserWechatLoginDTO userWechatLoginDTO) {
+        UserVO userVO = userService.loginByWechat(userWechatLoginDTO);
+        return Result.success(buildLoginToken(userVO.getId()));
     }
 
     @Operation(summary = "用户注册")
@@ -87,5 +90,14 @@ public class UserController {
             return Result.error(404, "user not found");
         }
         return Result.success(updatedUser);
+    }
+
+    private LoginTokenDTO buildLoginToken(Long userId) {
+        return LoginTokenDTO.builder()
+                .token(jwtUtil.generateUserToken(userId))
+                .userType(JwtUtil.USER_TYPE_USER)
+                .userId(userId)
+                .adminId(0L)
+                .build();
     }
 }

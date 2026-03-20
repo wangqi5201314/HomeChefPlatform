@@ -6,9 +6,11 @@ import com.homechef.homechefsystem.dto.UserChangePasswordDTO;
 import com.homechef.homechefsystem.dto.UserLoginDTO;
 import com.homechef.homechefsystem.dto.UserRegisterDTO;
 import com.homechef.homechefsystem.dto.UserUpdateDTO;
+import com.homechef.homechefsystem.dto.UserWechatLoginDTO;
 import com.homechef.homechefsystem.entity.User;
 import com.homechef.homechefsystem.mapper.UserMapper;
 import com.homechef.homechefsystem.service.UserService;
+import com.homechef.homechefsystem.service.WechatMiniProgramService;
 import com.homechef.homechefsystem.utils.LoginUserContext;
 import com.homechef.homechefsystem.vo.UserVO;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserMapper userMapper;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final WechatMiniProgramService wechatMiniProgramService;
 
     @Override
     public UserVO login(UserLoginDTO userLoginDTO) {
@@ -31,9 +34,7 @@ public class UserServiceImpl implements UserService {
         if (user == null) {
             throw new BusinessException(ResultCodeEnum.UNAUTHORIZED, "phone or password is incorrect");
         }
-        if (user.getStatus() == null || user.getStatus() != 1) {
-            throw new BusinessException(ResultCodeEnum.FORBIDDEN, "user is disabled");
-        }
+        validateUserForLogin(user);
         if (!StringUtils.hasText(user.getPassword())) {
             throw new BusinessException(ResultCodeEnum.UNAUTHORIZED, "password is not set");
         }
@@ -41,9 +42,22 @@ public class UserServiceImpl implements UserService {
             throw new BusinessException(ResultCodeEnum.UNAUTHORIZED, "phone or password is incorrect");
         }
 
-        LocalDateTime now = LocalDateTime.now();
-        userMapper.updateLoginTimeById(user.getId(), now, now);
-        return toUserVO(userMapper.selectById(user.getId()));
+        return finishLogin(user);
+    }
+
+    @Override
+    public UserVO loginByWechat(UserWechatLoginDTO userWechatLoginDTO) {
+        WechatMiniProgramService.WechatLoginInfo wechatLoginInfo =
+                wechatMiniProgramService.code2Session(userWechatLoginDTO.getCode());
+
+        User user = userMapper.selectByOpenid(wechatLoginInfo.openid());
+        if (user == null) {
+            user = createWechatUser(wechatLoginInfo);
+        } else {
+            validateUserForLogin(user);
+        }
+
+        return finishLogin(user);
     }
 
     @Override
@@ -58,7 +72,7 @@ public class UserServiceImpl implements UserService {
         User user = User.builder()
                 .phone(userRegisterDTO.getPhone())
                 .password(passwordEncoder.encode(userRegisterDTO.getPassword()))
-                .nickname(buildNickname(userRegisterDTO.getPhone(), userRegisterDTO.getNickname()))
+                .nickname(buildPhoneNickname(userRegisterDTO.getPhone(), userRegisterDTO.getNickname()))
                 .avatar("")
                 .gender(0)
                 .status(1)
@@ -146,6 +160,45 @@ public class UserServiceImpl implements UserService {
         return toUserVO(userMapper.selectById(currentUserId));
     }
 
+    private User createWechatUser(WechatMiniProgramService.WechatLoginInfo wechatLoginInfo) {
+        LocalDateTime now = LocalDateTime.now();
+        User user = User.builder()
+                .openid(wechatLoginInfo.openid())
+                .unionid(wechatLoginInfo.unionid())
+                .phone(null)
+                .password(null)
+                .nickname(buildWechatNickname(wechatLoginInfo.openid()))
+                .avatar("")
+                .gender(0)
+                .status(1)
+                .lastLoginTime(now)
+                .createdAt(now)
+                .updatedAt(now)
+                .build();
+
+        int rows = userMapper.insert(user);
+        if (rows <= 0) {
+            throw new BusinessException(ResultCodeEnum.SYSTEM_ERROR, "wechat register failed");
+        }
+        User createdUser = userMapper.selectById(user.getId());
+        if (createdUser == null) {
+            throw new BusinessException(ResultCodeEnum.SYSTEM_ERROR, "wechat register failed");
+        }
+        return createdUser;
+    }
+
+    private UserVO finishLogin(User user) {
+        LocalDateTime now = LocalDateTime.now();
+        userMapper.updateLoginTimeById(user.getId(), now, now);
+        return toUserVO(userMapper.selectById(user.getId()));
+    }
+
+    private void validateUserForLogin(User user) {
+        if (user.getStatus() == null || user.getStatus() != 1) {
+            throw new BusinessException(ResultCodeEnum.FORBIDDEN, "user is disabled");
+        }
+    }
+
     private void validateRegister(UserRegisterDTO userRegisterDTO) {
         if (!userRegisterDTO.getPassword().equals(userRegisterDTO.getConfirmPassword())) {
             throw new BusinessException(ResultCodeEnum.PARAM_ERROR, "confirmPassword does not match password");
@@ -158,7 +211,7 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    private String buildNickname(String phone, String nickname) {
+    private String buildPhoneNickname(String phone, String nickname) {
         if (StringUtils.hasText(nickname)) {
             return nickname.trim();
         }
@@ -166,6 +219,16 @@ public class UserServiceImpl implements UserService {
             return "用户" + phone.substring(phone.length() - 4);
         }
         return phone;
+    }
+
+    private String buildWechatNickname(String openid) {
+        if (!StringUtils.hasText(openid)) {
+            return "微信用户";
+        }
+        if (openid.length() <= 6) {
+            return "微信用户" + openid;
+        }
+        return "微信用户" + openid.substring(openid.length() - 6);
     }
 
     private UserVO toUserVO(User user) {

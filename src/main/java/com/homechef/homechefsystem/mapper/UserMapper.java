@@ -73,13 +73,43 @@ public interface UserMapper {
     })
     User selectByPhone(@Param("phone") String phone);
 
+    @Select("""
+            SELECT id, openid, unionid, phone, password, nickname, avatar, gender, birthday,
+                   taste_preference, allergy_info, emergency_contact_name, emergency_contact_phone,
+                   status, last_login_time, created_at, updated_at
+            FROM `user`
+            WHERE openid = #{openid}
+            ORDER BY id DESC
+            LIMIT 1
+            """)
+    @Results(id = "userWechatResultMap", value = {
+            @Result(property = "id", column = "id"),
+            @Result(property = "openid", column = "openid"),
+            @Result(property = "unionid", column = "unionid"),
+            @Result(property = "phone", column = "phone"),
+            @Result(property = "password", column = "password"),
+            @Result(property = "nickname", column = "nickname"),
+            @Result(property = "avatar", column = "avatar"),
+            @Result(property = "gender", column = "gender"),
+            @Result(property = "birthday", column = "birthday"),
+            @Result(property = "tastePreference", column = "taste_preference"),
+            @Result(property = "allergyInfo", column = "allergy_info"),
+            @Result(property = "emergencyContactName", column = "emergency_contact_name"),
+            @Result(property = "emergencyContactPhone", column = "emergency_contact_phone"),
+            @Result(property = "status", column = "status"),
+            @Result(property = "lastLoginTime", column = "last_login_time"),
+            @Result(property = "createdAt", column = "created_at"),
+            @Result(property = "updatedAt", column = "updated_at")
+    })
+    User selectByOpenid(@Param("openid") String openid);
+
     @Insert("""
             INSERT INTO `user` (
-                phone, password, nickname, avatar, gender, status,
-                created_at, updated_at
+                openid, unionid, phone, password, nickname, avatar, gender, status,
+                last_login_time, created_at, updated_at
             ) VALUES (
-                #{phone}, #{password}, #{nickname}, #{avatar}, #{gender}, #{status},
-                #{createdAt}, #{updatedAt}
+                #{openid}, #{unionid}, #{phone}, #{password}, #{nickname}, #{avatar}, #{gender}, #{status},
+                #{lastLoginTime}, #{createdAt}, #{updatedAt}
             )
             """)
     @Options(useGeneratedKeys = true, keyProperty = "id")
