@@ -1,7 +1,9 @@
 package com.homechef.homechefsystem.mapper;
 
 import com.homechef.homechefsystem.entity.User;
+import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Result;
 import org.apache.ibatis.annotations.Results;
@@ -14,7 +16,7 @@ import java.time.LocalDateTime;
 public interface UserMapper {
 
     @Select("""
-            SELECT id, openid, unionid, phone, nickname, avatar, gender, birthday,
+            SELECT id, openid, unionid, phone, password, nickname, avatar, gender, birthday,
                    taste_preference, allergy_info, emergency_contact_name, emergency_contact_phone,
                    status, last_login_time, created_at, updated_at
             FROM `user`
@@ -25,6 +27,7 @@ public interface UserMapper {
             @Result(property = "openid", column = "openid"),
             @Result(property = "unionid", column = "unionid"),
             @Result(property = "phone", column = "phone"),
+            @Result(property = "password", column = "password"),
             @Result(property = "nickname", column = "nickname"),
             @Result(property = "avatar", column = "avatar"),
             @Result(property = "gender", column = "gender"),
@@ -41,7 +44,7 @@ public interface UserMapper {
     User selectById(@Param("id") Long id);
 
     @Select("""
-            SELECT id, openid, unionid, phone, nickname, avatar, gender, birthday,
+            SELECT id, openid, unionid, phone, password, nickname, avatar, gender, birthday,
                    taste_preference, allergy_info, emergency_contact_name, emergency_contact_phone,
                    status, last_login_time, created_at, updated_at
             FROM `user`
@@ -54,6 +57,7 @@ public interface UserMapper {
             @Result(property = "openid", column = "openid"),
             @Result(property = "unionid", column = "unionid"),
             @Result(property = "phone", column = "phone"),
+            @Result(property = "password", column = "password"),
             @Result(property = "nickname", column = "nickname"),
             @Result(property = "avatar", column = "avatar"),
             @Result(property = "gender", column = "gender"),
@@ -69,6 +73,18 @@ public interface UserMapper {
     })
     User selectByPhone(@Param("phone") String phone);
 
+    @Insert("""
+            INSERT INTO `user` (
+                phone, password, nickname, avatar, gender, status,
+                created_at, updated_at
+            ) VALUES (
+                #{phone}, #{password}, #{nickname}, #{avatar}, #{gender}, #{status},
+                #{createdAt}, #{updatedAt}
+            )
+            """)
+    @Options(useGeneratedKeys = true, keyProperty = "id")
+    int insert(User user);
+
     @Update("""
             UPDATE `user`
             SET last_login_time = #{lastLoginTime},
@@ -78,6 +94,16 @@ public interface UserMapper {
     int updateLoginTimeById(@Param("id") Long id,
                             @Param("lastLoginTime") LocalDateTime lastLoginTime,
                             @Param("updatedAt") LocalDateTime updatedAt);
+
+    @Update("""
+            UPDATE `user`
+            SET password = #{password},
+                updated_at = #{updatedAt}
+            WHERE id = #{id}
+            """)
+    int updatePasswordById(@Param("id") Long id,
+                           @Param("password") String password,
+                           @Param("updatedAt") LocalDateTime updatedAt);
 
     @Update("""
             UPDATE `user`

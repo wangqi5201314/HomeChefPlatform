@@ -3,7 +3,9 @@ package com.homechef.homechefsystem.controller.user;
 import com.homechef.homechefsystem.annotation.RequireLogin;
 import com.homechef.homechefsystem.common.result.Result;
 import com.homechef.homechefsystem.dto.LoginTokenDTO;
+import com.homechef.homechefsystem.dto.UserChangePasswordDTO;
 import com.homechef.homechefsystem.dto.UserLoginDTO;
+import com.homechef.homechefsystem.dto.UserRegisterDTO;
 import com.homechef.homechefsystem.dto.UserUpdateDTO;
 import com.homechef.homechefsystem.service.UserService;
 import com.homechef.homechefsystem.utils.JwtUtil;
@@ -33,15 +35,26 @@ public class UserController {
     @PostMapping("/login")
     public Result<LoginTokenDTO> login(@Valid @RequestBody UserLoginDTO userLoginDTO) {
         UserVO userVO = userService.login(userLoginDTO);
-        if (userVO == null) {
-            return Result.error(401, "user not found");
-        }
-
         return Result.success(LoginTokenDTO.builder()
                 .token(jwtUtil.generateUserToken(userVO.getId()))
                 .userType(JwtUtil.USER_TYPE_USER)
                 .userId(userVO.getId())
+                .adminId(0L)
                 .build());
+    }
+
+    @Operation(summary = "用户注册")
+    @PostMapping("/register")
+    public Result<UserVO> register(@Valid @RequestBody UserRegisterDTO userRegisterDTO) {
+        return Result.success(userService.register(userRegisterDTO));
+    }
+
+    @RequireLogin
+    @Operation(summary = "修改密码")
+    @PutMapping("/password")
+    public Result<Void> changePassword(@Valid @RequestBody UserChangePasswordDTO userChangePasswordDTO) {
+        userService.changePassword(userChangePasswordDTO);
+        return Result.success();
     }
 
     @Operation(summary = "根据ID查询用户")
