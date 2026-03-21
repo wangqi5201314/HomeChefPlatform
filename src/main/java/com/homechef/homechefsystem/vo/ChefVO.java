@@ -1,4 +1,4 @@
-package com.homechef.homechefsystem.entity;
+package com.homechef.homechefsystem.vo;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -6,21 +6,18 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Chef {
+public class ChefVO {
 
     private Long id;
 
     private String name;
 
     private String phone;
-
-    private String password;
 
     private String avatar;
 
@@ -51,8 +48,4 @@ public class Chef {
     private Integer certStatus;
 
     private Integer status;
-
-    private LocalDateTime createdAt;
-
-    private LocalDateTime updatedAt;
 }

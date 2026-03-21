@@ -18,4 +18,6 @@ public class LoginTokenDTO {
     private Long userId;
 
     private Long adminId;
+
+    private Long chefId;
 }

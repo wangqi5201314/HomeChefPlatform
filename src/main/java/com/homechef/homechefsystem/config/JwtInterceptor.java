@@ -46,10 +46,12 @@ public class JwtInterceptor implements HandlerInterceptor {
         String userType = jwtUtil.getUserType(token);
         Long userId = jwtUtil.getUserId(token);
         Long adminId = jwtUtil.getAdminId(token);
+        Long chefId = jwtUtil.getChefId(token);
 
         LoginUserContext.set(LoginUserContext.LoginUser.builder()
                 .userId(userId)
                 .adminId(adminId)
+                .chefId(chefId)
                 .userType(userType)
                 .build());
 

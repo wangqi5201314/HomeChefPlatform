@@ -17,6 +17,7 @@ public class JwtUtil {
 
     public static final String USER_TYPE_USER = "USER";
     public static final String USER_TYPE_ADMIN = "ADMIN";
+    public static final String USER_TYPE_CHEF = "CHEF";
 
     private static final String JWT_ALG = "HS256";
     private static final String JWT_TYP = "JWT";
@@ -37,6 +38,13 @@ public class JwtUtil {
         Map<String, Object> claims = new LinkedHashMap<>();
         claims.put("adminId", adminId);
         claims.put("userType", USER_TYPE_ADMIN);
+        return generateToken(claims);
+    }
+
+    public String generateChefToken(Long chefId) {
+        Map<String, Object> claims = new LinkedHashMap<>();
+        claims.put("chefId", chefId);
+        claims.put("userType", USER_TYPE_CHEF);
         return generateToken(claims);
     }
 
@@ -107,6 +115,14 @@ public class JwtUtil {
             return null;
         }
         return getLongValue(claims.get("adminId"));
+    }
+
+    public Long getChefId(String token) {
+        Map<String, Object> claims = parseToken(token);
+        if (claims == null) {
+            return null;
+        }
+        return getLongValue(claims.get("chefId"));
     }
 
     public String getUserType(String token) {

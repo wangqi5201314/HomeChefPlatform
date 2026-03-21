@@ -30,6 +30,11 @@ public class LoginUserContext {
         return loginUser == null ? null : loginUser.getAdminId();
     }
 
+    public static Long getChefId() {
+        LoginUser loginUser = get();
+        return loginUser == null ? null : loginUser.getChefId();
+    }
+
     public static String getUserType() {
         LoginUser loginUser = get();
         return loginUser == null ? null : loginUser.getUserType();
@@ -37,6 +42,10 @@ public class LoginUserContext {
 
     public static boolean isAdmin() {
         return JwtUtil.USER_TYPE_ADMIN.equals(getUserType());
+    }
+
+    public static boolean isChef() {
+        return JwtUtil.USER_TYPE_CHEF.equals(getUserType());
     }
 
     public static void clear() {
@@ -52,6 +61,8 @@ public class LoginUserContext {
         private Long userId;
 
         private Long adminId;
+
+        private Long chefId;
 
         private String userType;
     }
