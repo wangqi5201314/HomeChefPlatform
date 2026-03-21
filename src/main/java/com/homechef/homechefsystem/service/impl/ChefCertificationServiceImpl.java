@@ -1,5 +1,7 @@
 package com.homechef.homechefsystem.service.impl;
 
+import com.homechef.homechefsystem.common.enums.ResultCodeEnum;
+import com.homechef.homechefsystem.common.exception.BusinessException;
 import com.homechef.homechefsystem.dto.ChefCertificationAuditDTO;
 import com.homechef.homechefsystem.dto.ChefCertificationQueryDTO;
 import com.homechef.homechefsystem.dto.ChefCertificationSubmitDTO;
@@ -7,6 +9,7 @@ import com.homechef.homechefsystem.entity.ChefCertification;
 import com.homechef.homechefsystem.mapper.ChefCertificationMapper;
 import com.homechef.homechefsystem.mapper.ChefMapper;
 import com.homechef.homechefsystem.service.ChefCertificationService;
+import com.homechef.homechefsystem.utils.LoginUserContext;
 import com.homechef.homechefsystem.vo.ChefCertificationVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -111,6 +114,33 @@ public class ChefCertificationServiceImpl implements ChefCertificationService {
     @Override
     public boolean chefExists(Long chefId) {
         return chefMapper.selectById(chefId) != null;
+    }
+
+    @Override
+    public ChefCertificationVO getCurrentChefCertification() {
+        return getByChefId(requireCurrentChefId());
+    }
+
+    @Override
+    public ChefCertificationVO submitCurrentChefCertification(ChefCertificationSubmitDTO chefCertificationSubmitDTO) {
+        Long chefId = requireCurrentChefId();
+        chefCertificationSubmitDTO.setChefId(chefId);
+        if (!chefExists(chefId)) {
+            throw new BusinessException(ResultCodeEnum.NOT_FOUND, "chef not found");
+        }
+        ChefCertificationVO chefCertificationVO = submit(chefCertificationSubmitDTO);
+        if (chefCertificationVO == null) {
+            throw new BusinessException(ResultCodeEnum.SYSTEM_ERROR, "submit certification failed");
+        }
+        return chefCertificationVO;
+    }
+
+    private Long requireCurrentChefId() {
+        Long chefId = LoginUserContext.getChefId();
+        if (chefId == null) {
+            throw new BusinessException(ResultCodeEnum.UNAUTHORIZED, "unauthorized");
+        }
+        return chefId;
     }
 
     private ChefCertificationVO toChefCertificationVO(ChefCertification chefCertification) {

@@ -1,5 +1,6 @@
 package com.homechef.homechefsystem.controller.chef;
 
+import com.homechef.homechefsystem.annotation.RequireLogin;
 import com.homechef.homechefsystem.common.result.Result;
 import com.homechef.homechefsystem.dto.ChefCertificationSubmitDTO;
 import com.homechef.homechefsystem.service.ChefCertificationService;
@@ -22,18 +23,22 @@ public class ChefCertificationController {
 
     private final ChefCertificationService chefCertificationService;
 
-    @Operation(summary = "提交或更新厨师认证资料")
-    @PostMapping("/submit")
-    public Result<ChefCertificationVO> submit(@RequestBody ChefCertificationSubmitDTO chefCertificationSubmitDTO) {
-        if (!chefCertificationService.chefExists(chefCertificationSubmitDTO.getChefId())) {
-            return Result.error(404, "chef not found");
-        }
-
-        ChefCertificationVO chefCertificationVO = chefCertificationService.submit(chefCertificationSubmitDTO);
+    @RequireLogin
+    @Operation(summary = "查看我的认证资料")
+    @GetMapping("/me")
+    public Result<ChefCertificationVO> getCurrentChefCertification() {
+        ChefCertificationVO chefCertificationVO = chefCertificationService.getCurrentChefCertification();
         if (chefCertificationVO == null) {
-            return Result.error(500, "submit certification failed");
+            return Result.error(404, "certification not found");
         }
         return Result.success(chefCertificationVO);
+    }
+
+    @RequireLogin
+    @Operation(summary = "提交或更新我的认证资料")
+    @PostMapping("/submit")
+    public Result<ChefCertificationVO> submitCurrentChefCertification(@RequestBody ChefCertificationSubmitDTO chefCertificationSubmitDTO) {
+        return Result.success(chefCertificationService.submitCurrentChefCertification(chefCertificationSubmitDTO));
     }
 
     @Operation(summary = "根据厨师ID查询认证详情")

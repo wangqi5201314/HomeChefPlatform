@@ -23,4 +23,14 @@ public interface ChefScheduleService {
     ChefScheduleVO deleteById(Long id);
 
     boolean existsDuplicate(Long chefId, LocalDate serviceDate, String timeSlot, Long excludeId);
+
+    List<ChefScheduleVO> getCurrentChefScheduleList(ChefScheduleQueryDTO queryDTO);
+
+    ChefScheduleVO createCurrentChefSchedule(ChefScheduleCreateDTO chefScheduleCreateDTO);
+
+    ChefScheduleVO updateCurrentChefSchedule(Long id, ChefScheduleUpdateDTO chefScheduleUpdateDTO);
+
+    ChefScheduleVO deleteCurrentChefSchedule(Long id);
+
+    ChefScheduleVO updateCurrentChefScheduleAvailability(Long id, Integer isAvailable);
 }

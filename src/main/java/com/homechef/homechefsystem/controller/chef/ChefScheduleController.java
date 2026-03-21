@@ -1,5 +1,6 @@
 package com.homechef.homechefsystem.controller.chef;
 
+import com.homechef.homechefsystem.annotation.RequireLogin;
 import com.homechef.homechefsystem.common.result.Result;
 import com.homechef.homechefsystem.dto.ChefScheduleAvailabilityDTO;
 import com.homechef.homechefsystem.dto.ChefScheduleCreateDTO;
@@ -36,90 +37,53 @@ public class ChefScheduleController {
         return Result.success(chefScheduleService.getScheduleList(queryDTO));
     }
 
-    @Operation(summary = "查询档期详情")
-    @GetMapping("/schedule/{id}")
-    public Result<ChefScheduleVO> getById(@PathVariable Long id) {
-        ChefScheduleVO chefScheduleVO = chefScheduleService.getById(id);
-        if (chefScheduleVO == null) {
-            return Result.error(404, "schedule not found");
-        }
-        return Result.success(chefScheduleVO);
+    @RequireLogin
+    @Operation(summary = "查询我的档期列表")
+    @GetMapping("/schedule/my")
+    public Result<List<ChefScheduleVO>> getCurrentChefScheduleList(ChefScheduleQueryDTO queryDTO) {
+        return Result.success(chefScheduleService.getCurrentChefScheduleList(queryDTO));
     }
 
-    @Operation(summary = "新增厨师档期")
-    @PostMapping("/{chefId}/schedule")
-    public Result<ChefScheduleVO> create(@PathVariable Long chefId,
-                                         @RequestBody ChefScheduleCreateDTO chefScheduleCreateDTO) {
-        if (chefScheduleService.existsDuplicate(chefId,
-                chefScheduleCreateDTO.getServiceDate(),
-                chefScheduleCreateDTO.getTimeSlot(),
-                null)) {
-            return Result.error(400, "schedule already exists");
-        }
-
-        ChefScheduleVO chefScheduleVO = chefScheduleService.create(chefId, chefScheduleCreateDTO);
+    @RequireLogin
+    @Operation(summary = "新增我的档期")
+    @PostMapping("/schedule")
+    public Result<ChefScheduleVO> createCurrentChefSchedule(@RequestBody ChefScheduleCreateDTO chefScheduleCreateDTO) {
+        ChefScheduleVO chefScheduleVO = chefScheduleService.createCurrentChefSchedule(chefScheduleCreateDTO);
         if (chefScheduleVO == null) {
             return Result.error(500, "create schedule failed");
         }
         return Result.success(chefScheduleVO);
     }
 
-    @Operation(summary = "修改厨师档期")
+    @RequireLogin
+    @Operation(summary = "修改我的档期")
     @PutMapping("/schedule/{id}")
-    public Result<ChefScheduleVO> updateById(@PathVariable Long id,
-                                             @RequestBody ChefScheduleUpdateDTO chefScheduleUpdateDTO) {
-        ChefScheduleVO existingSchedule = chefScheduleService.getById(id);
-        if (existingSchedule == null) {
-            return Result.error(404, "schedule not found");
-        }
-        if (chefScheduleService.existsDuplicate(existingSchedule.getChefId(),
-                chefScheduleUpdateDTO.getServiceDate(),
-                chefScheduleUpdateDTO.getTimeSlot(),
-                id)) {
-            return Result.error(400, "schedule already exists");
-        }
-        if (existingSchedule.getLockedOrderId() != null && Integer.valueOf(0).equals(chefScheduleUpdateDTO.getIsAvailable())) {
-            return Result.error(400, "schedule is locked by order");
-        }
-
-        ChefScheduleVO chefScheduleVO = chefScheduleService.updateById(id, chefScheduleUpdateDTO);
+    public Result<ChefScheduleVO> updateCurrentChefSchedule(@PathVariable Long id,
+                                                            @RequestBody ChefScheduleUpdateDTO chefScheduleUpdateDTO) {
+        ChefScheduleVO chefScheduleVO = chefScheduleService.updateCurrentChefSchedule(id, chefScheduleUpdateDTO);
         if (chefScheduleVO == null) {
             return Result.error(404, "schedule not found");
         }
         return Result.success(chefScheduleVO);
     }
 
-    @Operation(summary = "删除厨师档期")
+    @RequireLogin
+    @Operation(summary = "删除我的档期")
     @DeleteMapping("/schedule/{id}")
-    public Result<ChefScheduleVO> deleteById(@PathVariable Long id) {
-        ChefScheduleVO existingSchedule = chefScheduleService.getById(id);
-        if (existingSchedule == null) {
-            return Result.error(404, "schedule not found");
-        }
-        if (existingSchedule.getLockedOrderId() != null) {
-            return Result.error(400, "schedule is locked by order");
-        }
-
-        ChefScheduleVO chefScheduleVO = chefScheduleService.deleteById(id);
+    public Result<ChefScheduleVO> deleteCurrentChefSchedule(@PathVariable Long id) {
+        ChefScheduleVO chefScheduleVO = chefScheduleService.deleteCurrentChefSchedule(id);
         if (chefScheduleVO == null) {
             return Result.error(404, "schedule not found");
         }
         return Result.success(chefScheduleVO);
     }
 
-    @Operation(summary = "修改档期可预约状态")
+    @RequireLogin
+    @Operation(summary = "切换我的档期可预约状态")
     @PostMapping("/schedule/{id}/availability")
-    public Result<ChefScheduleVO> updateAvailabilityById(@PathVariable Long id,
-                                                         @RequestBody ChefScheduleAvailabilityDTO availabilityDTO) {
-        ChefScheduleVO existingSchedule = chefScheduleService.getById(id);
-        if (existingSchedule == null) {
-            return Result.error(404, "schedule not found");
-        }
-        if (existingSchedule.getLockedOrderId() != null && Integer.valueOf(0).equals(availabilityDTO.getIsAvailable())) {
-            return Result.error(400, "schedule is locked by order");
-        }
-
-        ChefScheduleVO chefScheduleVO = chefScheduleService.updateAvailabilityById(id, availabilityDTO.getIsAvailable());
+    public Result<ChefScheduleVO> updateCurrentChefScheduleAvailability(@PathVariable Long id,
+                                                                        @RequestBody ChefScheduleAvailabilityDTO availabilityDTO) {
+        ChefScheduleVO chefScheduleVO = chefScheduleService.updateCurrentChefScheduleAvailability(id, availabilityDTO.getIsAvailable());
         if (chefScheduleVO == null) {
             return Result.error(404, "schedule not found");
         }

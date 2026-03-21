@@ -18,4 +18,8 @@ public interface ChefCertificationService {
     ChefCertificationVO auditById(Long id, ChefCertificationAuditDTO chefCertificationAuditDTO);
 
     boolean chefExists(Long chefId);
+
+    ChefCertificationVO getCurrentChefCertification();
+
+    ChefCertificationVO submitCurrentChefCertification(ChefCertificationSubmitDTO chefCertificationSubmitDTO);
 }

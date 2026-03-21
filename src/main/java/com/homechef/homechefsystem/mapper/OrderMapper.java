@@ -85,6 +85,37 @@ public interface OrderMapper {
     })
     Order selectById(@Param("id") Long id);
 
+    @Select("""
+            SELECT id, order_no, user_id, chef_id, address_id, service_date, time_slot,
+                   service_start_time, service_end_time, people_count, taste_preference,
+                   taboo_food, special_requirement, ingredient_mode, ingredient_list,
+                   contact_name, contact_phone, full_address, longitude, latitude,
+                   confirm_code, total_amount, discount_amount, pay_amount, order_status,
+                   cancel_reason, refund_reason, user_deleted, chef_deleted, created_at, updated_at
+            FROM orders
+            WHERE id = #{id}
+              AND chef_id = #{chefId}
+              AND chef_deleted = 0
+            """)
+    @ResultMap("orderResultMap")
+    Order selectByIdAndChefId(@Param("id") Long id, @Param("chefId") Long chefId);
+
+    @Select("""
+            SELECT id, order_no, user_id, chef_id, address_id, service_date, time_slot,
+                   service_start_time, service_end_time, people_count, taste_preference,
+                   taboo_food, special_requirement, ingredient_mode, ingredient_list,
+                   contact_name, contact_phone, full_address, longitude, latitude,
+                   confirm_code, total_amount, discount_amount, pay_amount, order_status,
+                   cancel_reason, refund_reason, user_deleted, chef_deleted, created_at, updated_at
+            FROM orders
+            WHERE chef_id = #{chefId}
+              AND chef_deleted = 0
+              AND (#{orderStatus} IS NULL OR #{orderStatus} = '' OR order_status = #{orderStatus})
+            ORDER BY created_at DESC
+            """)
+    @ResultMap("orderResultMap")
+    List<Order> selectChefList(@Param("chefId") Long chefId, @Param("orderStatus") String orderStatus);
+
     @SelectProvider(type = OrderSqlProvider.class, method = "buildSelectListSql")
     @ResultMap("orderResultMap")
     List<Order> selectList(OrderQueryDTO queryDTO);
@@ -109,6 +140,34 @@ public interface OrderMapper {
     int updatePaidStatusById(@Param("id") Long id,
                              @Param("orderStatus") String orderStatus,
                              @Param("updatedAt") LocalDateTime updatedAt);
+
+    @Update("""
+            UPDATE orders
+            SET order_status = #{orderStatus},
+                updated_at = #{updatedAt}
+            WHERE id = #{id}
+              AND chef_id = #{chefId}
+              AND chef_deleted = 0
+            """)
+    int updateStatusByIdAndChefId(@Param("id") Long id,
+                                  @Param("chefId") Long chefId,
+                                  @Param("orderStatus") String orderStatus,
+                                  @Param("updatedAt") LocalDateTime updatedAt);
+
+    @Update("""
+            UPDATE orders
+            SET order_status = #{orderStatus},
+                cancel_reason = #{cancelReason},
+                updated_at = #{updatedAt}
+            WHERE id = #{id}
+              AND chef_id = #{chefId}
+              AND chef_deleted = 0
+            """)
+    int updateStatusAndCancelReasonById(@Param("id") Long id,
+                                        @Param("chefId") Long chefId,
+                                        @Param("orderStatus") String orderStatus,
+                                        @Param("cancelReason") String cancelReason,
+                                        @Param("updatedAt") LocalDateTime updatedAt);
 
     @Update("""
             UPDATE orders
