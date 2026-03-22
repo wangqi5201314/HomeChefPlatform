@@ -2,7 +2,9 @@ package com.homechef.homechefsystem.mapper;
 
 import com.homechef.homechefsystem.dto.ChefQueryDTO;
 import com.homechef.homechefsystem.entity.Chef;
+import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Result;
 import org.apache.ibatis.annotations.Results;
@@ -110,6 +112,22 @@ public interface ChefMapper {
             @Result(property = "updatedAt", column = "updated_at")
     })
     Chef selectByPhone(@Param("phone") String phone);
+
+    @Insert("""
+            INSERT INTO chef (
+                name, phone, password, avatar, gender, age, introduction, specialty_cuisine,
+                specialty_tags, years_of_experience, service_radius_km, service_mode,
+                rating_avg, order_count, on_time_rate, good_review_rate, cert_status,
+                status, created_at, updated_at
+            ) VALUES (
+                #{name}, #{phone}, #{password}, #{avatar}, #{gender}, #{age}, #{introduction}, #{specialtyCuisine},
+                #{specialtyTags}, #{yearsOfExperience}, #{serviceRadiusKm}, #{serviceMode},
+                #{ratingAvg}, #{orderCount}, #{onTimeRate}, #{goodReviewRate}, #{certStatus},
+                #{status}, #{createdAt}, #{updatedAt}
+            )
+            """)
+    @Options(useGeneratedKeys = true, keyProperty = "id")
+    int insert(Chef chef);
 
     @Update("""
             UPDATE chef

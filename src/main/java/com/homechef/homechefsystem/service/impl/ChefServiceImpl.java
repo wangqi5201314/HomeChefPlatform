@@ -5,6 +5,7 @@ import com.homechef.homechefsystem.common.exception.BusinessException;
 import com.homechef.homechefsystem.dto.ChefChangePasswordDTO;
 import com.homechef.homechefsystem.dto.ChefLoginDTO;
 import com.homechef.homechefsystem.dto.ChefQueryDTO;
+import com.homechef.homechefsystem.dto.ChefRegisterDTO;
 import com.homechef.homechefsystem.dto.ChefUpdateDTO;
 import com.homechef.homechefsystem.entity.Chef;
 import com.homechef.homechefsystem.mapper.ChefMapper;
@@ -93,6 +94,45 @@ public class ChefServiceImpl implements ChefService {
     }
 
     @Override
+    public ChefVO register(ChefRegisterDTO chefRegisterDTO) {
+        validateRegister(chefRegisterDTO);
+
+        if (chefMapper.selectByPhone(chefRegisterDTO.getPhone()) != null) {
+            throw new BusinessException(ResultCodeEnum.FAIL, "phone already exists");
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        Chef chef = Chef.builder()
+                .name(buildChefName(chefRegisterDTO.getPhone(), chefRegisterDTO.getName()))
+                .phone(chefRegisterDTO.getPhone())
+                .password(passwordEncoder.encode(chefRegisterDTO.getPassword()))
+                .avatar("")
+                .gender(0)
+                .age(0)
+                .introduction("")
+                .specialtyCuisine("")
+                .specialtyTags("")
+                .yearsOfExperience(0)
+                .serviceRadiusKm(0)
+                .serviceMode(1)
+                .ratingAvg(null)
+                .orderCount(0)
+                .onTimeRate(null)
+                .goodReviewRate(null)
+                .certStatus(0)
+                .status(1)
+                .createdAt(now)
+                .updatedAt(now)
+                .build();
+
+        int rows = chefMapper.insert(chef);
+        if (rows <= 0) {
+            throw new BusinessException(ResultCodeEnum.SYSTEM_ERROR, "register failed");
+        }
+        return toChefVO(chefMapper.selectById(chef.getId()));
+    }
+
+    @Override
     public ChefVO getCurrentChef() {
         Long currentChefId = LoginUserContext.getChefId();
         if (currentChefId == null) {
@@ -161,6 +201,22 @@ public class ChefServiceImpl implements ChefService {
         if (rows <= 0) {
             throw new BusinessException(ResultCodeEnum.SYSTEM_ERROR, "change password failed");
         }
+    }
+
+    private void validateRegister(ChefRegisterDTO chefRegisterDTO) {
+        if (!chefRegisterDTO.getPassword().equals(chefRegisterDTO.getConfirmPassword())) {
+            throw new BusinessException(ResultCodeEnum.PARAM_ERROR, "confirmPassword does not match password");
+        }
+    }
+
+    private String buildChefName(String phone, String name) {
+        if (StringUtils.hasText(name)) {
+            return name.trim();
+        }
+        if (phone != null && phone.length() >= 4) {
+            return "厨师" + phone.substring(phone.length() - 4);
+        }
+        return phone;
     }
 
     private ChefListVO toChefListVO(Chef chef) {

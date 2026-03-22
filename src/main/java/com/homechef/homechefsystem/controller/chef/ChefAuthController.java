@@ -4,6 +4,7 @@ import com.homechef.homechefsystem.annotation.RequireLogin;
 import com.homechef.homechefsystem.common.result.Result;
 import com.homechef.homechefsystem.dto.ChefChangePasswordDTO;
 import com.homechef.homechefsystem.dto.ChefLoginDTO;
+import com.homechef.homechefsystem.dto.ChefRegisterDTO;
 import com.homechef.homechefsystem.dto.ChefUpdateDTO;
 import com.homechef.homechefsystem.dto.LoginTokenDTO;
 import com.homechef.homechefsystem.service.ChefService;
@@ -40,6 +41,12 @@ public class ChefAuthController {
                 .adminId(0L)
                 .chefId(chefVO.getId())
                 .build());
+    }
+
+    @Operation(summary = "厨师注册")
+    @PostMapping("/register")
+    public Result<ChefVO> register(@Valid @RequestBody ChefRegisterDTO chefRegisterDTO) {
+        return Result.success(chefService.register(chefRegisterDTO));
     }
 
     @RequireLogin

@@ -3,6 +3,7 @@ package com.homechef.homechefsystem.service;
 import com.homechef.homechefsystem.dto.ChefChangePasswordDTO;
 import com.homechef.homechefsystem.dto.ChefLoginDTO;
 import com.homechef.homechefsystem.dto.ChefQueryDTO;
+import com.homechef.homechefsystem.dto.ChefRegisterDTO;
 import com.homechef.homechefsystem.dto.ChefUpdateDTO;
 import com.homechef.homechefsystem.vo.ChefDetailVO;
 import com.homechef.homechefsystem.vo.ChefListVO;
@@ -19,6 +20,8 @@ public interface ChefService {
     ChefDetailVO updateById(Long id, ChefUpdateDTO chefUpdateDTO);
 
     ChefVO login(ChefLoginDTO chefLoginDTO);
+
+    ChefVO register(ChefRegisterDTO chefRegisterDTO);
 
     ChefVO getCurrentChef();
 
