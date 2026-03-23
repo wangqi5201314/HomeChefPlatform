@@ -69,5 +69,7 @@ public class OrderDetailVO {
 
     private String refundReason;
 
+    private Integer reviewed;
+
     private LocalDateTime createdAt;
 }

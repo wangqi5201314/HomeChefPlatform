@@ -73,6 +73,8 @@ public class Order {
 
     private Integer chefDeleted;
 
+    private Integer reviewed;
+
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;

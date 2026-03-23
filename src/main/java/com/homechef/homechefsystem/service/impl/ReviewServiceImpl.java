@@ -1,15 +1,17 @@
 package com.homechef.homechefsystem.service.impl;
 
+import com.homechef.homechefsystem.common.enums.ResultCodeEnum;
+import com.homechef.homechefsystem.common.exception.BusinessException;
 import com.homechef.homechefsystem.dto.ReviewCreateDTO;
 import com.homechef.homechefsystem.dto.ReviewQueryDTO;
 import com.homechef.homechefsystem.dto.ReviewReplyDTO;
+import com.homechef.homechefsystem.entity.Order;
 import com.homechef.homechefsystem.entity.Review;
-import com.homechef.homechefsystem.common.enums.ResultCodeEnum;
-import com.homechef.homechefsystem.common.exception.BusinessException;
 import com.homechef.homechefsystem.mapper.ChefMapper;
 import com.homechef.homechefsystem.mapper.OrderMapper;
 import com.homechef.homechefsystem.mapper.ReviewMapper;
 import com.homechef.homechefsystem.service.ReviewService;
+import com.homechef.homechefsystem.utils.LoginUserContext;
 import com.homechef.homechefsystem.vo.ReviewVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ReviewServiceImpl implements ReviewService {
 
+    private static final String ORDER_STATUS_COMPLETED = "COMPLETED";
+
     private final ReviewMapper reviewMapper;
 
     private final OrderMapper orderMapper;
@@ -35,6 +39,30 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     @Transactional
     public ReviewVO create(ReviewCreateDTO reviewCreateDTO) {
+        if (reviewCreateDTO.getOrderId() == null) {
+            throw new BusinessException(ResultCodeEnum.PARAM_ERROR, "orderId不能为空");
+        }
+
+        Order order = orderMapper.selectById(reviewCreateDTO.getOrderId());
+        if (order == null) {
+            throw new BusinessException(ResultCodeEnum.NOT_FOUND, "订单不存在");
+        }
+
+        Long currentUserId = LoginUserContext.getUserId();
+        Long effectiveUserId = currentUserId != null ? currentUserId : reviewCreateDTO.getUserId();
+        if (effectiveUserId == null) {
+            throw new BusinessException(ResultCodeEnum.UNAUTHORIZED, "unauthorized");
+        }
+        if (!effectiveUserId.equals(order.getUserId())) {
+            throw new BusinessException(ResultCodeEnum.FORBIDDEN, "只能评价自己的订单");
+        }
+        if (!ORDER_STATUS_COMPLETED.equals(order.getOrderStatus())) {
+            throw new BusinessException(ResultCodeEnum.FAIL, "仅已完成订单允许评价");
+        }
+        if (reviewMapper.countByOrderId(reviewCreateDTO.getOrderId()) > 0) {
+            throw new BusinessException(ResultCodeEnum.FAIL, "该订单已评价，不能重复评价");
+        }
+
         LocalDateTime now = LocalDateTime.now();
         Integer isAnonymous = reviewCreateDTO.getIsAnonymous();
         if (isAnonymous == null) {
@@ -43,8 +71,8 @@ public class ReviewServiceImpl implements ReviewService {
 
         Review review = Review.builder()
                 .orderId(reviewCreateDTO.getOrderId())
-                .userId(reviewCreateDTO.getUserId())
-                .chefId(reviewCreateDTO.getChefId())
+                .userId(effectiveUserId)
+                .chefId(order.getChefId())
                 .dishScore(reviewCreateDTO.getDishScore())
                 .serviceScore(reviewCreateDTO.getServiceScore())
                 .skillScore(reviewCreateDTO.getSkillScore())
@@ -66,7 +94,7 @@ public class ReviewServiceImpl implements ReviewService {
         if (rows <= 0) {
             return null;
         }
-        int updatedRows = chefMapper.updateReviewStatsById(reviewCreateDTO.getChefId(), now);
+        int updatedRows = chefMapper.updateReviewStatsById(order.getChefId(), now);
         if (updatedRows <= 0) {
             throw new BusinessException(ResultCodeEnum.SYSTEM_ERROR, "update chef review stats failed");
         }
@@ -119,15 +147,33 @@ public class ReviewServiceImpl implements ReviewService {
         return reviewMapper.countByOrderId(orderId) > 0;
     }
 
+    @Override
+    public ReviewVO getByOrderId(Long orderId) {
+        return toReviewVO(reviewMapper.selectByOrderId(orderId));
+    }
+
     private BigDecimal calculateOverallScore(Integer dishScore,
                                              Integer serviceScore,
                                              Integer skillScore,
                                              Integer environmentScore) {
+        validateScore(dishScore, "dishScore");
+        validateScore(serviceScore, "serviceScore");
+        validateScore(skillScore, "skillScore");
+        validateScore(environmentScore, "environmentScore");
         BigDecimal total = BigDecimal.valueOf(dishScore)
                 .add(BigDecimal.valueOf(serviceScore))
                 .add(BigDecimal.valueOf(skillScore))
                 .add(BigDecimal.valueOf(environmentScore));
         return total.divide(BigDecimal.valueOf(4), 2, RoundingMode.HALF_UP);
+    }
+
+    private void validateScore(Integer score, String fieldName) {
+        if (score == null) {
+            throw new BusinessException(ResultCodeEnum.PARAM_ERROR, fieldName + "不能为空");
+        }
+        if (score < 1 || score > 5) {
+            throw new BusinessException(ResultCodeEnum.PARAM_ERROR, fieldName + "必须在1到5之间");
+        }
     }
 
     private ReviewVO toReviewVO(Review review) {

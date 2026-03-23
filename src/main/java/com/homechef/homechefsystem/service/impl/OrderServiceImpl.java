@@ -123,6 +123,7 @@ public class OrderServiceImpl implements OrderService {
                 .contactName(order.getContactName())
                 .contactPhone(order.getContactPhone())
                 .fullAddress(order.getFullAddress())
+                .reviewed(order.getReviewed())
                 .createdAt(order.getCreatedAt())
                 .build();
     }
@@ -159,6 +160,7 @@ public class OrderServiceImpl implements OrderService {
                 .orderStatus(order.getOrderStatus())
                 .cancelReason(order.getCancelReason())
                 .refundReason(order.getRefundReason())
+                .reviewed(order.getReviewed())
                 .createdAt(order.getCreatedAt())
                 .build();
     }

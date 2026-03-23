@@ -19,4 +19,6 @@ public interface ReviewService {
     boolean orderExists(Long orderId);
 
     boolean existsByOrderId(Long orderId);
+
+    ReviewVO getByOrderId(Long orderId);
 }

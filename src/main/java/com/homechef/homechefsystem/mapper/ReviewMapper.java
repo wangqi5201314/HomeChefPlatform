@@ -61,6 +61,17 @@ public interface ReviewMapper {
     Review selectById(@Param("id") Long id);
 
     @Select("""
+            SELECT id, order_id, user_id, chef_id, dish_score, service_score, skill_score,
+                   environment_score, overall_score, content, image_urls, is_anonymous,
+                   reply_content, reply_at, created_at
+            FROM review
+            WHERE order_id = #{orderId}
+            LIMIT 1
+            """)
+    @ResultMap("reviewResultMap")
+    Review selectByOrderId(@Param("orderId") Long orderId);
+
+    @Select("""
             SELECT COUNT(1)
             FROM review
             WHERE order_id = #{orderId}

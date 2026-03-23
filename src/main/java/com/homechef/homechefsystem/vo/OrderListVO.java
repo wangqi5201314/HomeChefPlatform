@@ -41,5 +41,7 @@ public class OrderListVO {
 
     private String fullAddress;
 
+    private Integer reviewed;
+
     private LocalDateTime createdAt;
 }

@@ -1,5 +1,6 @@
 package com.homechef.homechefsystem.controller.review;
 
+import com.homechef.homechefsystem.annotation.RequireLogin;
 import com.homechef.homechefsystem.common.result.Result;
 import com.homechef.homechefsystem.dto.ReviewCreateDTO;
 import com.homechef.homechefsystem.dto.ReviewReplyDTO;
@@ -25,16 +26,10 @@ public class ReviewController {
 
     private final ReviewService reviewService;
 
+    @RequireLogin
     @Operation(summary = "创建评价")
     @PostMapping("/create")
     public Result<ReviewVO> create(@RequestBody ReviewCreateDTO reviewCreateDTO) {
-        if (!reviewService.orderExists(reviewCreateDTO.getOrderId())) {
-            return Result.error(404, "order not found");
-        }
-        if (reviewService.existsByOrderId(reviewCreateDTO.getOrderId())) {
-            return Result.error(400, "review already exists");
-        }
-
         ReviewVO reviewVO = reviewService.create(reviewCreateDTO);
         if (reviewVO == null) {
             return Result.error(500, "create review failed");

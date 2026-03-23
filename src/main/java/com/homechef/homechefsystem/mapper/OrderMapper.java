@@ -46,7 +46,9 @@ public interface OrderMapper {
                    taboo_food, special_requirement, ingredient_mode, ingredient_list,
                    contact_name, contact_phone, full_address, longitude, latitude,
                    confirm_code, total_amount, discount_amount, pay_amount, order_status,
-                   cancel_reason, refund_reason, user_deleted, chef_deleted, created_at, updated_at
+                   cancel_reason, refund_reason, user_deleted, chef_deleted,
+                   EXISTS(SELECT 1 FROM review r WHERE r.order_id = orders.id) AS reviewed,
+                   created_at, updated_at
             FROM orders
             WHERE id = #{id}
             """)
@@ -80,6 +82,7 @@ public interface OrderMapper {
             @Result(property = "refundReason", column = "refund_reason"),
             @Result(property = "userDeleted", column = "user_deleted"),
             @Result(property = "chefDeleted", column = "chef_deleted"),
+            @Result(property = "reviewed", column = "reviewed"),
             @Result(property = "createdAt", column = "created_at"),
             @Result(property = "updatedAt", column = "updated_at")
     })
@@ -91,7 +94,9 @@ public interface OrderMapper {
                    taboo_food, special_requirement, ingredient_mode, ingredient_list,
                    contact_name, contact_phone, full_address, longitude, latitude,
                    confirm_code, total_amount, discount_amount, pay_amount, order_status,
-                   cancel_reason, refund_reason, user_deleted, chef_deleted, created_at, updated_at
+                   cancel_reason, refund_reason, user_deleted, chef_deleted,
+                   EXISTS(SELECT 1 FROM review r WHERE r.order_id = orders.id) AS reviewed,
+                   created_at, updated_at
             FROM orders
             WHERE id = #{id}
               AND chef_id = #{chefId}
@@ -106,7 +111,9 @@ public interface OrderMapper {
                    taboo_food, special_requirement, ingredient_mode, ingredient_list,
                    contact_name, contact_phone, full_address, longitude, latitude,
                    confirm_code, total_amount, discount_amount, pay_amount, order_status,
-                   cancel_reason, refund_reason, user_deleted, chef_deleted, created_at, updated_at
+                   cancel_reason, refund_reason, user_deleted, chef_deleted,
+                   EXISTS(SELECT 1 FROM review r WHERE r.order_id = orders.id) AS reviewed,
+                   created_at, updated_at
             FROM orders
             WHERE chef_id = #{chefId}
               AND chef_deleted = 0
@@ -190,6 +197,7 @@ public interface OrderMapper {
                     .SELECT("special_requirement, ingredient_mode, ingredient_list, contact_name, contact_phone")
                     .SELECT("full_address, longitude, latitude, confirm_code, total_amount, discount_amount")
                     .SELECT("pay_amount, order_status, cancel_reason, refund_reason, user_deleted, chef_deleted")
+                    .SELECT("EXISTS(SELECT 1 FROM review r WHERE r.order_id = orders.id) AS reviewed")
                     .SELECT("created_at, updated_at")
                     .FROM("orders");
 
