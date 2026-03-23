@@ -37,6 +37,8 @@ public class ChefDetailVO {
 
     private Integer serviceMode;
 
+    private String serviceModeDesc;
+
     private BigDecimal ratingAvg;
 
     private Integer orderCount;

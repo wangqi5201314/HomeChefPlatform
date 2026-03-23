@@ -1,5 +1,6 @@
 package com.homechef.homechefsystem.service.impl;
 
+import com.homechef.homechefsystem.common.enums.ChefServiceModeEnum;
 import com.homechef.homechefsystem.common.enums.ResultCodeEnum;
 import com.homechef.homechefsystem.common.exception.BusinessException;
 import com.homechef.homechefsystem.dto.ChefChangePasswordDTO;
@@ -54,6 +55,8 @@ public class ChefServiceImpl implements ChefService {
             return null;
         }
 
+        validateServiceMode(chefUpdateDTO.getServiceMode());
+
         existingChef.setName(chefUpdateDTO.getName());
         existingChef.setPhone(chefUpdateDTO.getPhone());
         existingChef.setAvatar(chefUpdateDTO.getAvatar());
@@ -64,7 +67,9 @@ public class ChefServiceImpl implements ChefService {
         existingChef.setSpecialtyTags(chefUpdateDTO.getSpecialtyTags());
         existingChef.setYearsOfExperience(chefUpdateDTO.getYearsOfExperience());
         existingChef.setServiceRadiusKm(chefUpdateDTO.getServiceRadiusKm());
-        existingChef.setServiceMode(chefUpdateDTO.getServiceMode());
+        if (chefUpdateDTO.getServiceMode() != null) {
+            existingChef.setServiceMode(chefUpdateDTO.getServiceMode());
+        }
         existingChef.setStatus(chefUpdateDTO.getStatus());
         existingChef.setUpdatedAt(LocalDateTime.now());
 
@@ -114,7 +119,7 @@ public class ChefServiceImpl implements ChefService {
                 .specialtyTags("")
                 .yearsOfExperience(0)
                 .serviceRadiusKm(0)
-                .serviceMode(1)
+                .serviceMode(ChefServiceModeEnum.USER_PREPARES_INGREDIENTS.getCode())
                 .ratingAvg(null)
                 .orderCount(0)
                 .onTimeRate(null)
@@ -153,6 +158,8 @@ public class ChefServiceImpl implements ChefService {
             return null;
         }
 
+        validateServiceMode(chefUpdateDTO.getServiceMode());
+
         existingChef.setName(chefUpdateDTO.getName());
         existingChef.setAvatar(chefUpdateDTO.getAvatar());
         existingChef.setGender(chefUpdateDTO.getGender());
@@ -162,7 +169,9 @@ public class ChefServiceImpl implements ChefService {
         existingChef.setSpecialtyTags(chefUpdateDTO.getSpecialtyTags());
         existingChef.setYearsOfExperience(chefUpdateDTO.getYearsOfExperience());
         existingChef.setServiceRadiusKm(chefUpdateDTO.getServiceRadiusKm());
-        existingChef.setServiceMode(chefUpdateDTO.getServiceMode());
+        if (chefUpdateDTO.getServiceMode() != null) {
+            existingChef.setServiceMode(chefUpdateDTO.getServiceMode());
+        }
         existingChef.setUpdatedAt(LocalDateTime.now());
 
         int rows = chefMapper.updateById(existingChef);
@@ -219,6 +228,12 @@ public class ChefServiceImpl implements ChefService {
         return phone;
     }
 
+    private void validateServiceMode(Integer serviceMode) {
+        if (serviceMode != null && !ChefServiceModeEnum.isValid(serviceMode)) {
+            throw new BusinessException(ResultCodeEnum.PARAM_ERROR, "serviceMode 取值非法，只能为 1、2、3");
+        }
+    }
+
     private ChefListVO toChefListVO(Chef chef) {
         if (chef == null) {
             return null;
@@ -253,6 +268,7 @@ public class ChefServiceImpl implements ChefService {
                 .yearsOfExperience(chef.getYearsOfExperience())
                 .serviceRadiusKm(chef.getServiceRadiusKm())
                 .serviceMode(chef.getServiceMode())
+                .serviceModeDesc(ChefServiceModeEnum.getDescByCode(chef.getServiceMode()))
                 .ratingAvg(chef.getRatingAvg())
                 .orderCount(chef.getOrderCount())
                 .onTimeRate(chef.getOnTimeRate())
@@ -279,6 +295,7 @@ public class ChefServiceImpl implements ChefService {
                 .yearsOfExperience(chef.getYearsOfExperience())
                 .serviceRadiusKm(chef.getServiceRadiusKm())
                 .serviceMode(chef.getServiceMode())
+                .serviceModeDesc(ChefServiceModeEnum.getDescByCode(chef.getServiceMode()))
                 .ratingAvg(chef.getRatingAvg())
                 .orderCount(chef.getOrderCount())
                 .onTimeRate(chef.getOnTimeRate())
