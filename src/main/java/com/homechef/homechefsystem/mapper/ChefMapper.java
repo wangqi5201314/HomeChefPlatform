@@ -160,6 +160,15 @@ public interface ChefMapper {
 
     @Update("""
             UPDATE chef
+            SET order_count = COALESCE(order_count, 0) + 1,
+                updated_at = #{updatedAt}
+            WHERE id = #{id}
+            """)
+    int incrementOrderCountById(@Param("id") Long id,
+                                @Param("updatedAt") LocalDateTime updatedAt);
+
+    @Update("""
+            UPDATE chef
             SET cert_status = #{certStatus},
                 updated_at = #{updatedAt}
             WHERE id = #{id}

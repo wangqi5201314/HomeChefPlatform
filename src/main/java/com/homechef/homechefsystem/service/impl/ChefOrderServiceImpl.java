@@ -4,12 +4,14 @@ import com.homechef.homechefsystem.common.enums.ResultCodeEnum;
 import com.homechef.homechefsystem.common.exception.BusinessException;
 import com.homechef.homechefsystem.dto.ChefOrderRejectDTO;
 import com.homechef.homechefsystem.entity.Order;
+import com.homechef.homechefsystem.mapper.ChefMapper;
 import com.homechef.homechefsystem.mapper.OrderMapper;
 import com.homechef.homechefsystem.service.ChefOrderService;
 import com.homechef.homechefsystem.utils.LoginUserContext;
 import com.homechef.homechefsystem.vo.ChefOrderDetailVO;
 import com.homechef.homechefsystem.vo.ChefOrderListVO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -30,6 +32,7 @@ public class ChefOrderServiceImpl implements ChefOrderService {
     private static final String ORDER_STATUS_CANCELLED = "CANCELLED";
 
     private final OrderMapper orderMapper;
+    private final ChefMapper chefMapper;
 
     @Override
     public List<ChefOrderListVO> getCurrentChefOrderList(String orderStatus) {
@@ -73,10 +76,16 @@ public class ChefOrderServiceImpl implements ChefOrderService {
     }
 
     @Override
+    @Transactional
     public ChefOrderDetailVO finish(Long id) {
         Order order = getOwnedOrder(id);
         ensureOrderStatus(order, ORDER_STATUS_IN_SERVICE, "order status does not allow finish service");
-        updateOrderStatus(order, ORDER_STATUS_COMPLETED, null);
+        LocalDateTime now = LocalDateTime.now();
+        updateOrderStatus(order, ORDER_STATUS_COMPLETED, null, now);
+        int rows = chefMapper.incrementOrderCountById(order.getChefId(), now);
+        if (rows <= 0) {
+            throw new BusinessException(ResultCodeEnum.SYSTEM_ERROR, "update chef order count failed");
+        }
         return toChefOrderDetailVO(getOwnedOrder(id));
     }
 
@@ -104,11 +113,15 @@ public class ChefOrderServiceImpl implements ChefOrderService {
     }
 
     private void updateOrderStatus(Order order, String orderStatus, String reason) {
+        updateOrderStatus(order, orderStatus, reason, LocalDateTime.now());
+    }
+
+    private void updateOrderStatus(Order order, String orderStatus, String reason, LocalDateTime updatedAt) {
         int rows;
         if (StringUtils.hasText(reason)) {
-            rows = orderMapper.updateStatusAndCancelReasonById(order.getId(), order.getChefId(), orderStatus, reason, LocalDateTime.now());
+            rows = orderMapper.updateStatusAndCancelReasonById(order.getId(), order.getChefId(), orderStatus, reason, updatedAt);
         } else {
-            rows = orderMapper.updateStatusByIdAndChefId(order.getId(), order.getChefId(), orderStatus, LocalDateTime.now());
+            rows = orderMapper.updateStatusByIdAndChefId(order.getId(), order.getChefId(), orderStatus, updatedAt);
         }
         if (rows <= 0) {
             throw new BusinessException(ResultCodeEnum.SYSTEM_ERROR, "update order status failed");
