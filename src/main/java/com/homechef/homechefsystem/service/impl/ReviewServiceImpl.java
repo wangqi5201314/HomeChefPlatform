@@ -4,12 +4,16 @@ import com.homechef.homechefsystem.dto.ReviewCreateDTO;
 import com.homechef.homechefsystem.dto.ReviewQueryDTO;
 import com.homechef.homechefsystem.dto.ReviewReplyDTO;
 import com.homechef.homechefsystem.entity.Review;
+import com.homechef.homechefsystem.common.enums.ResultCodeEnum;
+import com.homechef.homechefsystem.common.exception.BusinessException;
+import com.homechef.homechefsystem.mapper.ChefMapper;
 import com.homechef.homechefsystem.mapper.OrderMapper;
 import com.homechef.homechefsystem.mapper.ReviewMapper;
 import com.homechef.homechefsystem.service.ReviewService;
 import com.homechef.homechefsystem.vo.ReviewVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -26,7 +30,10 @@ public class ReviewServiceImpl implements ReviewService {
 
     private final OrderMapper orderMapper;
 
+    private final ChefMapper chefMapper;
+
     @Override
+    @Transactional
     public ReviewVO create(ReviewCreateDTO reviewCreateDTO) {
         LocalDateTime now = LocalDateTime.now();
         Integer isAnonymous = reviewCreateDTO.getIsAnonymous();
@@ -55,11 +62,13 @@ public class ReviewServiceImpl implements ReviewService {
                 .createdAt(now)
                 .build();
 
-        // Current stage does not enforce order status COMPLETED.
-        // Chef ratingAvg can be updated later when introducing aggregate review statistics.
         int rows = reviewMapper.insert(review);
         if (rows <= 0) {
             return null;
+        }
+        int updatedRows = chefMapper.updateReviewStatsById(reviewCreateDTO.getChefId(), now);
+        if (updatedRows <= 0) {
+            throw new BusinessException(ResultCodeEnum.SYSTEM_ERROR, "update chef review stats failed");
         }
         return toReviewVO(reviewMapper.selectById(review.getId()));
     }

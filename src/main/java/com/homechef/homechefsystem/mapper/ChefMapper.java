@@ -169,6 +169,27 @@ public interface ChefMapper {
 
     @Update("""
             UPDATE chef
+            SET rating_avg = (
+                    SELECT ROUND(COALESCE(AVG(overall_score), 0), 2)
+                    FROM review
+                    WHERE chef_id = #{id}
+                ),
+                good_review_rate = (
+                    SELECT CASE
+                               WHEN COUNT(1) = 0 THEN 0
+                               ELSE ROUND(SUM(CASE WHEN overall_score >= 4.00 THEN 1 ELSE 0 END) * 100.0 / COUNT(1), 2)
+                           END
+                    FROM review
+                    WHERE chef_id = #{id}
+                ),
+                updated_at = #{updatedAt}
+            WHERE id = #{id}
+            """)
+    int updateReviewStatsById(@Param("id") Long id,
+                              @Param("updatedAt") LocalDateTime updatedAt);
+
+    @Update("""
+            UPDATE chef
             SET cert_status = #{certStatus},
                 updated_at = #{updatedAt}
             WHERE id = #{id}
