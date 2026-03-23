@@ -1,5 +1,6 @@
 package com.homechef.homechefsystem.service.impl;
 
+import com.homechef.homechefsystem.common.enums.ChefCertStatusEnum;
 import com.homechef.homechefsystem.dto.AdminChefQueryDTO;
 import com.homechef.homechefsystem.dto.AdminLoginDTO;
 import com.homechef.homechefsystem.dto.AdminOrderQueryDTO;
@@ -166,6 +167,7 @@ public class AdminServiceImpl implements AdminService {
                 .yearsOfExperience(chef.getYearsOfExperience())
                 .ratingAvg(chef.getRatingAvg())
                 .certStatus(chef.getCertStatus())
+                .certStatusDesc(ChefCertStatusEnum.getDescByCode(chef.getCertStatus()))
                 .status(chef.getStatus())
                 .createdAt(chef.getCreatedAt())
                 .build();

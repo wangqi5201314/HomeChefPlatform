@@ -51,6 +51,9 @@ public class Chef {
 
     private BigDecimal goodReviewRate;
 
+    /**
+     * 认证状态：0=待审核，1=已通过，2=已拒绝
+     */
     private Integer certStatus;
 
     private Integer status;

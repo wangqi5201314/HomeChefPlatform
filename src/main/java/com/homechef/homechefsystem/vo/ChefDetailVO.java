@@ -49,5 +49,7 @@ public class ChefDetailVO {
 
     private Integer certStatus;
 
+    private String certStatusDesc;
+
     private Integer status;
 }

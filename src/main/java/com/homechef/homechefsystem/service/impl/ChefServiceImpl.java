@@ -1,5 +1,6 @@
 package com.homechef.homechefsystem.service.impl;
 
+import com.homechef.homechefsystem.common.enums.ChefCertStatusEnum;
 import com.homechef.homechefsystem.common.enums.ChefServiceModeEnum;
 import com.homechef.homechefsystem.common.enums.ResultCodeEnum;
 import com.homechef.homechefsystem.common.exception.BusinessException;
@@ -124,7 +125,7 @@ public class ChefServiceImpl implements ChefService {
                 .orderCount(0)
                 .onTimeRate(null)
                 .goodReviewRate(null)
-                .certStatus(0)
+                .certStatus(ChefCertStatusEnum.PENDING.getCode())
                 .status(1)
                 .createdAt(now)
                 .updatedAt(now)
@@ -247,6 +248,7 @@ public class ChefServiceImpl implements ChefService {
                 .ratingAvg(chef.getRatingAvg())
                 .orderCount(chef.getOrderCount())
                 .certStatus(chef.getCertStatus())
+                .certStatusDesc(ChefCertStatusEnum.getDescByCode(chef.getCertStatus()))
                 .status(chef.getStatus())
                 .build();
     }
@@ -274,6 +276,7 @@ public class ChefServiceImpl implements ChefService {
                 .onTimeRate(chef.getOnTimeRate())
                 .goodReviewRate(chef.getGoodReviewRate())
                 .certStatus(chef.getCertStatus())
+                .certStatusDesc(ChefCertStatusEnum.getDescByCode(chef.getCertStatus()))
                 .status(chef.getStatus())
                 .build();
     }
@@ -301,6 +304,7 @@ public class ChefServiceImpl implements ChefService {
                 .onTimeRate(chef.getOnTimeRate())
                 .goodReviewRate(chef.getGoodReviewRate())
                 .certStatus(chef.getCertStatus())
+                .certStatusDesc(ChefCertStatusEnum.getDescByCode(chef.getCertStatus()))
                 .status(chef.getStatus())
                 .build();
     }

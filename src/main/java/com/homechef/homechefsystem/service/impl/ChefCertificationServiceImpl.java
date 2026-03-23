@@ -1,5 +1,6 @@
 package com.homechef.homechefsystem.service.impl;
 
+import com.homechef.homechefsystem.common.enums.ChefCertStatusEnum;
 import com.homechef.homechefsystem.common.enums.ResultCodeEnum;
 import com.homechef.homechefsystem.common.exception.BusinessException;
 import com.homechef.homechefsystem.dto.ChefCertificationAuditDTO;
@@ -41,7 +42,7 @@ public class ChefCertificationServiceImpl implements ChefCertificationService {
                     .skillCertUrl(chefCertificationSubmitDTO.getSkillCertUrl())
                     .serviceCertUrl(chefCertificationSubmitDTO.getServiceCertUrl())
                     .advancedCertUrl(chefCertificationSubmitDTO.getAdvancedCertUrl())
-                    .auditStatus(0)
+                    .auditStatus(ChefCertStatusEnum.PENDING.getCode())
                     .auditRemark(null)
                     .submittedAt(now)
                     .auditedAt(null)
@@ -58,7 +59,7 @@ public class ChefCertificationServiceImpl implements ChefCertificationService {
             existingCertification.setSkillCertUrl(chefCertificationSubmitDTO.getSkillCertUrl());
             existingCertification.setServiceCertUrl(chefCertificationSubmitDTO.getServiceCertUrl());
             existingCertification.setAdvancedCertUrl(chefCertificationSubmitDTO.getAdvancedCertUrl());
-            existingCertification.setAuditStatus(0);
+            existingCertification.setAuditStatus(ChefCertStatusEnum.PENDING.getCode());
             existingCertification.setAuditRemark(null);
             existingCertification.setSubmittedAt(now);
             existingCertification.setAuditedAt(null);
@@ -69,7 +70,11 @@ public class ChefCertificationServiceImpl implements ChefCertificationService {
             }
         }
 
-        chefMapper.updateCertStatusById(chefCertificationSubmitDTO.getChefId(), 0, now);
+        chefMapper.updateCertStatusById(
+                chefCertificationSubmitDTO.getChefId(),
+                ChefCertStatusEnum.PENDING.getCode(),
+                now
+        );
         return toChefCertificationVO(chefCertificationMapper.selectByChefId(chefCertificationSubmitDTO.getChefId()));
     }
 
@@ -94,6 +99,9 @@ public class ChefCertificationServiceImpl implements ChefCertificationService {
         ChefCertification existingCertification = chefCertificationMapper.selectById(id);
         if (existingCertification == null) {
             return null;
+        }
+        if (!ChefCertStatusEnum.isAuditResult(chefCertificationAuditDTO.getAuditStatus())) {
+            throw new BusinessException(ResultCodeEnum.PARAM_ERROR, "审核状态取值非法，只能为 1、2");
         }
 
         LocalDateTime now = LocalDateTime.now();

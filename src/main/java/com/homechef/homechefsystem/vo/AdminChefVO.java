@@ -28,6 +28,8 @@ public class AdminChefVO {
 
     private Integer certStatus;
 
+    private String certStatusDesc;
+
     private Integer status;
 
     private LocalDateTime createdAt;
