@@ -1,5 +1,8 @@
 package com.homechef.homechefsystem.service.impl;
 
+import com.homechef.homechefsystem.common.enums.OrderStatusEnum;
+import com.homechef.homechefsystem.common.enums.ResultCodeEnum;
+import com.homechef.homechefsystem.common.exception.BusinessException;
 import com.homechef.homechefsystem.dto.PaymentCreateDTO;
 import com.homechef.homechefsystem.dto.PaymentRefundDTO;
 import com.homechef.homechefsystem.entity.Order;
@@ -22,13 +25,8 @@ public class PaymentServiceImpl implements PaymentService {
 
     private static final String PAY_CHANNEL_WECHAT = "WECHAT";
     private static final String PAY_STATUS_UNPAID = "UNPAID";
-    private static final String PAY_STATUS_PAID = "PAID";
-    private static final String REFUND_STATUS_REFUNDED = "REFUNDED";
-    private static final String ORDER_STATUS_PAID = "PAID";
-    private static final String ORDER_STATUS_REFUNDED = "REFUNDED";
 
     private final PaymentMapper paymentMapper;
-
     private final OrderMapper orderMapper;
 
     @Override
@@ -79,13 +77,21 @@ public class PaymentServiceImpl implements PaymentService {
             return null;
         }
 
+        Order order = orderMapper.selectById(orderId);
+        if (order == null) {
+            return null;
+        }
+        if (!OrderStatusEnum.WAIT_PAY.equalsCode(order.getOrderStatus())) {
+            throw new BusinessException(ResultCodeEnum.FAIL, "仅待支付订单允许支付");
+        }
+
         LocalDateTime now = LocalDateTime.now();
         int paymentRows = paymentMapper.updatePaySuccessByOrderId(orderId, generateTransactionId(), now, now);
         if (paymentRows <= 0) {
             return null;
         }
 
-        orderMapper.updatePaidStatusById(orderId, ORDER_STATUS_PAID, now);
+        orderMapper.updatePaidStatusById(orderId, OrderStatusEnum.PAID.getCode(), now);
         return toPaymentStatusVO(paymentMapper.selectByOrderId(orderId));
     }
 
@@ -110,7 +116,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         orderMapper.updateRefundStatusById(
                 paymentRefundDTO.getOrderId(),
-                ORDER_STATUS_REFUNDED,
+                OrderStatusEnum.REFUNDED.getCode(),
                 paymentRefundDTO.getRefundReason(),
                 now
         );

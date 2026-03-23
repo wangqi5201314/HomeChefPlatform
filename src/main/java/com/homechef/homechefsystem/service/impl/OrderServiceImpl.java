@@ -1,5 +1,8 @@
 package com.homechef.homechefsystem.service.impl;
 
+import com.homechef.homechefsystem.common.enums.OrderStatusEnum;
+import com.homechef.homechefsystem.common.enums.ResultCodeEnum;
+import com.homechef.homechefsystem.common.exception.BusinessException;
 import com.homechef.homechefsystem.dto.OrderCancelDTO;
 import com.homechef.homechefsystem.dto.OrderCreateDTO;
 import com.homechef.homechefsystem.dto.OrderQueryDTO;
@@ -10,6 +13,7 @@ import com.homechef.homechefsystem.vo.OrderDetailVO;
 import com.homechef.homechefsystem.vo.OrderListVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -21,10 +25,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
-
-    private static final String ORDER_STATUS_PENDING_CONFIRM = "PENDING_CONFIRM";
-    private static final String ORDER_STATUS_COMPLETED = "COMPLETED";
-    private static final String ORDER_STATUS_CANCELLED = "CANCELLED";
 
     private final OrderMapper orderMapper;
 
@@ -55,7 +55,7 @@ public class OrderServiceImpl implements OrderService {
                 .totalAmount(orderCreateDTO.getTotalAmount())
                 .discountAmount(orderCreateDTO.getDiscountAmount())
                 .payAmount(orderCreateDTO.getPayAmount())
-                .orderStatus(ORDER_STATUS_PENDING_CONFIRM)
+                .orderStatus(OrderStatusEnum.PENDING_CONFIRM.getCode())
                 .cancelReason(null)
                 .refundReason(null)
                 .userDeleted(0)
@@ -93,16 +93,30 @@ public class OrderServiceImpl implements OrderService {
         if (existingOrder == null) {
             return null;
         }
-        if (ORDER_STATUS_COMPLETED.equals(existingOrder.getOrderStatus())
-                || ORDER_STATUS_CANCELLED.equals(existingOrder.getOrderStatus())) {
-            return toOrderDetailVO(existingOrder);
+        if (!canCancelByUser(existingOrder.getOrderStatus())) {
+            throw new BusinessException(ResultCodeEnum.FAIL, "当前订单状态不允许取消");
         }
 
-        int rows = orderMapper.cancelById(id, orderCancelDTO.getReason(), LocalDateTime.now());
+        String cancelReason = orderCancelDTO == null ? null : orderCancelDTO.getReason();
+        if (!StringUtils.hasText(cancelReason)) {
+            cancelReason = "用户取消订单";
+        }
+
+        int rows = orderMapper.cancelById(
+                id,
+                OrderStatusEnum.CANCELLED.getCode(),
+                cancelReason,
+                LocalDateTime.now()
+        );
         if (rows <= 0) {
             return null;
         }
         return toOrderDetailVO(orderMapper.selectById(id));
+    }
+
+    private boolean canCancelByUser(String orderStatus) {
+        return OrderStatusEnum.PENDING_CONFIRM.equalsCode(orderStatus)
+                || OrderStatusEnum.WAIT_PAY.equalsCode(orderStatus);
     }
 
     private OrderListVO toOrderListVO(Order order) {

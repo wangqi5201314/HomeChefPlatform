@@ -1,5 +1,6 @@
 package com.homechef.homechefsystem.service.impl;
 
+import com.homechef.homechefsystem.common.enums.OrderStatusEnum;
 import com.homechef.homechefsystem.common.enums.ResultCodeEnum;
 import com.homechef.homechefsystem.common.exception.BusinessException;
 import com.homechef.homechefsystem.dto.ReviewCreateDTO;
@@ -28,12 +29,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ReviewServiceImpl implements ReviewService {
 
-    private static final String ORDER_STATUS_COMPLETED = "COMPLETED";
-
     private final ReviewMapper reviewMapper;
-
     private final OrderMapper orderMapper;
-
     private final ChefMapper chefMapper;
 
     @Override
@@ -56,7 +53,7 @@ public class ReviewServiceImpl implements ReviewService {
         if (!effectiveUserId.equals(order.getUserId())) {
             throw new BusinessException(ResultCodeEnum.FORBIDDEN, "只能评价自己的订单");
         }
-        if (!ORDER_STATUS_COMPLETED.equals(order.getOrderStatus())) {
+        if (!OrderStatusEnum.COMPLETED.equalsCode(order.getOrderStatus())) {
             throw new BusinessException(ResultCodeEnum.FAIL, "仅已完成订单允许评价");
         }
         if (reviewMapper.countByOrderId(reviewCreateDTO.getOrderId()) > 0) {

@@ -1,5 +1,6 @@
 package com.homechef.homechefsystem.service.impl;
 
+import com.homechef.homechefsystem.common.enums.OrderStatusEnum;
 import com.homechef.homechefsystem.common.enums.ResultCodeEnum;
 import com.homechef.homechefsystem.common.exception.BusinessException;
 import com.homechef.homechefsystem.dto.ChefOrderRejectDTO;
@@ -11,8 +12,8 @@ import com.homechef.homechefsystem.utils.LoginUserContext;
 import com.homechef.homechefsystem.vo.ChefOrderDetailVO;
 import com.homechef.homechefsystem.vo.ChefOrderListVO;
 import lombok.RequiredArgsConstructor;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
@@ -24,19 +25,16 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ChefOrderServiceImpl implements ChefOrderService {
 
-    private static final String ORDER_STATUS_PENDING_CONFIRM = "PENDING_CONFIRM";
-    private static final String ORDER_STATUS_WAIT_PAY = "WAIT_PAY";
-    private static final String ORDER_STATUS_PAID = "PAID";
-    private static final String ORDER_STATUS_IN_SERVICE = "IN_SERVICE";
-    private static final String ORDER_STATUS_COMPLETED = "COMPLETED";
-    private static final String ORDER_STATUS_CANCELLED = "CANCELLED";
-
     private final OrderMapper orderMapper;
     private final ChefMapper chefMapper;
 
     @Override
     public List<ChefOrderListVO> getCurrentChefOrderList(String orderStatus) {
         Long chefId = requireCurrentChefId();
+        if (StringUtils.hasText(orderStatus) && !OrderStatusEnum.isValid(orderStatus)) {
+            throw new BusinessException(ResultCodeEnum.PARAM_ERROR, "订单状态不合法");
+        }
+
         List<Order> orderList = orderMapper.selectChefList(chefId, orderStatus);
         if (orderList == null || orderList.isEmpty()) {
             return Collections.emptyList();
@@ -54,24 +52,25 @@ public class ChefOrderServiceImpl implements ChefOrderService {
     @Override
     public ChefOrderDetailVO accept(Long id) {
         Order order = getOwnedOrder(id);
-        ensureOrderStatus(order, ORDER_STATUS_PENDING_CONFIRM, "order status does not allow accept");
-        updateOrderStatus(order, ORDER_STATUS_WAIT_PAY, null);
+        ensureOrderStatus(order, OrderStatusEnum.PENDING_CONFIRM, "待确认订单之外不能接单");
+        updateOrderStatus(order, OrderStatusEnum.WAIT_PAY.getCode(), null);
         return toChefOrderDetailVO(getOwnedOrder(id));
     }
 
     @Override
     public ChefOrderDetailVO reject(Long id, ChefOrderRejectDTO chefOrderRejectDTO) {
         Order order = getOwnedOrder(id);
-        ensureOrderStatus(order, ORDER_STATUS_PENDING_CONFIRM, "order status does not allow reject");
-        updateOrderStatus(order, ORDER_STATUS_CANCELLED, chefOrderRejectDTO.getReason());
+        ensureOrderStatus(order, OrderStatusEnum.PENDING_CONFIRM, "待确认订单之外不能拒单");
+        // orders 表当前没有 reject_reason 字段，这里复用 cancel_reason 存储拒单原因。
+        updateOrderStatus(order, OrderStatusEnum.REJECTED.getCode(), chefOrderRejectDTO.getReason());
         return toChefOrderDetailVO(getOwnedOrder(id));
     }
 
     @Override
     public ChefOrderDetailVO start(Long id) {
         Order order = getOwnedOrder(id);
-        ensureOrderStatus(order, ORDER_STATUS_PAID, "order status does not allow start service");
-        updateOrderStatus(order, ORDER_STATUS_IN_SERVICE, null);
+        ensureOrderStatus(order, OrderStatusEnum.PAID, "非已支付订单不能开始服务");
+        updateOrderStatus(order, OrderStatusEnum.IN_SERVICE.getCode(), null);
         return toChefOrderDetailVO(getOwnedOrder(id));
     }
 
@@ -79,9 +78,9 @@ public class ChefOrderServiceImpl implements ChefOrderService {
     @Transactional
     public ChefOrderDetailVO finish(Long id) {
         Order order = getOwnedOrder(id);
-        ensureOrderStatus(order, ORDER_STATUS_IN_SERVICE, "order status does not allow finish service");
+        ensureOrderStatus(order, OrderStatusEnum.IN_SERVICE, "非服务中订单不能完成服务");
         LocalDateTime now = LocalDateTime.now();
-        updateOrderStatus(order, ORDER_STATUS_COMPLETED, null, now);
+        updateOrderStatus(order, OrderStatusEnum.COMPLETED.getCode(), null, now);
         int rows = chefMapper.incrementOrderCountById(order.getChefId(), now);
         if (rows <= 0) {
             throw new BusinessException(ResultCodeEnum.SYSTEM_ERROR, "update chef order count failed");
@@ -106,8 +105,8 @@ public class ChefOrderServiceImpl implements ChefOrderService {
         return order;
     }
 
-    private void ensureOrderStatus(Order order, String expectedStatus, String message) {
-        if (!expectedStatus.equals(order.getOrderStatus())) {
+    private void ensureOrderStatus(Order order, OrderStatusEnum expectedStatus, String message) {
+        if (!expectedStatus.equalsCode(order.getOrderStatus())) {
             throw new BusinessException(ResultCodeEnum.FAIL, message);
         }
     }

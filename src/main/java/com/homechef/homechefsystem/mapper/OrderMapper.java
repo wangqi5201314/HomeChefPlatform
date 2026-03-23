@@ -129,12 +129,13 @@ public interface OrderMapper {
 
     @Update("""
             UPDATE orders
-            SET order_status = 'CANCELLED',
+            SET order_status = #{orderStatus},
                 cancel_reason = #{cancelReason},
                 updated_at = #{updatedAt}
             WHERE id = #{id}
             """)
     int cancelById(@Param("id") Long id,
+                   @Param("orderStatus") String orderStatus,
                    @Param("cancelReason") String cancelReason,
                    @Param("updatedAt") LocalDateTime updatedAt);
 
