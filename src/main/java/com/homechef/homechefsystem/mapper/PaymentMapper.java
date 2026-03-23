@@ -59,13 +59,14 @@ public interface PaymentMapper {
 
     @Update("""
             UPDATE payment
-            SET pay_status = 'PAID',
+            SET pay_status = #{payStatus},
                 transaction_id = #{transactionId},
                 paid_at = #{paidAt},
                 updated_at = #{updatedAt}
             WHERE order_id = #{orderId}
             """)
     int updatePaySuccessByOrderId(@Param("orderId") Long orderId,
+                                  @Param("payStatus") String payStatus,
                                   @Param("transactionId") String transactionId,
                                   @Param("paidAt") LocalDateTime paidAt,
                                   @Param("updatedAt") LocalDateTime updatedAt);
@@ -74,7 +75,7 @@ public interface PaymentMapper {
             UPDATE payment
             SET refund_no = #{refundNo},
                 refund_amount = #{refundAmount},
-                refund_status = 'REFUNDED',
+                refund_status = #{refundStatus},
                 refund_at = #{refundAt},
                 updated_at = #{updatedAt}
             WHERE order_id = #{orderId}
@@ -82,6 +83,7 @@ public interface PaymentMapper {
     int updateRefundByOrderId(@Param("orderId") Long orderId,
                               @Param("refundNo") String refundNo,
                               @Param("refundAmount") BigDecimal refundAmount,
+                              @Param("refundStatus") String refundStatus,
                               @Param("refundAt") LocalDateTime refundAt,
                               @Param("updatedAt") LocalDateTime updatedAt);
 }

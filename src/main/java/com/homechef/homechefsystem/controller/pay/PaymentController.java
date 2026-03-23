@@ -1,5 +1,7 @@
 package com.homechef.homechefsystem.controller.pay;
 
+import com.homechef.homechefsystem.common.enums.PayStatusEnum;
+import com.homechef.homechefsystem.common.enums.RefundStatusEnum;
 import com.homechef.homechefsystem.common.result.Result;
 import com.homechef.homechefsystem.dto.PaymentCreateDTO;
 import com.homechef.homechefsystem.dto.PaymentRefundDTO;
@@ -59,7 +61,7 @@ public class PaymentController {
         if (existingPayment == null) {
             return Result.error(404, "payment not found");
         }
-        if ("PAID".equals(existingPayment.getPayStatus())) {
+        if (PayStatusEnum.PAID.equalsCode(existingPayment.getPayStatus())) {
             return Result.error(400, "payment already paid");
         }
 
@@ -81,10 +83,10 @@ public class PaymentController {
         if (existingPayment == null) {
             return Result.error(404, "payment not found");
         }
-        if (!"PAID".equals(existingPayment.getPayStatus())) {
+        if (!PayStatusEnum.PAID.equalsCode(existingPayment.getPayStatus())) {
             return Result.error(400, "payment status invalid");
         }
-        if ("REFUNDED".equals(existingPayment.getRefundStatus())) {
+        if (RefundStatusEnum.REFUNDED.equalsCode(existingPayment.getRefundStatus())) {
             return Result.error(400, "payment already refunded");
         }
 

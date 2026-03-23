@@ -1,6 +1,7 @@
 package com.homechef.homechefsystem.service.impl;
 
 import com.homechef.homechefsystem.common.enums.ResultCodeEnum;
+import com.homechef.homechefsystem.common.enums.UserStatusEnum;
 import com.homechef.homechefsystem.common.exception.BusinessException;
 import com.homechef.homechefsystem.dto.UserChangePasswordDTO;
 import com.homechef.homechefsystem.dto.UserLoginDTO;
@@ -75,7 +76,7 @@ public class UserServiceImpl implements UserService {
                 .nickname(buildPhoneNickname(userRegisterDTO.getPhone(), userRegisterDTO.getNickname()))
                 .avatar("")
                 .gender(0)
-                .status(1)
+                .status(UserStatusEnum.NORMAL.getCode())
                 .createdAt(now)
                 .updatedAt(now)
                 .build();
@@ -170,7 +171,7 @@ public class UserServiceImpl implements UserService {
                 .nickname(buildWechatNickname(wechatLoginInfo.openid()))
                 .avatar("")
                 .gender(0)
-                .status(1)
+                .status(UserStatusEnum.NORMAL.getCode())
                 .lastLoginTime(now)
                 .createdAt(now)
                 .updatedAt(now)
@@ -194,7 +195,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private void validateUserForLogin(User user) {
-        if (user.getStatus() == null || user.getStatus() != 1) {
+        if (user.getStatus() == null || !UserStatusEnum.NORMAL.getCode().equals(user.getStatus())) {
             throw new BusinessException(ResultCodeEnum.FORBIDDEN, "user is disabled");
         }
     }
@@ -247,6 +248,7 @@ public class UserServiceImpl implements UserService {
                 .emergencyContactName(user.getEmergencyContactName())
                 .emergencyContactPhone(user.getEmergencyContactPhone())
                 .status(user.getStatus())
+                .statusDesc(UserStatusEnum.getDescByCode(user.getStatus()))
                 .build();
     }
 }

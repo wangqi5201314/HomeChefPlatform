@@ -32,5 +32,7 @@ public class AdminChefVO {
 
     private Integer status;
 
+    private String statusDesc;
+
     private LocalDateTime createdAt;
 }

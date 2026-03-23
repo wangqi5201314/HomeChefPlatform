@@ -56,6 +56,9 @@ public class Chef {
      */
     private Integer certStatus;
 
+    /**
+     * 厨师状态：0=停用，1=正常
+     */
     private Integer status;
 
     private LocalDateTime createdAt;

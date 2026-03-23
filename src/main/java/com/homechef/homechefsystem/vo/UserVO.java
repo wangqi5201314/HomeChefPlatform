@@ -34,4 +34,6 @@ public class UserVO {
     private String emergencyContactPhone;
 
     private Integer status;
+
+    private String statusDesc;
 }

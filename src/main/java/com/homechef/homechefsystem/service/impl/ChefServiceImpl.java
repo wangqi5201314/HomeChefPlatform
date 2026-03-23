@@ -2,6 +2,7 @@ package com.homechef.homechefsystem.service.impl;
 
 import com.homechef.homechefsystem.common.enums.ChefCertStatusEnum;
 import com.homechef.homechefsystem.common.enums.ChefServiceModeEnum;
+import com.homechef.homechefsystem.common.enums.ChefStatusEnum;
 import com.homechef.homechefsystem.common.enums.ResultCodeEnum;
 import com.homechef.homechefsystem.common.exception.BusinessException;
 import com.homechef.homechefsystem.dto.ChefChangePasswordDTO;
@@ -87,7 +88,7 @@ public class ChefServiceImpl implements ChefService {
         if (chef == null) {
             throw new BusinessException(ResultCodeEnum.UNAUTHORIZED, "phone or password is incorrect");
         }
-        if (chef.getStatus() == null || chef.getStatus() != 1) {
+        if (chef.getStatus() == null || !ChefStatusEnum.NORMAL.getCode().equals(chef.getStatus())) {
             throw new BusinessException(ResultCodeEnum.FORBIDDEN, "chef is disabled");
         }
         if (!StringUtils.hasText(chef.getPassword())) {
@@ -126,7 +127,7 @@ public class ChefServiceImpl implements ChefService {
                 .onTimeRate(null)
                 .goodReviewRate(null)
                 .certStatus(ChefCertStatusEnum.PENDING.getCode())
-                .status(1)
+                .status(ChefStatusEnum.NORMAL.getCode())
                 .createdAt(now)
                 .updatedAt(now)
                 .build();
@@ -278,6 +279,7 @@ public class ChefServiceImpl implements ChefService {
                 .certStatus(chef.getCertStatus())
                 .certStatusDesc(ChefCertStatusEnum.getDescByCode(chef.getCertStatus()))
                 .status(chef.getStatus())
+                .statusDesc(ChefStatusEnum.getDescByCode(chef.getStatus()))
                 .build();
     }
 
@@ -306,6 +308,7 @@ public class ChefServiceImpl implements ChefService {
                 .certStatus(chef.getCertStatus())
                 .certStatusDesc(ChefCertStatusEnum.getDescByCode(chef.getCertStatus()))
                 .status(chef.getStatus())
+                .statusDesc(ChefStatusEnum.getDescByCode(chef.getStatus()))
                 .build();
     }
 }

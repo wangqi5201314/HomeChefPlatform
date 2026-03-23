@@ -25,5 +25,7 @@ public class AdminUserVO {
 
     private Integer status;
 
+    private String statusDesc;
+
     private LocalDateTime createdAt;
 }

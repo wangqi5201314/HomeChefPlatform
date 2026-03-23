@@ -1,6 +1,8 @@
 package com.homechef.homechefsystem.service.impl;
 
 import com.homechef.homechefsystem.common.enums.OrderStatusEnum;
+import com.homechef.homechefsystem.common.enums.PayStatusEnum;
+import com.homechef.homechefsystem.common.enums.RefundStatusEnum;
 import com.homechef.homechefsystem.common.enums.ResultCodeEnum;
 import com.homechef.homechefsystem.common.exception.BusinessException;
 import com.homechef.homechefsystem.dto.PaymentCreateDTO;
@@ -24,7 +26,6 @@ import java.util.concurrent.ThreadLocalRandom;
 public class PaymentServiceImpl implements PaymentService {
 
     private static final String PAY_CHANNEL_WECHAT = "WECHAT";
-    private static final String PAY_STATUS_UNPAID = "UNPAID";
 
     private final PaymentMapper paymentMapper;
     private final OrderMapper orderMapper;
@@ -47,12 +48,12 @@ public class PaymentServiceImpl implements PaymentService {
                 .payNo(generatePayNo())
                 .payChannel(PAY_CHANNEL_WECHAT)
                 .payAmount(order.getPayAmount())
-                .payStatus(PAY_STATUS_UNPAID)
+                .payStatus(PayStatusEnum.UNPAID.getCode())
                 .transactionId(null)
                 .paidAt(null)
                 .refundNo(null)
                 .refundAmount(null)
-                .refundStatus(null)
+                .refundStatus(RefundStatusEnum.NONE.getCode())
                 .refundAt(null)
                 .createdAt(now)
                 .updatedAt(now)
@@ -86,7 +87,13 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         LocalDateTime now = LocalDateTime.now();
-        int paymentRows = paymentMapper.updatePaySuccessByOrderId(orderId, generateTransactionId(), now, now);
+        int paymentRows = paymentMapper.updatePaySuccessByOrderId(
+                orderId,
+                PayStatusEnum.PAID.getCode(),
+                generateTransactionId(),
+                now,
+                now
+        );
         if (paymentRows <= 0) {
             return null;
         }
@@ -107,6 +114,7 @@ public class PaymentServiceImpl implements PaymentService {
                 paymentRefundDTO.getOrderId(),
                 generateRefundNo(),
                 paymentRefundDTO.getRefundAmount(),
+                RefundStatusEnum.REFUNDED.getCode(),
                 now,
                 now
         );
@@ -139,6 +147,7 @@ public class PaymentServiceImpl implements PaymentService {
                 .payChannel(payment.getPayChannel())
                 .payAmount(payment.getPayAmount())
                 .payStatus(payment.getPayStatus())
+                .payStatusDesc(PayStatusEnum.getDescByCode(payment.getPayStatus()))
                 .createdAt(payment.getCreatedAt())
                 .build();
     }
@@ -152,10 +161,12 @@ public class PaymentServiceImpl implements PaymentService {
                 .payNo(payment.getPayNo())
                 .payAmount(payment.getPayAmount())
                 .payStatus(payment.getPayStatus())
+                .payStatusDesc(PayStatusEnum.getDescByCode(payment.getPayStatus()))
                 .transactionId(payment.getTransactionId())
                 .paidAt(payment.getPaidAt())
                 .refundAmount(payment.getRefundAmount())
                 .refundStatus(payment.getRefundStatus())
+                .refundStatusDesc(RefundStatusEnum.getDescByCode(payment.getRefundStatus()))
                 .refundAt(payment.getRefundAt())
                 .build();
     }

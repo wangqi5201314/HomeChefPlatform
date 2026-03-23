@@ -26,5 +26,7 @@ public class PaymentVO {
 
     private String payStatus;
 
+    private String payStatusDesc;
+
     private LocalDateTime createdAt;
 }

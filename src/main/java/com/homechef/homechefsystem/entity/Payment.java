@@ -24,6 +24,9 @@ public class Payment {
 
     private BigDecimal payAmount;
 
+    /**
+     * 支付状态：UNPAID=未支付，PAID=已支付
+     */
     private String payStatus;
 
     private String transactionId;
@@ -34,6 +37,9 @@ public class Payment {
 
     private BigDecimal refundAmount;
 
+    /**
+     * 退款状态：NONE=无退款，REFUNDED=已退款
+     */
     private String refundStatus;
 
     private LocalDateTime refundAt;

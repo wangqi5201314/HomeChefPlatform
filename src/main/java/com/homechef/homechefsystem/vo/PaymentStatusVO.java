@@ -22,6 +22,8 @@ public class PaymentStatusVO {
 
     private String payStatus;
 
+    private String payStatusDesc;
+
     private String transactionId;
 
     private LocalDateTime paidAt;
@@ -29,6 +31,8 @@ public class PaymentStatusVO {
     private BigDecimal refundAmount;
 
     private String refundStatus;
+
+    private String refundStatusDesc;
 
     private LocalDateTime refundAt;
 }

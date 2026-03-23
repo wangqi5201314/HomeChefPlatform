@@ -40,6 +40,9 @@ public class User {
 
     private String emergencyContactPhone;
 
+    /**
+     * 用户状态：0=禁用，1=正常
+     */
     private Integer status;
 
     private LocalDateTime lastLoginTime;

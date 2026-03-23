@@ -52,4 +52,6 @@ public class ChefVO {
     private String certStatusDesc;
 
     private Integer status;
+
+    private String statusDesc;
 }

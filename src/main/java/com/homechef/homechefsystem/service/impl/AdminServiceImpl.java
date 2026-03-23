@@ -1,6 +1,10 @@
 package com.homechef.homechefsystem.service.impl;
 
 import com.homechef.homechefsystem.common.enums.ChefCertStatusEnum;
+import com.homechef.homechefsystem.common.enums.ChefStatusEnum;
+import com.homechef.homechefsystem.common.enums.ResultCodeEnum;
+import com.homechef.homechefsystem.common.enums.UserStatusEnum;
+import com.homechef.homechefsystem.common.exception.BusinessException;
 import com.homechef.homechefsystem.dto.AdminChefQueryDTO;
 import com.homechef.homechefsystem.dto.AdminLoginDTO;
 import com.homechef.homechefsystem.dto.AdminOrderQueryDTO;
@@ -62,6 +66,10 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public AdminUserVO updateUserStatus(Long id, AdminStatusUpdateDTO statusUpdateDTO) {
+        if (!UserStatusEnum.isValid(statusUpdateDTO.getStatus())) {
+            throw new BusinessException(ResultCodeEnum.PARAM_ERROR, "user status 取值非法，只能为 0、1");
+        }
+
         List<User> userList = adminMapper.selectUserList(AdminUserQueryDTO.builder().build());
         User targetUser = userList.stream()
                 .filter(user -> user.getId().equals(id))
@@ -93,6 +101,10 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public AdminChefVO updateChefStatus(Long id, AdminStatusUpdateDTO statusUpdateDTO) {
+        if (!ChefStatusEnum.isValid(statusUpdateDTO.getStatus())) {
+            throw new BusinessException(ResultCodeEnum.PARAM_ERROR, "chef status 取值非法，只能为 0、1");
+        }
+
         List<Chef> chefList = adminMapper.selectChefList(AdminChefQueryDTO.builder().build());
         Chef targetChef = chefList.stream()
                 .filter(chef -> chef.getId().equals(id))
@@ -151,6 +163,7 @@ public class AdminServiceImpl implements AdminService {
                 .gender(user.getGender())
                 .tastePreference(user.getTastePreference())
                 .status(user.getStatus())
+                .statusDesc(UserStatusEnum.getDescByCode(user.getStatus()))
                 .createdAt(user.getCreatedAt())
                 .build();
     }
@@ -169,6 +182,7 @@ public class AdminServiceImpl implements AdminService {
                 .certStatus(chef.getCertStatus())
                 .certStatusDesc(ChefCertStatusEnum.getDescByCode(chef.getCertStatus()))
                 .status(chef.getStatus())
+                .statusDesc(ChefStatusEnum.getDescByCode(chef.getStatus()))
                 .createdAt(chef.getCreatedAt())
                 .build();
     }
