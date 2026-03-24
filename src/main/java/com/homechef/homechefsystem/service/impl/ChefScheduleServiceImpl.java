@@ -180,6 +180,13 @@ public class ChefScheduleServiceImpl implements ChefScheduleService {
         return updateAvailabilityById(id, isAvailable);
     }
 
+    @Override
+    public int disableExpiredAvailableSchedules() {
+        LocalDate currentDate = LocalDate.now();
+        LocalDateTime updatedAt = LocalDateTime.now();
+        return chefScheduleMapper.disableExpiredAvailableSchedules(currentDate, updatedAt);
+    }
+
     private Long requireCurrentChefId() {
         Long chefId = LoginUserContext.getChefId();
         if (chefId == null) {

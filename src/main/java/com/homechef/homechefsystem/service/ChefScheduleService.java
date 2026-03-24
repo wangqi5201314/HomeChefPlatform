@@ -33,4 +33,6 @@ public interface ChefScheduleService {
     ChefScheduleVO deleteCurrentChefSchedule(Long id);
 
     ChefScheduleVO updateCurrentChefScheduleAvailability(Long id, Integer isAvailable);
+
+    int disableExpiredAvailableSchedules();
 }
