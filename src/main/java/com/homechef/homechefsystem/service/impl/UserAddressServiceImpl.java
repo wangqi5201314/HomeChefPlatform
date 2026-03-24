@@ -65,10 +65,10 @@ public class UserAddressServiceImpl implements UserAddressService {
                 .province(userAddressCreateDTO.getProvince())
                 .city(userAddressCreateDTO.getCity())
                 .district(userAddressCreateDTO.getDistrict())
+                .town(userAddressCreateDTO.getTown())
                 .detailAddress(userAddressCreateDTO.getDetailAddress())
                 .longitude(userAddressCreateDTO.getLongitude())
                 .latitude(userAddressCreateDTO.getLatitude())
-                .doorplate(userAddressCreateDTO.getDoorplate())
                 .isDefault(isDefault)
                 .status(1)
                 .createdAt(now)
@@ -104,10 +104,10 @@ public class UserAddressServiceImpl implements UserAddressService {
         existingUserAddress.setProvince(userAddressUpdateDTO.getProvince());
         existingUserAddress.setCity(userAddressUpdateDTO.getCity());
         existingUserAddress.setDistrict(userAddressUpdateDTO.getDistrict());
+        existingUserAddress.setTown(userAddressUpdateDTO.getTown());
         existingUserAddress.setDetailAddress(userAddressUpdateDTO.getDetailAddress());
         existingUserAddress.setLongitude(userAddressUpdateDTO.getLongitude());
         existingUserAddress.setLatitude(userAddressUpdateDTO.getLatitude());
-        existingUserAddress.setDoorplate(userAddressUpdateDTO.getDoorplate());
         existingUserAddress.setIsDefault(isDefault);
         existingUserAddress.setUpdatedAt(now);
 
@@ -163,10 +163,10 @@ public class UserAddressServiceImpl implements UserAddressService {
                 .province(userAddress.getProvince())
                 .city(userAddress.getCity())
                 .district(userAddress.getDistrict())
+                .town(userAddress.getTown())
                 .detailAddress(userAddress.getDetailAddress())
                 .longitude(userAddress.getLongitude())
                 .latitude(userAddress.getLatitude())
-                .doorplate(userAddress.getDoorplate())
                 .isDefault(userAddress.getIsDefault())
                 .build();
     }

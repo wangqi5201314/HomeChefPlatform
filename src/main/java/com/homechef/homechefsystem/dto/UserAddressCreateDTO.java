@@ -25,13 +25,13 @@ public class UserAddressCreateDTO {
 
     private String district;
 
+    private String town;
+
     private String detailAddress;
 
     private BigDecimal longitude;
 
     private BigDecimal latitude;
-
-    private String doorplate;
 
     private Integer isDefault;
 }

@@ -22,12 +22,12 @@ public interface UserAddressMapper {
 
     @Insert("""
             INSERT INTO user_address (
-                user_id, contact_name, contact_phone, province, city, district,
-                detail_address, longitude, latitude, doorplate, is_default, status,
+                user_id, contact_name, contact_phone, province, city, district, town,
+                detail_address, longitude, latitude, is_default, status,
                 created_at, updated_at
             ) VALUES (
-                #{userId}, #{contactName}, #{contactPhone}, #{province}, #{city}, #{district},
-                #{detailAddress}, #{longitude}, #{latitude}, #{doorplate}, #{isDefault}, #{status},
+                #{userId}, #{contactName}, #{contactPhone}, #{province}, #{city}, #{district}, #{town},
+                #{detailAddress}, #{longitude}, #{latitude}, #{isDefault}, #{status},
                 #{createdAt}, #{updatedAt}
             )
             """)
@@ -35,8 +35,8 @@ public interface UserAddressMapper {
     int insert(UserAddress userAddress);
 
     @Select("""
-            SELECT id, user_id, contact_name, contact_phone, province, city, district,
-                   detail_address, longitude, latitude, doorplate, is_default, status,
+            SELECT id, user_id, contact_name, contact_phone, province, city, district, town,
+                   detail_address, longitude, latitude, is_default, status,
                    created_at, updated_at
             FROM user_address
             WHERE id = #{id} AND status = 1
@@ -49,10 +49,10 @@ public interface UserAddressMapper {
             @Result(property = "province", column = "province"),
             @Result(property = "city", column = "city"),
             @Result(property = "district", column = "district"),
+            @Result(property = "town", column = "town"),
             @Result(property = "detailAddress", column = "detail_address"),
             @Result(property = "longitude", column = "longitude"),
             @Result(property = "latitude", column = "latitude"),
-            @Result(property = "doorplate", column = "doorplate"),
             @Result(property = "isDefault", column = "is_default"),
             @Result(property = "status", column = "status"),
             @Result(property = "createdAt", column = "created_at"),
@@ -65,8 +65,8 @@ public interface UserAddressMapper {
     List<UserAddress> selectList(UserAddressQueryDTO queryDTO);
 
     @Select("""
-            SELECT id, user_id, contact_name, contact_phone, province, city, district,
-                   detail_address, longitude, latitude, doorplate, is_default, status,
+            SELECT id, user_id, contact_name, contact_phone, province, city, district, town,
+                   detail_address, longitude, latitude, is_default, status,
                    created_at, updated_at
             FROM user_address
             WHERE user_id = #{userId} AND is_default = 1 AND status = 1
@@ -90,10 +90,10 @@ public interface UserAddressMapper {
                 province = #{province},
                 city = #{city},
                 district = #{district},
+                town = #{town},
                 detail_address = #{detailAddress},
                 longitude = #{longitude},
                 latitude = #{latitude},
-                doorplate = #{doorplate},
                 is_default = #{isDefault},
                 updated_at = #{updatedAt}
             WHERE id = #{id} AND status = 1
@@ -131,8 +131,8 @@ public interface UserAddressMapper {
 
         public String buildSelectListSql(final UserAddressQueryDTO queryDTO) {
             SQL sql = new SQL()
-                    .SELECT("id, user_id, contact_name, contact_phone, province, city, district")
-                    .SELECT("detail_address, longitude, latitude, doorplate, is_default, status")
+                    .SELECT("id, user_id, contact_name, contact_phone, province, city, district, town")
+                    .SELECT("detail_address, longitude, latitude, is_default, status")
                     .SELECT("created_at, updated_at")
                     .FROM("user_address")
                     .WHERE("status = 1");
