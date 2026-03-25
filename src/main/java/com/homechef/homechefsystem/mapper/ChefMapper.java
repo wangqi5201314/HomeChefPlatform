@@ -204,6 +204,16 @@ public interface ChefMapper {
                              @Param("certStatus") Integer certStatus,
                              @Param("updatedAt") LocalDateTime updatedAt);
 
+    @Update("""
+            UPDATE chef
+            SET status = #{status},
+                updated_at = #{updatedAt}
+            WHERE id = #{id}
+            """)
+    int updateStatusById(@Param("id") Long id,
+                         @Param("status") Integer status,
+                         @Param("updatedAt") LocalDateTime updatedAt);
+
     class ChefSqlProvider {
 
         public String buildSelectListSql(final ChefQueryDTO queryDTO) {

@@ -58,18 +58,6 @@ public class AdminController {
     }
 
     @RequireAdmin
-    @Operation(summary = "修改厨师状态")
-    @PostMapping("/chef/{id}/status")
-    public Result<AdminChefVO> updateChefStatus(@PathVariable Long id,
-                                                @RequestBody com.homechef.homechefsystem.dto.AdminStatusUpdateDTO statusUpdateDTO) {
-        AdminChefVO adminChefVO = adminService.updateChefStatus(id, statusUpdateDTO);
-        if (adminChefVO == null) {
-            return Result.error(404, "chef not found");
-        }
-        return Result.success(adminChefVO);
-    }
-
-    @RequireAdmin
     @Operation(summary = "查询订单列表")
     @GetMapping("/orders")
     public Result<List<AdminOrderVO>> getOrderList(AdminOrderQueryDTO queryDTO) {
