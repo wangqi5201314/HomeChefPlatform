@@ -1,17 +1,22 @@
 package com.homechef.homechefsystem.mapper;
 
+import com.homechef.homechefsystem.dto.AdminPaymentQueryDTO;
 import com.homechef.homechefsystem.entity.Payment;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Result;
+import org.apache.ibatis.annotations.ResultMap;
 import org.apache.ibatis.annotations.Results;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.SelectProvider;
 import org.apache.ibatis.annotations.Update;
+import org.apache.ibatis.jdbc.SQL;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Mapper
 public interface PaymentMapper {
@@ -57,6 +62,10 @@ public interface PaymentMapper {
     })
     Payment selectByOrderId(@Param("orderId") Long orderId);
 
+    @SelectProvider(type = PaymentSqlProvider.class, method = "buildSelectAdminListSql")
+    @ResultMap("paymentResultMap")
+    List<Payment> selectAdminList(AdminPaymentQueryDTO queryDTO);
+
     @Update("""
             UPDATE payment
             SET pay_status = #{payStatus},
@@ -86,4 +95,29 @@ public interface PaymentMapper {
                               @Param("refundStatus") String refundStatus,
                               @Param("refundAt") LocalDateTime refundAt,
                               @Param("updatedAt") LocalDateTime updatedAt);
+
+    class PaymentSqlProvider {
+
+        public String buildSelectAdminListSql(final AdminPaymentQueryDTO queryDTO) {
+            SQL sql = new SQL()
+                    .SELECT("id, order_id, pay_no, pay_channel, pay_amount, pay_status")
+                    .SELECT("transaction_id, paid_at, refund_no, refund_amount, refund_status")
+                    .SELECT("refund_at, created_at, updated_at")
+                    .FROM("payment");
+
+            if (queryDTO != null) {
+                if (queryDTO.getOrderId() != null) {
+                    sql.WHERE("order_id = #{orderId}");
+                }
+                if (queryDTO.getPayStatus() != null && !queryDTO.getPayStatus().trim().isEmpty()) {
+                    sql.WHERE("pay_status = #{payStatus}");
+                }
+                if (queryDTO.getRefundStatus() != null && !queryDTO.getRefundStatus().trim().isEmpty()) {
+                    sql.WHERE("refund_status = #{refundStatus}");
+                }
+            }
+
+            return sql.ORDER_BY("created_at DESC").toString();
+        }
+    }
 }
