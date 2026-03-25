@@ -11,6 +11,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AdminUserQueryDTO {
 
+    private String phone;
+
+    private String nickname;
+
     private String keyword;
 
     private Integer status;

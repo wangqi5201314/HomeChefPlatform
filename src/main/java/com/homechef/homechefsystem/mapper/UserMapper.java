@@ -1,5 +1,6 @@
 package com.homechef.homechefsystem.mapper;
 
+import com.homechef.homechefsystem.dto.AdminUserQueryDTO;
 import com.homechef.homechefsystem.entity.User;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
@@ -8,9 +9,12 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Result;
 import org.apache.ibatis.annotations.Results;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.SelectProvider;
 import org.apache.ibatis.annotations.Update;
+import org.apache.ibatis.jdbc.SQL;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Mapper
 public interface UserMapper {
@@ -20,6 +24,19 @@ public interface UserMapper {
             FROM `user`
             """)
     int countAll();
+
+    @SelectProvider(type = UserSqlProvider.class, method = "buildSelectAdminUserListSql")
+    @Results(id = "adminUserListResultMap", value = {
+            @Result(property = "id", column = "id"),
+            @Result(property = "phone", column = "phone"),
+            @Result(property = "nickname", column = "nickname"),
+            @Result(property = "avatar", column = "avatar"),
+            @Result(property = "gender", column = "gender"),
+            @Result(property = "tastePreference", column = "taste_preference"),
+            @Result(property = "status", column = "status"),
+            @Result(property = "createdAt", column = "created_at")
+    })
+    List<User> selectAdminList(AdminUserQueryDTO queryDTO);
 
     @Select("""
             SELECT id, openid, unionid, phone, password, nickname, avatar, gender, birthday,
@@ -143,6 +160,16 @@ public interface UserMapper {
 
     @Update("""
             UPDATE `user`
+            SET status = #{status},
+                updated_at = #{updatedAt}
+            WHERE id = #{id}
+            """)
+    int updateStatusById(@Param("id") Long id,
+                         @Param("status") Integer status,
+                         @Param("updatedAt") LocalDateTime updatedAt);
+
+    @Update("""
+            UPDATE `user`
             SET phone = #{phone},
                 nickname = #{nickname},
                 avatar = #{avatar},
@@ -156,4 +183,27 @@ public interface UserMapper {
             WHERE id = #{id}
             """)
     int updateProfileById(User user);
+
+    class UserSqlProvider {
+
+        public String buildSelectAdminUserListSql(final AdminUserQueryDTO queryDTO) {
+            SQL sql = new SQL()
+                    .SELECT("id, phone, nickname, avatar, gender, taste_preference, status, created_at")
+                    .FROM("`user`");
+
+            if (queryDTO != null) {
+                if (queryDTO.getPhone() != null && !queryDTO.getPhone().trim().isEmpty()) {
+                    sql.WHERE("phone LIKE CONCAT('%', #{phone}, '%')");
+                }
+                if (queryDTO.getNickname() != null && !queryDTO.getNickname().trim().isEmpty()) {
+                    sql.WHERE("nickname LIKE CONCAT('%', #{nickname}, '%')");
+                }
+                if (queryDTO.getStatus() != null) {
+                    sql.WHERE("status = #{status}");
+                }
+            }
+
+            return sql.ORDER_BY("id DESC").toString();
+        }
+    }
 }

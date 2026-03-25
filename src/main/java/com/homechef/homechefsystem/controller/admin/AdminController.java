@@ -1,13 +1,10 @@
 package com.homechef.homechefsystem.controller.admin;
 
 import com.homechef.homechefsystem.annotation.RequireAdmin;
-import com.homechef.homechefsystem.common.annotation.OperationLog;
 import com.homechef.homechefsystem.common.result.Result;
 import com.homechef.homechefsystem.dto.AdminChefQueryDTO;
 import com.homechef.homechefsystem.dto.AdminLoginDTO;
 import com.homechef.homechefsystem.dto.AdminOrderQueryDTO;
-import com.homechef.homechefsystem.dto.AdminStatusUpdateDTO;
-import com.homechef.homechefsystem.dto.AdminUserQueryDTO;
 import com.homechef.homechefsystem.dto.LoginTokenDTO;
 import com.homechef.homechefsystem.service.AdminService;
 import com.homechef.homechefsystem.service.ChefScheduleService;
@@ -15,7 +12,6 @@ import com.homechef.homechefsystem.utils.JwtUtil;
 import com.homechef.homechefsystem.vo.AdminChefVO;
 import com.homechef.homechefsystem.vo.AdminLoginVO;
 import com.homechef.homechefsystem.vo.AdminOrderVO;
-import com.homechef.homechefsystem.vo.AdminUserVO;
 import com.homechef.homechefsystem.vo.OrderDetailVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -55,26 +51,6 @@ public class AdminController {
     }
 
     @RequireAdmin
-    @Operation(summary = "查询用户列表")
-    @GetMapping("/users")
-    public Result<List<AdminUserVO>> getUserList(AdminUserQueryDTO queryDTO) {
-        return Result.success(adminService.getUserList(queryDTO));
-    }
-
-    @RequireAdmin
-    @OperationLog(module = "AdminUser", operation = "Update User Status")
-    @Operation(summary = "修改用户状态")
-    @PostMapping("/user/{id}/status")
-    public Result<AdminUserVO> updateUserStatus(@PathVariable Long id,
-                                                @Valid @RequestBody AdminStatusUpdateDTO statusUpdateDTO) {
-        AdminUserVO adminUserVO = adminService.updateUserStatus(id, statusUpdateDTO);
-        if (adminUserVO == null) {
-            return Result.error(404, "user not found");
-        }
-        return Result.success(adminUserVO);
-    }
-
-    @RequireAdmin
     @Operation(summary = "查询厨师列表")
     @GetMapping("/chefs")
     public Result<List<AdminChefVO>> getChefList(AdminChefQueryDTO queryDTO) {
@@ -85,7 +61,7 @@ public class AdminController {
     @Operation(summary = "修改厨师状态")
     @PostMapping("/chef/{id}/status")
     public Result<AdminChefVO> updateChefStatus(@PathVariable Long id,
-                                                @RequestBody AdminStatusUpdateDTO statusUpdateDTO) {
+                                                @RequestBody com.homechef.homechefsystem.dto.AdminStatusUpdateDTO statusUpdateDTO) {
         AdminChefVO adminChefVO = adminService.updateChefStatus(id, statusUpdateDTO);
         if (adminChefVO == null) {
             return Result.error(404, "chef not found");

@@ -5,13 +5,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AdminUserVO {
+public class AdminUserDetailVO {
 
     private Long id;
 
@@ -23,11 +24,23 @@ public class AdminUserVO {
 
     private Integer gender;
 
+    private LocalDate birthday;
+
     private String tastePreference;
+
+    private String allergyInfo;
+
+    private String emergencyContactName;
+
+    private String emergencyContactPhone;
 
     private Integer status;
 
     private String statusDesc;
 
+    private LocalDateTime lastLoginTime;
+
     private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
 }
