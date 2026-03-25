@@ -1,5 +1,6 @@
 package com.homechef.homechefsystem.controller.admin;
 
+import com.homechef.homechefsystem.annotation.RequireAdmin;
 import com.homechef.homechefsystem.common.enums.ChefCertStatusEnum;
 import com.homechef.homechefsystem.common.result.Result;
 import com.homechef.homechefsystem.dto.ChefCertificationAuditDTO;
@@ -19,21 +20,30 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/admin/chef/certification")
+@RequestMapping("/api/admin/chef")
 @RequiredArgsConstructor
 @Tag(name = "后台厨师认证接口")
 public class AdminChefCertificationController {
 
     private final ChefCertificationService chefCertificationService;
 
+    @RequireAdmin
     @Operation(summary = "查询厨师认证列表")
-    @GetMapping("/list")
+    @GetMapping("/certifications")
+    public Result<List<ChefCertificationVO>> getCertificationList(ChefCertificationQueryDTO queryDTO) {
+        return Result.success(chefCertificationService.getList(queryDTO));
+    }
+
+    @RequireAdmin
+    @Operation(summary = "查询厨师认证列表")
+    @GetMapping("/certification/list")
     public Result<List<ChefCertificationVO>> getList(ChefCertificationQueryDTO queryDTO) {
         return Result.success(chefCertificationService.getList(queryDTO));
     }
 
+    @RequireAdmin
     @Operation(summary = "审核厨师认证")
-    @PostMapping("/{id}/audit")
+    @PostMapping("/certification/{id}/audit")
     public Result<ChefCertificationVO> auditById(@PathVariable Long id,
                                                  @RequestBody ChefCertificationAuditDTO chefCertificationAuditDTO) {
         Integer auditStatus = chefCertificationAuditDTO.getAuditStatus();

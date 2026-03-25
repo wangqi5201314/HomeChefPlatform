@@ -12,4 +12,8 @@ import lombok.NoArgsConstructor;
 public class ChefCertificationQueryDTO {
 
     private Integer auditStatus;
+
+    private Long chefId;
+
+    private String realName;
 }

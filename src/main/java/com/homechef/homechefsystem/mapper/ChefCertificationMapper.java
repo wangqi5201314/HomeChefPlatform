@@ -110,8 +110,16 @@ public interface ChefCertificationMapper {
                     .SELECT("submitted_at, audited_at")
                     .FROM("chef_certification");
 
-            if (queryDTO != null && queryDTO.getAuditStatus() != null) {
-                sql.WHERE("audit_status = #{auditStatus}");
+            if (queryDTO != null) {
+                if (queryDTO.getAuditStatus() != null) {
+                    sql.WHERE("audit_status = #{auditStatus}");
+                }
+                if (queryDTO.getChefId() != null) {
+                    sql.WHERE("chef_id = #{chefId}");
+                }
+                if (queryDTO.getRealName() != null && !queryDTO.getRealName().trim().isEmpty()) {
+                    sql.WHERE("real_name LIKE CONCAT('%', #{realName}, '%')");
+                }
             }
 
             return sql.ORDER_BY("submitted_at DESC").toString();
