@@ -6,6 +6,7 @@ import com.homechef.homechefsystem.common.enums.ResultCodeEnum;
 import com.homechef.homechefsystem.common.enums.UserStatusEnum;
 import com.homechef.homechefsystem.common.exception.BusinessException;
 import com.homechef.homechefsystem.dto.AdminChefQueryDTO;
+import com.homechef.homechefsystem.dto.AdminChangePasswordDTO;
 import com.homechef.homechefsystem.dto.AdminLoginDTO;
 import com.homechef.homechefsystem.dto.AdminOrderQueryDTO;
 import com.homechef.homechefsystem.dto.AdminStatusUpdateDTO;
@@ -17,13 +18,16 @@ import com.homechef.homechefsystem.entity.User;
 import com.homechef.homechefsystem.mapper.AdminMapper;
 import com.homechef.homechefsystem.mapper.OrderMapper;
 import com.homechef.homechefsystem.service.AdminService;
+import com.homechef.homechefsystem.utils.LoginUserContext;
 import com.homechef.homechefsystem.vo.AdminChefVO;
 import com.homechef.homechefsystem.vo.AdminLoginVO;
 import com.homechef.homechefsystem.vo.AdminOrderVO;
 import com.homechef.homechefsystem.vo.AdminUserVO;
 import com.homechef.homechefsystem.vo.OrderDetailVO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -38,19 +42,52 @@ public class AdminServiceImpl implements AdminService {
 
     private final OrderMapper orderMapper;
 
+    private final BCryptPasswordEncoder passwordEncoder;
+
     @Override
     public AdminLoginVO login(AdminLoginDTO adminLoginDTO) {
         Admin admin = adminMapper.selectByUsername(adminLoginDTO.getUsername());
         if (admin == null) {
             return null;
         }
-        if (!admin.getPassword().equals(adminLoginDTO.getPassword())) {
+        if (!passwordMatches(adminLoginDTO.getPassword(), admin.getPassword())) {
             return null;
         }
 
         LocalDateTime now = LocalDateTime.now();
         adminMapper.updateLoginTimeById(admin.getId(), now, now);
         return toAdminLoginVO(adminMapper.selectByUsername(adminLoginDTO.getUsername()));
+    }
+
+    @Override
+    public void changePassword(AdminChangePasswordDTO adminChangePasswordDTO) {
+        Long currentAdminId = LoginUserContext.getAdminId();
+        if (currentAdminId == null) {
+            throw new BusinessException(ResultCodeEnum.UNAUTHORIZED, "unauthorized");
+        }
+        if (!adminChangePasswordDTO.getNewPassword().equals(adminChangePasswordDTO.getConfirmPassword())) {
+            throw new BusinessException(ResultCodeEnum.PARAM_ERROR, "confirmPassword does not match newPassword");
+        }
+
+        Admin admin = adminMapper.selectById(currentAdminId);
+        if (admin == null) {
+            throw new BusinessException(ResultCodeEnum.NOT_FOUND, "admin not found");
+        }
+        if (!StringUtils.hasText(admin.getPassword())) {
+            throw new BusinessException(ResultCodeEnum.FAIL, "password is not set");
+        }
+        if (!passwordMatches(adminChangePasswordDTO.getOldPassword(), admin.getPassword())) {
+            throw new BusinessException(ResultCodeEnum.FAIL, "old password is incorrect");
+        }
+
+        int rows = adminMapper.updatePasswordById(
+                currentAdminId,
+                passwordEncoder.encode(adminChangePasswordDTO.getNewPassword()),
+                LocalDateTime.now()
+        );
+        if (rows <= 0) {
+            throw new BusinessException(ResultCodeEnum.SYSTEM_ERROR, "change password failed");
+        }
     }
 
     @Override
@@ -150,6 +187,18 @@ public class AdminServiceImpl implements AdminService {
                 .role(admin.getRole())
                 .status(admin.getStatus())
                 .build();
+    }
+
+    private boolean passwordMatches(String rawPassword, String storedPassword) {
+        if (!StringUtils.hasText(storedPassword)) {
+            return false;
+        }
+        if (storedPassword.startsWith("$2a$")
+                || storedPassword.startsWith("$2b$")
+                || storedPassword.startsWith("$2y$")) {
+            return passwordEncoder.matches(rawPassword, storedPassword);
+        }
+        return storedPassword.equals(rawPassword);
     }
 
     private AdminUserVO toAdminUserVO(User user) {

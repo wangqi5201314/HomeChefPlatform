@@ -3,6 +3,7 @@ package com.homechef.homechefsystem.controller.admin;
 import com.homechef.homechefsystem.annotation.RequireAdmin;
 import com.homechef.homechefsystem.common.result.Result;
 import com.homechef.homechefsystem.dto.AdminChefQueryDTO;
+import com.homechef.homechefsystem.dto.AdminChangePasswordDTO;
 import com.homechef.homechefsystem.dto.AdminLoginDTO;
 import com.homechef.homechefsystem.dto.LoginTokenDTO;
 import com.homechef.homechefsystem.service.AdminService;
@@ -18,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -46,6 +48,14 @@ public class AdminController {
                 .userType(JwtUtil.USER_TYPE_ADMIN)
                 .adminId(adminLoginVO.getId())
                 .build());
+    }
+
+    @RequireAdmin
+    @Operation(summary = "修改管理员密码")
+    @PutMapping("/password")
+    public Result<Void> changePassword(@Valid @RequestBody AdminChangePasswordDTO adminChangePasswordDTO) {
+        adminService.changePassword(adminChangePasswordDTO);
+        return Result.success();
     }
 
     @RequireAdmin

@@ -40,6 +40,24 @@ public interface AdminMapper {
     })
     Admin selectByUsername(@Param("username") String username);
 
+    @Select("""
+            SELECT id, username, password, real_name, role, status, last_login_time, created_at, updated_at
+            FROM admin
+            WHERE id = #{id}
+            """)
+    @Results(id = "adminDetailResultMap", value = {
+            @Result(property = "id", column = "id"),
+            @Result(property = "username", column = "username"),
+            @Result(property = "password", column = "password"),
+            @Result(property = "realName", column = "real_name"),
+            @Result(property = "role", column = "role"),
+            @Result(property = "status", column = "status"),
+            @Result(property = "lastLoginTime", column = "last_login_time"),
+            @Result(property = "createdAt", column = "created_at"),
+            @Result(property = "updatedAt", column = "updated_at")
+    })
+    Admin selectById(@Param("id") Long id);
+
     @Update("""
             UPDATE admin
             SET last_login_time = #{lastLoginTime},
@@ -49,6 +67,16 @@ public interface AdminMapper {
     int updateLoginTimeById(@Param("id") Long id,
                             @Param("lastLoginTime") LocalDateTime lastLoginTime,
                             @Param("updatedAt") LocalDateTime updatedAt);
+
+    @Update("""
+            UPDATE admin
+            SET password = #{password},
+                updated_at = #{updatedAt}
+            WHERE id = #{id}
+            """)
+    int updatePasswordById(@Param("id") Long id,
+                           @Param("password") String password,
+                           @Param("updatedAt") LocalDateTime updatedAt);
 
     @SelectProvider(type = AdminSqlProvider.class, method = "buildSelectUserListSql")
     @Results(id = "adminUserResultMap", value = {

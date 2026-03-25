@@ -1,6 +1,7 @@
 package com.homechef.homechefsystem.service;
 
 import com.homechef.homechefsystem.dto.AdminChefQueryDTO;
+import com.homechef.homechefsystem.dto.AdminChangePasswordDTO;
 import com.homechef.homechefsystem.dto.AdminLoginDTO;
 import com.homechef.homechefsystem.dto.AdminOrderQueryDTO;
 import com.homechef.homechefsystem.dto.AdminStatusUpdateDTO;
@@ -16,6 +17,8 @@ import java.util.List;
 public interface AdminService {
 
     AdminLoginVO login(AdminLoginDTO adminLoginDTO);
+
+    void changePassword(AdminChangePasswordDTO adminChangePasswordDTO);
 
     List<AdminUserVO> getUserList(AdminUserQueryDTO queryDTO);
 
