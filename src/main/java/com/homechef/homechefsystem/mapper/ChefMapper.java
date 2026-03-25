@@ -19,6 +19,12 @@ import java.util.List;
 @Mapper
 public interface ChefMapper {
 
+    @Select("""
+            SELECT COUNT(1)
+            FROM chef
+            """)
+    int countAll();
+
     @SelectProvider(type = ChefSqlProvider.class, method = "buildSelectListSql")
     @Results(id = "chefResultMap", value = {
             @Result(property = "id", column = "id"),

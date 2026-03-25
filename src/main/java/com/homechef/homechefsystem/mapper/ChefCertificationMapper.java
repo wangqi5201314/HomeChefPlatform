@@ -20,6 +20,13 @@ import java.util.List;
 @Mapper
 public interface ChefCertificationMapper {
 
+    @Select("""
+            SELECT COUNT(1)
+            FROM chef_certification
+            WHERE audit_status = #{auditStatus}
+            """)
+    int countByAuditStatus(@Param("auditStatus") Integer auditStatus);
+
     @Insert("""
             INSERT INTO chef_certification (
                 chef_id, real_name, id_card_no, health_cert_url, skill_cert_url,

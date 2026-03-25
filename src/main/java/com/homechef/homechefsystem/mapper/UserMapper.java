@@ -16,6 +16,12 @@ import java.time.LocalDateTime;
 public interface UserMapper {
 
     @Select("""
+            SELECT COUNT(1)
+            FROM `user`
+            """)
+    int countAll();
+
+    @Select("""
             SELECT id, openid, unionid, phone, password, nickname, avatar, gender, birthday,
                    taste_preference, allergy_info, emergency_contact_name, emergency_contact_phone,
                    status, last_login_time, created_at, updated_at

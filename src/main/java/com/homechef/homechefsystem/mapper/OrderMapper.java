@@ -20,6 +20,28 @@ import java.util.List;
 @Mapper
 public interface OrderMapper {
 
+    @Select("""
+            SELECT COUNT(1)
+            FROM orders
+            """)
+    int countAll();
+
+    @Select("""
+            SELECT COUNT(1)
+            FROM orders
+            WHERE created_at >= #{startTime}
+              AND created_at < #{endTime}
+            """)
+    int countCreatedBetween(@Param("startTime") LocalDateTime startTime,
+                            @Param("endTime") LocalDateTime endTime);
+
+    @Select("""
+            SELECT COUNT(1)
+            FROM orders
+            WHERE order_status = #{orderStatus}
+            """)
+    int countByOrderStatus(@Param("orderStatus") String orderStatus);
+
     @Insert("""
             INSERT INTO orders (
                 order_no, user_id, chef_id, address_id, service_date, time_slot,
