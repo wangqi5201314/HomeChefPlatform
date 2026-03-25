@@ -27,6 +27,10 @@ public class AdminOrderVO {
 
     private String timeSlot;
 
+    private Integer peopleCount;
+
+    private BigDecimal totalAmount;
+
     private BigDecimal payAmount;
 
     private String orderStatus;
@@ -36,6 +40,8 @@ public class AdminOrderVO {
     private String contactPhone;
 
     private String fullAddress;
+
+    private Integer reviewed;
 
     private LocalDateTime createdAt;
 }

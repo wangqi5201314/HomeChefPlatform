@@ -1,5 +1,6 @@
 package com.homechef.homechefsystem.mapper;
 
+import com.homechef.homechefsystem.dto.AdminOrderQueryDTO;
 import com.homechef.homechefsystem.dto.OrderQueryDTO;
 import com.homechef.homechefsystem.entity.Order;
 import org.apache.ibatis.annotations.Insert;
@@ -145,6 +146,10 @@ public interface OrderMapper {
     @ResultMap("orderResultMap")
     List<Order> selectChefList(@Param("chefId") Long chefId, @Param("orderStatus") String orderStatus);
 
+    @SelectProvider(type = OrderSqlProvider.class, method = "buildSelectAdminListSql")
+    @ResultMap("orderResultMap")
+    List<Order> selectAdminList(AdminOrderQueryDTO queryDTO);
+
     @SelectProvider(type = OrderSqlProvider.class, method = "buildSelectListSql")
     @ResultMap("orderResultMap")
     List<Order> selectList(OrderQueryDTO queryDTO);
@@ -234,6 +239,47 @@ public interface OrderMapper {
             }
 
             return sql.ORDER_BY("id DESC").toString();
+        }
+
+        public String buildSelectAdminListSql(final AdminOrderQueryDTO queryDTO) {
+            SQL sql = new SQL()
+                    .SELECT("id, order_no, user_id, chef_id, address_id, service_date, time_slot")
+                    .SELECT("service_start_time, service_end_time, people_count, taste_preference, taboo_food")
+                    .SELECT("special_requirement, ingredient_mode, ingredient_list, contact_name, contact_phone")
+                    .SELECT("full_address, longitude, latitude, confirm_code, total_amount, discount_amount")
+                    .SELECT("pay_amount, order_status, cancel_reason, refund_reason, user_deleted, chef_deleted")
+                    .SELECT("EXISTS(SELECT 1 FROM review r WHERE r.order_id = orders.id) AS reviewed")
+                    .SELECT("created_at, updated_at")
+                    .FROM("orders");
+
+            if (queryDTO != null) {
+                if (queryDTO.getOrderNo() != null && !queryDTO.getOrderNo().trim().isEmpty()) {
+                    sql.WHERE("order_no LIKE CONCAT('%', #{orderNo}, '%')");
+                }
+                if (queryDTO.getOrderStatus() != null && !queryDTO.getOrderStatus().trim().isEmpty()) {
+                    sql.WHERE("order_status = #{orderStatus}");
+                }
+                if (queryDTO.getUserId() != null) {
+                    sql.WHERE("user_id = #{userId}");
+                }
+                if (queryDTO.getChefId() != null) {
+                    sql.WHERE("chef_id = #{chefId}");
+                }
+                if (queryDTO.getServiceDateFrom() != null) {
+                    sql.WHERE("service_date >= #{serviceDateFrom}");
+                }
+                if (queryDTO.getServiceDateTo() != null) {
+                    sql.WHERE("service_date <= #{serviceDateTo}");
+                }
+                if (queryDTO.getCreatedAtFrom() != null) {
+                    sql.WHERE("created_at >= #{createdAtFrom}");
+                }
+                if (queryDTO.getCreatedAtTo() != null) {
+                    sql.WHERE("created_at <= #{createdAtTo}");
+                }
+            }
+
+            return sql.ORDER_BY("created_at DESC").toString();
         }
     }
 }

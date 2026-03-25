@@ -4,14 +4,12 @@ import com.homechef.homechefsystem.annotation.RequireAdmin;
 import com.homechef.homechefsystem.common.result.Result;
 import com.homechef.homechefsystem.dto.AdminChefQueryDTO;
 import com.homechef.homechefsystem.dto.AdminLoginDTO;
-import com.homechef.homechefsystem.dto.AdminOrderQueryDTO;
 import com.homechef.homechefsystem.dto.LoginTokenDTO;
 import com.homechef.homechefsystem.service.AdminService;
 import com.homechef.homechefsystem.service.ChefScheduleService;
 import com.homechef.homechefsystem.utils.JwtUtil;
 import com.homechef.homechefsystem.vo.AdminChefVO;
 import com.homechef.homechefsystem.vo.AdminLoginVO;
-import com.homechef.homechefsystem.vo.AdminOrderVO;
 import com.homechef.homechefsystem.vo.OrderDetailVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -55,13 +53,6 @@ public class AdminController {
     @GetMapping("/chefs")
     public Result<List<AdminChefVO>> getChefList(AdminChefQueryDTO queryDTO) {
         return Result.success(adminService.getChefList(queryDTO));
-    }
-
-    @RequireAdmin
-    @Operation(summary = "查询订单列表")
-    @GetMapping("/orders")
-    public Result<List<AdminOrderVO>> getOrderList(AdminOrderQueryDTO queryDTO) {
-        return Result.success(adminService.getOrderList(queryDTO));
     }
 
     @RequireAdmin
