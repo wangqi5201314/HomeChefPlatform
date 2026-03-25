@@ -1,5 +1,6 @@
 package com.homechef.homechefsystem.mapper;
 
+import com.homechef.homechefsystem.dto.AdminReviewQueryDTO;
 import com.homechef.homechefsystem.dto.ReviewQueryDTO;
 import com.homechef.homechefsystem.entity.Review;
 import org.apache.ibatis.annotations.Insert;
@@ -82,6 +83,10 @@ public interface ReviewMapper {
     @ResultMap("reviewResultMap")
     List<Review> selectList(ReviewQueryDTO queryDTO);
 
+    @SelectProvider(type = ReviewSqlProvider.class, method = "buildSelectAdminListSql")
+    @ResultMap("reviewResultMap")
+    List<Review> selectAdminList(AdminReviewQueryDTO queryDTO);
+
     @Update("""
             UPDATE review
             SET reply_content = #{replyContent},
@@ -107,6 +112,28 @@ public interface ReviewMapper {
                 }
                 if (queryDTO.getUserId() != null) {
                     sql.WHERE("user_id = #{userId}");
+                }
+            }
+
+            return sql.ORDER_BY("created_at DESC").toString();
+        }
+
+        public String buildSelectAdminListSql(final AdminReviewQueryDTO queryDTO) {
+            SQL sql = new SQL()
+                    .SELECT("id, order_id, user_id, chef_id, dish_score, service_score, skill_score")
+                    .SELECT("environment_score, overall_score, content, image_urls, is_anonymous")
+                    .SELECT("reply_content, reply_at, created_at")
+                    .FROM("review");
+
+            if (queryDTO != null) {
+                if (queryDTO.getOrderId() != null) {
+                    sql.WHERE("order_id = #{orderId}");
+                }
+                if (queryDTO.getUserId() != null) {
+                    sql.WHERE("user_id = #{userId}");
+                }
+                if (queryDTO.getChefId() != null) {
+                    sql.WHERE("chef_id = #{chefId}");
                 }
             }
 
