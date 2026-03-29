@@ -89,4 +89,11 @@ public class ChefScheduleController {
         }
         return Result.success(chefScheduleVO);
     }
+
+    @RequireLogin
+    @Operation(summary = "禁用当前登录厨师的过期档期")
+    @PostMapping("/schedule/disable-expired")
+    public Result<Integer> disableCurrentChefExpiredSchedules() {
+        return Result.success(chefScheduleService.disableCurrentChefExpiredAvailableSchedules());
+    }
 }

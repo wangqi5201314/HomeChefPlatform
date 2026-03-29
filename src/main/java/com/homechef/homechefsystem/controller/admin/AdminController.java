@@ -7,7 +7,6 @@ import com.homechef.homechefsystem.dto.AdminChangePasswordDTO;
 import com.homechef.homechefsystem.dto.AdminLoginDTO;
 import com.homechef.homechefsystem.dto.LoginTokenDTO;
 import com.homechef.homechefsystem.service.AdminService;
-import com.homechef.homechefsystem.service.ChefScheduleService;
 import com.homechef.homechefsystem.utils.JwtUtil;
 import com.homechef.homechefsystem.vo.AdminChefVO;
 import com.homechef.homechefsystem.vo.AdminLoginVO;
@@ -33,7 +32,6 @@ import java.util.List;
 public class AdminController {
 
     private final AdminService adminService;
-    private final ChefScheduleService chefScheduleService;
     private final JwtUtil jwtUtil;
 
     @Operation(summary = "管理员登录")
@@ -74,12 +72,5 @@ public class AdminController {
             return Result.error(404, "order not found");
         }
         return Result.success(orderDetailVO);
-    }
-
-    @RequireAdmin
-    @Operation(summary = "手动触发禁用过期档期")
-    @PostMapping("/chef/schedule/disable-expired")
-    public Result<Integer> disableExpiredChefSchedules() {
-        return Result.success(chefScheduleService.disableExpiredAvailableSchedules());
     }
 }
