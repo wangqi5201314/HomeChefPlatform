@@ -2,6 +2,7 @@ package com.homechef.homechefsystem.service.impl;
 
 import com.homechef.homechefsystem.common.enums.OrderStatusEnum;
 import com.homechef.homechefsystem.common.enums.ResultCodeEnum;
+import com.homechef.homechefsystem.common.enums.TimeSlotEnum;
 import com.homechef.homechefsystem.common.exception.BusinessException;
 import com.homechef.homechefsystem.dto.ChefOrderRejectDTO;
 import com.homechef.homechefsystem.entity.Order;
@@ -138,6 +139,7 @@ public class ChefOrderServiceImpl implements ChefOrderService {
                 .chefId(order.getChefId())
                 .serviceDate(order.getServiceDate())
                 .timeSlot(order.getTimeSlot())
+                .timeSlotDesc(TimeSlotEnum.getDescByCode(order.getTimeSlot()))
                 .peopleCount(order.getPeopleCount())
                 .totalAmount(order.getTotalAmount())
                 .payAmount(order.getPayAmount())
@@ -161,6 +163,7 @@ public class ChefOrderServiceImpl implements ChefOrderService {
                 .addressId(order.getAddressId())
                 .serviceDate(order.getServiceDate())
                 .timeSlot(order.getTimeSlot())
+                .timeSlotDesc(TimeSlotEnum.getDescByCode(order.getTimeSlot()))
                 .serviceStartTime(order.getServiceStartTime())
                 .serviceEndTime(order.getServiceEndTime())
                 .peopleCount(order.getPeopleCount())

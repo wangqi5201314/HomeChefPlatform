@@ -1,5 +1,6 @@
 package com.homechef.homechefsystem.service.impl;
 
+import com.homechef.homechefsystem.common.enums.TimeSlotEnum;
 import com.homechef.homechefsystem.dto.AdminOrderQueryDTO;
 import com.homechef.homechefsystem.entity.Order;
 import com.homechef.homechefsystem.mapper.OrderMapper;
@@ -40,6 +41,7 @@ public class AdminOrderServiceImpl implements AdminOrderService {
                 .chefId(order.getChefId())
                 .serviceDate(order.getServiceDate())
                 .timeSlot(order.getTimeSlot())
+                .timeSlotDesc(TimeSlotEnum.getDescByCode(order.getTimeSlot()))
                 .peopleCount(order.getPeopleCount())
                 .totalAmount(order.getTotalAmount())
                 .payAmount(order.getPayAmount())

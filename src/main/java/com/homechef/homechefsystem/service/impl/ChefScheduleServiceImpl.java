@@ -1,6 +1,7 @@
 package com.homechef.homechefsystem.service.impl;
 
 import com.homechef.homechefsystem.common.enums.ResultCodeEnum;
+import com.homechef.homechefsystem.common.enums.TimeSlotEnum;
 import com.homechef.homechefsystem.common.exception.BusinessException;
 import com.homechef.homechefsystem.dto.ChefScheduleCreateDTO;
 import com.homechef.homechefsystem.dto.ChefScheduleQueryDTO;
@@ -45,6 +46,7 @@ public class ChefScheduleServiceImpl implements ChefScheduleService {
     public ChefScheduleVO create(Long chefId, ChefScheduleCreateDTO chefScheduleCreateDTO) {
         LocalDateTime now = LocalDateTime.now();
         Integer isAvailable = chefScheduleCreateDTO.getIsAvailable();
+        String timeSlot = normalizeTimeSlot(chefScheduleCreateDTO.getTimeSlot());
         if (isAvailable == null) {
             isAvailable = 1;
         }
@@ -52,7 +54,7 @@ public class ChefScheduleServiceImpl implements ChefScheduleService {
         ChefSchedule chefSchedule = ChefSchedule.builder()
                 .chefId(chefId)
                 .serviceDate(chefScheduleCreateDTO.getServiceDate())
-                .timeSlot(chefScheduleCreateDTO.getTimeSlot())
+                .timeSlot(timeSlot)
                 .startTime(chefScheduleCreateDTO.getStartTime())
                 .endTime(chefScheduleCreateDTO.getEndTime())
                 .isAvailable(isAvailable)
@@ -77,12 +79,13 @@ public class ChefScheduleServiceImpl implements ChefScheduleService {
         }
 
         Integer isAvailable = chefScheduleUpdateDTO.getIsAvailable();
+        String timeSlot = normalizeTimeSlot(chefScheduleUpdateDTO.getTimeSlot());
         if (isAvailable == null) {
             isAvailable = 1;
         }
 
         existingChefSchedule.setServiceDate(chefScheduleUpdateDTO.getServiceDate());
-        existingChefSchedule.setTimeSlot(chefScheduleUpdateDTO.getTimeSlot());
+        existingChefSchedule.setTimeSlot(timeSlot);
         existingChefSchedule.setStartTime(chefScheduleUpdateDTO.getStartTime());
         existingChefSchedule.setEndTime(chefScheduleUpdateDTO.getEndTime());
         existingChefSchedule.setIsAvailable(isAvailable);
@@ -141,7 +144,9 @@ public class ChefScheduleServiceImpl implements ChefScheduleService {
     @Override
     public ChefScheduleVO createCurrentChefSchedule(ChefScheduleCreateDTO chefScheduleCreateDTO) {
         Long chefId = requireCurrentChefId();
-        if (existsDuplicate(chefId, chefScheduleCreateDTO.getServiceDate(), chefScheduleCreateDTO.getTimeSlot(), null)) {
+        String timeSlot = normalizeTimeSlot(chefScheduleCreateDTO.getTimeSlot());
+        chefScheduleCreateDTO.setTimeSlot(timeSlot);
+        if (existsDuplicate(chefId, chefScheduleCreateDTO.getServiceDate(), timeSlot, null)) {
             throw new BusinessException(ResultCodeEnum.FAIL, "schedule already exists");
         }
         return create(chefId, chefScheduleCreateDTO);
@@ -150,9 +155,11 @@ public class ChefScheduleServiceImpl implements ChefScheduleService {
     @Override
     public ChefScheduleVO updateCurrentChefSchedule(Long id, ChefScheduleUpdateDTO chefScheduleUpdateDTO) {
         ChefSchedule existingChefSchedule = getOwnedSchedule(id);
+        String timeSlot = normalizeTimeSlot(chefScheduleUpdateDTO.getTimeSlot());
+        chefScheduleUpdateDTO.setTimeSlot(timeSlot);
         if (existsDuplicate(existingChefSchedule.getChefId(),
                 chefScheduleUpdateDTO.getServiceDate(),
-                chefScheduleUpdateDTO.getTimeSlot(),
+                timeSlot,
                 id)) {
             throw new BusinessException(ResultCodeEnum.FAIL, "schedule already exists");
         }
@@ -220,11 +227,20 @@ public class ChefScheduleServiceImpl implements ChefScheduleService {
                 .chefId(chefSchedule.getChefId())
                 .serviceDate(chefSchedule.getServiceDate())
                 .timeSlot(chefSchedule.getTimeSlot())
+                .timeSlotDesc(TimeSlotEnum.getDescByCode(chefSchedule.getTimeSlot()))
                 .startTime(chefSchedule.getStartTime())
                 .endTime(chefSchedule.getEndTime())
                 .isAvailable(chefSchedule.getIsAvailable())
                 .lockedOrderId(chefSchedule.getLockedOrderId())
                 .remark(chefSchedule.getRemark())
                 .build();
+    }
+
+    private String normalizeTimeSlot(String timeSlot) {
+        TimeSlotEnum timeSlotEnum = TimeSlotEnum.fromCode(timeSlot);
+        if (timeSlotEnum == null) {
+            throw new BusinessException(ResultCodeEnum.PARAM_ERROR, TimeSlotEnum.INVALID_MESSAGE);
+        }
+        return timeSlotEnum.getCode();
     }
 }

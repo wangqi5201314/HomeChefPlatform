@@ -9,6 +9,7 @@ import com.homechef.homechefsystem.vo.OrderDetailVO;
 import com.homechef.homechefsystem.vo.OrderListVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,7 +30,7 @@ public class OrderController {
 
     @Operation(summary = "创建订单")
     @PostMapping("/create")
-    public Result<OrderDetailVO> createOrder(@RequestBody OrderCreateDTO orderCreateDTO) {
+    public Result<OrderDetailVO> createOrder(@Valid @RequestBody OrderCreateDTO orderCreateDTO) {
         OrderDetailVO orderDetailVO = orderService.createOrder(orderCreateDTO);
         if (orderDetailVO == null) {
             return Result.error(500, "create order failed");

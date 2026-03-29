@@ -1,5 +1,8 @@
 package com.homechef.homechefsystem.dto;
 
+import com.homechef.homechefsystem.common.enums.TimeSlotEnum;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,6 +19,8 @@ public class ChefScheduleUpdateDTO {
 
     private LocalDate serviceDate;
 
+    @NotBlank(message = TimeSlotEnum.INVALID_MESSAGE)
+    @Pattern(regexp = TimeSlotEnum.VALIDATION_REGEXP, message = TimeSlotEnum.INVALID_MESSAGE)
     private String timeSlot;
 
     private LocalDateTime startTime;

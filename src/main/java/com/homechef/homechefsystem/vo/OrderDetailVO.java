@@ -29,6 +29,8 @@ public class OrderDetailVO {
 
     private String timeSlot;
 
+    private String timeSlotDesc;
+
     private LocalDateTime serviceStartTime;
 
     private LocalDateTime serviceEndTime;

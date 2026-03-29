@@ -20,6 +20,9 @@ public class ChefSchedule {
 
     private LocalDate serviceDate;
 
+    /**
+     * 时段：BREAKFAST / LUNCH / DINNER / LATE_NIGHT
+     */
     private String timeSlot;
 
     private LocalDateTime startTime;

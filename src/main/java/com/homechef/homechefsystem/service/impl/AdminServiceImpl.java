@@ -3,6 +3,7 @@ package com.homechef.homechefsystem.service.impl;
 import com.homechef.homechefsystem.common.enums.ChefCertStatusEnum;
 import com.homechef.homechefsystem.common.enums.ChefStatusEnum;
 import com.homechef.homechefsystem.common.enums.ResultCodeEnum;
+import com.homechef.homechefsystem.common.enums.TimeSlotEnum;
 import com.homechef.homechefsystem.common.enums.UserStatusEnum;
 import com.homechef.homechefsystem.common.exception.BusinessException;
 import com.homechef.homechefsystem.dto.AdminChefQueryDTO;
@@ -247,6 +248,7 @@ public class AdminServiceImpl implements AdminService {
                 .chefId(order.getChefId())
                 .serviceDate(order.getServiceDate())
                 .timeSlot(order.getTimeSlot())
+                .timeSlotDesc(TimeSlotEnum.getDescByCode(order.getTimeSlot()))
                 .payAmount(order.getPayAmount())
                 .orderStatus(order.getOrderStatus())
                 .contactName(order.getContactName())
@@ -268,6 +270,7 @@ public class AdminServiceImpl implements AdminService {
                 .addressId(order.getAddressId())
                 .serviceDate(order.getServiceDate())
                 .timeSlot(order.getTimeSlot())
+                .timeSlotDesc(TimeSlotEnum.getDescByCode(order.getTimeSlot()))
                 .serviceStartTime(order.getServiceStartTime())
                 .serviceEndTime(order.getServiceEndTime())
                 .peopleCount(order.getPeopleCount())

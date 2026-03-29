@@ -22,6 +22,8 @@ public class ChefScheduleVO {
 
     private String timeSlot;
 
+    private String timeSlotDesc;
+
     private LocalDateTime startTime;
 
     private LocalDateTime endTime;

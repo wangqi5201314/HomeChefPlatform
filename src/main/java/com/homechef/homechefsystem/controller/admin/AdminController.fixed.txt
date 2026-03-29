@@ -1,5 +1,0 @@
-package com.homechef.homechefsystem.controller.admin;
-
-// Temporary placeholder kept non-public to avoid compile issues in restricted environments.
-class AdminControllerFixed {
-}

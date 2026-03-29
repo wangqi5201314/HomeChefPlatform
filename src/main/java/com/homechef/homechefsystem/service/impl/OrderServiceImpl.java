@@ -2,6 +2,7 @@ package com.homechef.homechefsystem.service.impl;
 
 import com.homechef.homechefsystem.common.enums.OrderStatusEnum;
 import com.homechef.homechefsystem.common.enums.ResultCodeEnum;
+import com.homechef.homechefsystem.common.enums.TimeSlotEnum;
 import com.homechef.homechefsystem.common.exception.BusinessException;
 import com.homechef.homechefsystem.dto.OrderCancelDTO;
 import com.homechef.homechefsystem.dto.OrderCreateDTO;
@@ -31,13 +32,14 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderDetailVO createOrder(OrderCreateDTO orderCreateDTO) {
         LocalDateTime now = LocalDateTime.now();
+        String timeSlot = normalizeTimeSlot(orderCreateDTO.getTimeSlot());
         Order order = Order.builder()
                 .orderNo(generateOrderNo())
                 .userId(orderCreateDTO.getUserId())
                 .chefId(orderCreateDTO.getChefId())
                 .addressId(orderCreateDTO.getAddressId())
                 .serviceDate(orderCreateDTO.getServiceDate())
-                .timeSlot(orderCreateDTO.getTimeSlot())
+                .timeSlot(timeSlot)
                 .serviceStartTime(orderCreateDTO.getServiceStartTime())
                 .serviceEndTime(orderCreateDTO.getServiceEndTime())
                 .peopleCount(orderCreateDTO.getPeopleCount())
@@ -130,6 +132,7 @@ public class OrderServiceImpl implements OrderService {
                 .chefId(order.getChefId())
                 .serviceDate(order.getServiceDate())
                 .timeSlot(order.getTimeSlot())
+                .timeSlotDesc(TimeSlotEnum.getDescByCode(order.getTimeSlot()))
                 .peopleCount(order.getPeopleCount())
                 .totalAmount(order.getTotalAmount())
                 .payAmount(order.getPayAmount())
@@ -154,6 +157,7 @@ public class OrderServiceImpl implements OrderService {
                 .addressId(order.getAddressId())
                 .serviceDate(order.getServiceDate())
                 .timeSlot(order.getTimeSlot())
+                .timeSlotDesc(TimeSlotEnum.getDescByCode(order.getTimeSlot()))
                 .serviceStartTime(order.getServiceStartTime())
                 .serviceEndTime(order.getServiceEndTime())
                 .peopleCount(order.getPeopleCount())
@@ -186,5 +190,13 @@ public class OrderServiceImpl implements OrderService {
 
     private String generateConfirmCode() {
         return String.valueOf(ThreadLocalRandom.current().nextInt(100000, 1000000));
+    }
+
+    private String normalizeTimeSlot(String timeSlot) {
+        TimeSlotEnum timeSlotEnum = TimeSlotEnum.fromCode(timeSlot);
+        if (timeSlotEnum == null) {
+            throw new BusinessException(ResultCodeEnum.PARAM_ERROR, TimeSlotEnum.INVALID_MESSAGE);
+        }
+        return timeSlotEnum.getCode();
     }
 }

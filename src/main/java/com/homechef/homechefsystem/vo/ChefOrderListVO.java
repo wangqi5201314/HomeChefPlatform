@@ -27,6 +27,8 @@ public class ChefOrderListVO {
 
     private String timeSlot;
 
+    private String timeSlotDesc;
+
     private Integer peopleCount;
 
     private BigDecimal totalAmount;

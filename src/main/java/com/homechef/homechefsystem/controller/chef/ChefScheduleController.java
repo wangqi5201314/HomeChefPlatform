@@ -10,6 +10,7 @@ import com.homechef.homechefsystem.service.ChefScheduleService;
 import com.homechef.homechefsystem.vo.ChefScheduleVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -47,7 +48,7 @@ public class ChefScheduleController {
     @RequireLogin
     @Operation(summary = "新增我的档期")
     @PostMapping("/schedule")
-    public Result<ChefScheduleVO> createCurrentChefSchedule(@RequestBody ChefScheduleCreateDTO chefScheduleCreateDTO) {
+    public Result<ChefScheduleVO> createCurrentChefSchedule(@Valid @RequestBody ChefScheduleCreateDTO chefScheduleCreateDTO) {
         ChefScheduleVO chefScheduleVO = chefScheduleService.createCurrentChefSchedule(chefScheduleCreateDTO);
         if (chefScheduleVO == null) {
             return Result.error(500, "create schedule failed");
@@ -59,7 +60,7 @@ public class ChefScheduleController {
     @Operation(summary = "修改我的档期")
     @PutMapping("/schedule/{id}")
     public Result<ChefScheduleVO> updateCurrentChefSchedule(@PathVariable Long id,
-                                                            @RequestBody ChefScheduleUpdateDTO chefScheduleUpdateDTO) {
+                                                            @Valid @RequestBody ChefScheduleUpdateDTO chefScheduleUpdateDTO) {
         ChefScheduleVO chefScheduleVO = chefScheduleService.updateCurrentChefSchedule(id, chefScheduleUpdateDTO);
         if (chefScheduleVO == null) {
             return Result.error(404, "schedule not found");
