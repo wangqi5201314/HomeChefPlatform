@@ -121,11 +121,11 @@ public interface ChefScheduleMapper {
             SET is_available = 0,
                 updated_at = #{updatedAt}
             WHERE chef_id = #{chefId}
-              AND service_date < #{currentDate}
+              AND end_time < #{currentTime}
               AND is_available = 1
             """)
     int disableExpiredAvailableSchedulesByChefId(@Param("chefId") Long chefId,
-                                                 @Param("currentDate") LocalDate currentDate,
+                                                 @Param("currentTime") LocalDateTime currentTime,
                                                  @Param("updatedAt") LocalDateTime updatedAt);
 
     @Delete("""

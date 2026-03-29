@@ -196,9 +196,9 @@ public class ChefScheduleServiceImpl implements ChefScheduleService {
 
     @Override
     public int disableCurrentChefExpiredAvailableSchedules() {
-        LocalDate currentDate = LocalDate.now();
+        LocalDateTime currentTime = LocalDateTime.now();
         LocalDateTime updatedAt = LocalDateTime.now();
-        return chefScheduleMapper.disableExpiredAvailableSchedulesByChefId(requireCurrentChefId(), currentDate, updatedAt);
+        return chefScheduleMapper.disableExpiredAvailableSchedulesByChefId(requireCurrentChefId(), currentTime, updatedAt);
     }
 
     private Long requireCurrentChefId() {
