@@ -274,6 +274,10 @@ public class ChefServiceImpl implements ChefService {
                 .specialtyTags(chef.getSpecialtyTags())
                 .yearsOfExperience(chef.getYearsOfExperience())
                 .serviceRadiusKm(chef.getServiceRadiusKm())
+                .serviceAreaProvince(getServiceAreaProvince(chefServiceLocation))
+                .serviceAreaCity(getServiceAreaCity(chefServiceLocation))
+                .serviceAreaDistrict(getServiceAreaDistrict(chefServiceLocation))
+                .serviceAreaTown(getServiceAreaTown(chefServiceLocation))
                 .serviceAreaText(buildServiceAreaText(chefServiceLocation))
                 .serviceMode(chef.getServiceMode())
                 .serviceModeDesc(ChefServiceModeEnum.getDescByCode(chef.getServiceMode()))
@@ -286,6 +290,22 @@ public class ChefServiceImpl implements ChefService {
                 .status(chef.getStatus())
                 .statusDesc(ChefStatusEnum.getDescByCode(chef.getStatus()))
                 .build();
+    }
+
+    private String getServiceAreaProvince(ChefServiceLocation chefServiceLocation) {
+        return chefServiceLocation == null ? null : chefServiceLocation.getProvince();
+    }
+
+    private String getServiceAreaCity(ChefServiceLocation chefServiceLocation) {
+        return chefServiceLocation == null ? null : chefServiceLocation.getCity();
+    }
+
+    private String getServiceAreaDistrict(ChefServiceLocation chefServiceLocation) {
+        return chefServiceLocation == null ? null : chefServiceLocation.getDistrict();
+    }
+
+    private String getServiceAreaTown(ChefServiceLocation chefServiceLocation) {
+        return chefServiceLocation == null ? null : chefServiceLocation.getTown();
     }
 
     private ChefVO toChefVO(Chef chef) {
