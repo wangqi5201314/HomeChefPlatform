@@ -180,10 +180,12 @@ public class ReviewServiceImpl implements ReviewService {
         if (review == null) {
             return null;
         }
+        Order order = orderMapper.selectById(review.getOrderId());
         User user = userMapper.selectById(review.getUserId());
         return ReviewVO.builder()
                 .id(review.getId())
                 .orderId(review.getOrderId())
+                .orderNo(order == null ? null : order.getOrderNo())
                 .userId(review.getUserId())
                 .userName(user == null ? null : user.getNickname())
                 .chefId(review.getChefId())

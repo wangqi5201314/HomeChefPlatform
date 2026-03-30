@@ -18,6 +18,8 @@ public class ReviewVO {
 
     private Long orderId;
 
+    private String orderNo;
+
     private Long userId;
 
     private String userName;
