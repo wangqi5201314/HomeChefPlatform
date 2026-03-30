@@ -1,6 +1,7 @@
 package com.homechef.homechefsystem.controller.admin;
 
 import com.homechef.homechefsystem.annotation.RequireAdmin;
+import com.homechef.homechefsystem.common.annotation.OperationLog;
 import com.homechef.homechefsystem.common.result.Result;
 import com.homechef.homechefsystem.dto.AdminChefQueryDTO;
 import com.homechef.homechefsystem.dto.AdminChangePasswordDTO;
@@ -49,6 +50,7 @@ public class AdminController {
     }
 
     @RequireAdmin
+    @OperationLog(module = "Admin", operation = "Change Password")
     @Operation(summary = "修改管理员密码")
     @PutMapping("/password")
     public Result<Void> changePassword(@Valid @RequestBody AdminChangePasswordDTO adminChangePasswordDTO) {

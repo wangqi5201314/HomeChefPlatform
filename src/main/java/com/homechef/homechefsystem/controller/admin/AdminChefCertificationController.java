@@ -1,6 +1,7 @@
 package com.homechef.homechefsystem.controller.admin;
 
 import com.homechef.homechefsystem.annotation.RequireAdmin;
+import com.homechef.homechefsystem.common.annotation.OperationLog;
 import com.homechef.homechefsystem.common.enums.ChefCertStatusEnum;
 import com.homechef.homechefsystem.common.result.Result;
 import com.homechef.homechefsystem.dto.ChefCertificationAuditDTO;
@@ -42,13 +43,14 @@ public class AdminChefCertificationController {
     }
 
     @RequireAdmin
+    @OperationLog(module = "AdminChefCertification", operation = "Audit Chef Certification")
     @Operation(summary = "审核厨师认证")
     @PostMapping("/certification/{id}/audit")
     public Result<ChefCertificationVO> auditById(@PathVariable Long id,
                                                  @RequestBody ChefCertificationAuditDTO chefCertificationAuditDTO) {
         Integer auditStatus = chefCertificationAuditDTO.getAuditStatus();
         if (!ChefCertStatusEnum.isAuditResult(auditStatus)) {
-            return Result.error(400, "审核状态取值非法，只能为 1、2");
+            return Result.error(400, "auditStatus 取值非法，只能为审核通过或审核拒绝");
         }
 
         ChefCertificationVO chefCertificationVO = chefCertificationService.auditById(id, chefCertificationAuditDTO);

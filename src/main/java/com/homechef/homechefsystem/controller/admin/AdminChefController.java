@@ -1,6 +1,7 @@
 package com.homechef.homechefsystem.controller.admin;
 
 import com.homechef.homechefsystem.annotation.RequireAdmin;
+import com.homechef.homechefsystem.common.annotation.OperationLog;
 import com.homechef.homechefsystem.common.result.Result;
 import com.homechef.homechefsystem.dto.AdminStatusUpdateDTO;
 import com.homechef.homechefsystem.service.AdminChefService;
@@ -25,6 +26,7 @@ public class AdminChefController {
     private final AdminChefService adminChefService;
 
     @RequireAdmin
+    @OperationLog(module = "AdminChef", operation = "Update Chef Status")
     @Operation(summary = "修改厨师状态")
     @PostMapping("/chef/{id}/status")
     public Result<Void> updateChefStatus(@PathVariable Long id,
