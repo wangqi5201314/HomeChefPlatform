@@ -7,9 +7,16 @@ import com.homechef.homechefsystem.common.exception.BusinessException;
 import com.homechef.homechefsystem.dto.OrderCancelDTO;
 import com.homechef.homechefsystem.dto.OrderCreateDTO;
 import com.homechef.homechefsystem.dto.OrderQueryDTO;
+import com.homechef.homechefsystem.entity.Chef;
+import com.homechef.homechefsystem.entity.ChefServiceLocation;
 import com.homechef.homechefsystem.entity.Order;
+import com.homechef.homechefsystem.entity.UserAddress;
+import com.homechef.homechefsystem.mapper.ChefMapper;
+import com.homechef.homechefsystem.mapper.ChefServiceLocationMapper;
 import com.homechef.homechefsystem.mapper.OrderMapper;
+import com.homechef.homechefsystem.mapper.UserAddressMapper;
 import com.homechef.homechefsystem.service.OrderService;
+import com.homechef.homechefsystem.utils.GeoDistanceUtil;
 import com.homechef.homechefsystem.vo.OrderDetailVO;
 import com.homechef.homechefsystem.vo.OrderListVO;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +27,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
@@ -28,11 +36,15 @@ import java.util.stream.Collectors;
 public class OrderServiceImpl implements OrderService {
 
     private final OrderMapper orderMapper;
+    private final UserAddressMapper userAddressMapper;
+    private final ChefMapper chefMapper;
+    private final ChefServiceLocationMapper chefServiceLocationMapper;
 
     @Override
     public OrderDetailVO createOrder(OrderCreateDTO orderCreateDTO) {
         LocalDateTime now = LocalDateTime.now();
         String timeSlot = normalizeTimeSlot(orderCreateDTO.getTimeSlot());
+        validateServiceRange(orderCreateDTO);
         Order order = Order.builder()
                 .orderNo(generateOrderNo())
                 .userId(orderCreateDTO.getUserId())
@@ -198,5 +210,50 @@ public class OrderServiceImpl implements OrderService {
             throw new BusinessException(ResultCodeEnum.PARAM_ERROR, TimeSlotEnum.INVALID_MESSAGE);
         }
         return timeSlotEnum.getCode();
+    }
+
+    private void validateServiceRange(OrderCreateDTO orderCreateDTO) {
+        UserAddress userAddress = userAddressMapper.selectById(orderCreateDTO.getAddressId());
+        if (userAddress == null) {
+            throw new BusinessException(ResultCodeEnum.NOT_FOUND, "收货地址不存在");
+        }
+        if (userAddress.getLongitude() == null || userAddress.getLatitude() == null) {
+            throw new BusinessException(ResultCodeEnum.FAIL, "收货地址缺少坐标信息，无法校验服务范围");
+        }
+
+        Chef chef = chefMapper.selectById(orderCreateDTO.getChefId());
+        if (chef == null) {
+            throw new BusinessException(ResultCodeEnum.NOT_FOUND, "厨师不存在");
+        }
+        if (chef.getServiceRadiusKm() == null || chef.getServiceRadiusKm() <= 0) {
+            throw new BusinessException(ResultCodeEnum.FAIL, "厨师未配置服务半径");
+        }
+
+        ChefServiceLocation chefServiceLocation = chefServiceLocationMapper.selectByChefId(orderCreateDTO.getChefId());
+        if (chefServiceLocation == null) {
+            throw new BusinessException(ResultCodeEnum.FAIL, "厨师未设置服务基准位置");
+        }
+        if (chefServiceLocation.getLongitude() == null || chefServiceLocation.getLatitude() == null) {
+            throw new BusinessException(ResultCodeEnum.FAIL, "厨师服务基准位置缺少坐标信息");
+        }
+
+        double distanceKm = GeoDistanceUtil.distanceKm(
+                userAddress.getLatitude().doubleValue(),
+                userAddress.getLongitude().doubleValue(),
+                chefServiceLocation.getLatitude().doubleValue(),
+                chefServiceLocation.getLongitude().doubleValue()
+        );
+        double serviceRadiusKm = chef.getServiceRadiusKm().doubleValue();
+        if (distanceKm > serviceRadiusKm) {
+            throw new BusinessException(
+                    ResultCodeEnum.FAIL,
+                    String.format(
+                            Locale.ROOT,
+                            "当前地址距离厨师 %.2f 公里，超出其服务半径 %.2f 公里",
+                            distanceKm,
+                            serviceRadiusKm
+                    )
+            );
+        }
     }
 }
