@@ -11,7 +11,9 @@ import com.homechef.homechefsystem.dto.ChefQueryDTO;
 import com.homechef.homechefsystem.dto.ChefRegisterDTO;
 import com.homechef.homechefsystem.dto.ChefUpdateDTO;
 import com.homechef.homechefsystem.entity.Chef;
+import com.homechef.homechefsystem.entity.ChefServiceLocation;
 import com.homechef.homechefsystem.mapper.ChefMapper;
+import com.homechef.homechefsystem.mapper.ChefServiceLocationMapper;
 import com.homechef.homechefsystem.service.ChefService;
 import com.homechef.homechefsystem.utils.LoginUserContext;
 import com.homechef.homechefsystem.vo.ChefDetailVO;
@@ -32,6 +34,7 @@ import java.util.stream.Collectors;
 public class ChefServiceImpl implements ChefService {
 
     private final ChefMapper chefMapper;
+    private final ChefServiceLocationMapper chefServiceLocationMapper;
     private final BCryptPasswordEncoder passwordEncoder;
 
     @Override
@@ -258,6 +261,7 @@ public class ChefServiceImpl implements ChefService {
         if (chef == null) {
             return null;
         }
+        ChefServiceLocation chefServiceLocation = chefServiceLocationMapper.selectByChefId(chef.getId());
         return ChefDetailVO.builder()
                 .id(chef.getId())
                 .name(chef.getName())
@@ -270,6 +274,7 @@ public class ChefServiceImpl implements ChefService {
                 .specialtyTags(chef.getSpecialtyTags())
                 .yearsOfExperience(chef.getYearsOfExperience())
                 .serviceRadiusKm(chef.getServiceRadiusKm())
+                .serviceAreaText(buildServiceAreaText(chefServiceLocation))
                 .serviceMode(chef.getServiceMode())
                 .serviceModeDesc(ChefServiceModeEnum.getDescByCode(chef.getServiceMode()))
                 .ratingAvg(chef.getRatingAvg())
@@ -310,5 +315,23 @@ public class ChefServiceImpl implements ChefService {
                 .status(chef.getStatus())
                 .statusDesc(ChefStatusEnum.getDescByCode(chef.getStatus()))
                 .build();
+    }
+
+    private String buildServiceAreaText(ChefServiceLocation chefServiceLocation) {
+        if (chefServiceLocation == null) {
+            return null;
+        }
+        StringBuilder builder = new StringBuilder();
+        appendAreaPart(builder, chefServiceLocation.getProvince());
+        appendAreaPart(builder, chefServiceLocation.getCity());
+        appendAreaPart(builder, chefServiceLocation.getDistrict());
+        appendAreaPart(builder, chefServiceLocation.getTown());
+        return builder.length() == 0 ? null : builder.toString();
+    }
+
+    private void appendAreaPart(StringBuilder builder, String areaPart) {
+        if (StringUtils.hasText(areaPart)) {
+            builder.append(areaPart.trim());
+        }
     }
 }

@@ -35,6 +35,8 @@ public class ChefDetailVO {
 
     private Integer serviceRadiusKm;
 
+    private String serviceAreaText;
+
     private Integer serviceMode;
 
     private String serviceModeDesc;
