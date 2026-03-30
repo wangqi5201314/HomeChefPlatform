@@ -229,12 +229,12 @@ public class OrderServiceImpl implements OrderService {
             throw new BusinessException(ResultCodeEnum.FAIL, "厨师未配置服务半径");
         }
 
-        ChefServiceLocation chefServiceLocation = chefServiceLocationMapper.selectByChefId(orderCreateDTO.getChefId());
+        ChefServiceLocation chefServiceLocation = chefServiceLocationMapper.selectActiveByChefId(orderCreateDTO.getChefId());
         if (chefServiceLocation == null) {
-            throw new BusinessException(ResultCodeEnum.FAIL, "厨师未设置服务基准位置");
+            throw new BusinessException(ResultCodeEnum.FAIL, "厨师未设置启用中的服务位置");
         }
         if (chefServiceLocation.getLongitude() == null || chefServiceLocation.getLatitude() == null) {
-            throw new BusinessException(ResultCodeEnum.FAIL, "厨师服务基准位置缺少坐标信息");
+            throw new BusinessException(ResultCodeEnum.FAIL, "厨师启用中的服务位置缺少坐标信息");
         }
 
         double distanceKm = GeoDistanceUtil.distanceKm(

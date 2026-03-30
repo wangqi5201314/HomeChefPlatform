@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
@@ -21,13 +23,9 @@ public class AdminChefServiceLocationController {
     private final ChefServiceLocationService chefServiceLocationService;
 
     @RequireAdmin
-    @Operation(summary = "查询后台厨师服务位置")
-    @GetMapping("/chef/{id}/service-location")
-    public Result<ChefServiceLocationVO> getChefServiceLocation(@PathVariable Long id) {
-        ChefServiceLocationVO chefServiceLocationVO = chefServiceLocationService.getByChefId(id);
-        if (chefServiceLocationVO == null) {
-            return Result.error(404, "service location not found");
-        }
-        return Result.success(chefServiceLocationVO);
+    @Operation(summary = "查询后台厨师服务位置列表")
+    @GetMapping("/chef/{id}/service-locations")
+    public Result<List<ChefServiceLocationVO>> getChefServiceLocationList(@PathVariable Long id) {
+        return Result.success(chefServiceLocationService.getChefServiceLocationListByChefId(id));
     }
 }

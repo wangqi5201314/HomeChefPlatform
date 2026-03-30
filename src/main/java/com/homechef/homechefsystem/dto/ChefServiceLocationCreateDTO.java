@@ -13,7 +13,9 @@ import java.math.BigDecimal;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ChefServiceLocationSaveDTO {
+public class ChefServiceLocationCreateDTO {
+
+    private String locationName;
 
     @NotBlank(message = "province 不能为空")
     private String province;

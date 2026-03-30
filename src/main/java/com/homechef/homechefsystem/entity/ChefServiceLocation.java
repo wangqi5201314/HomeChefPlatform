@@ -18,6 +18,8 @@ public class ChefServiceLocation {
 
     private Long chefId;
 
+    private String locationName;
+
     private String province;
 
     private String city;
@@ -31,6 +33,8 @@ public class ChefServiceLocation {
     private BigDecimal longitude;
 
     private BigDecimal latitude;
+
+    private Integer isActive;
 
     private LocalDateTime createdAt;
 

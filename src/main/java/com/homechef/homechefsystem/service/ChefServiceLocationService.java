@@ -1,13 +1,24 @@
 package com.homechef.homechefsystem.service;
 
-import com.homechef.homechefsystem.dto.ChefServiceLocationSaveDTO;
+import com.homechef.homechefsystem.dto.ChefServiceLocationCreateDTO;
+import com.homechef.homechefsystem.dto.ChefServiceLocationUpdateDTO;
 import com.homechef.homechefsystem.vo.ChefServiceLocationVO;
+
+import java.util.List;
 
 public interface ChefServiceLocationService {
 
-    ChefServiceLocationVO getCurrentChefServiceLocation();
+    List<ChefServiceLocationVO> getCurrentChefServiceLocationList();
 
-    ChefServiceLocationVO saveCurrentChefServiceLocation(ChefServiceLocationSaveDTO chefServiceLocationSaveDTO);
+    ChefServiceLocationVO getCurrentChefServiceLocationById(Long id);
 
-    ChefServiceLocationVO getByChefId(Long chefId);
+    ChefServiceLocationVO createCurrentChefServiceLocation(ChefServiceLocationCreateDTO chefServiceLocationCreateDTO);
+
+    ChefServiceLocationVO updateCurrentChefServiceLocation(Long id, ChefServiceLocationUpdateDTO chefServiceLocationUpdateDTO);
+
+    ChefServiceLocationVO deleteCurrentChefServiceLocation(Long id);
+
+    ChefServiceLocationVO activateCurrentChefServiceLocation(Long id);
+
+    List<ChefServiceLocationVO> getChefServiceLocationListByChefId(Long chefId);
 }

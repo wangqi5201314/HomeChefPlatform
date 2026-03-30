@@ -261,7 +261,7 @@ public class ChefServiceImpl implements ChefService {
         if (chef == null) {
             return null;
         }
-        ChefServiceLocation chefServiceLocation = chefServiceLocationMapper.selectByChefId(chef.getId());
+        ChefServiceLocation chefServiceLocation = chefServiceLocationMapper.selectActiveByChefId(chef.getId());
         return ChefDetailVO.builder()
                 .id(chef.getId())
                 .name(chef.getName())
