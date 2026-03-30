@@ -20,6 +20,8 @@ public class ReviewVO {
 
     private Long userId;
 
+    private String userName;
+
     private Long chefId;
 
     private Integer dishScore;

@@ -8,9 +8,11 @@ import com.homechef.homechefsystem.dto.ReviewQueryDTO;
 import com.homechef.homechefsystem.dto.ReviewReplyDTO;
 import com.homechef.homechefsystem.entity.Order;
 import com.homechef.homechefsystem.entity.Review;
+import com.homechef.homechefsystem.entity.User;
 import com.homechef.homechefsystem.mapper.ChefMapper;
 import com.homechef.homechefsystem.mapper.OrderMapper;
 import com.homechef.homechefsystem.mapper.ReviewMapper;
+import com.homechef.homechefsystem.mapper.UserMapper;
 import com.homechef.homechefsystem.service.ReviewService;
 import com.homechef.homechefsystem.utils.LoginUserContext;
 import com.homechef.homechefsystem.vo.ReviewVO;
@@ -32,6 +34,7 @@ public class ReviewServiceImpl implements ReviewService {
     private final ReviewMapper reviewMapper;
     private final OrderMapper orderMapper;
     private final ChefMapper chefMapper;
+    private final UserMapper userMapper;
 
     @Override
     @Transactional
@@ -177,10 +180,12 @@ public class ReviewServiceImpl implements ReviewService {
         if (review == null) {
             return null;
         }
+        User user = userMapper.selectById(review.getUserId());
         return ReviewVO.builder()
                 .id(review.getId())
                 .orderId(review.getOrderId())
                 .userId(review.getUserId())
+                .userName(user == null ? null : user.getNickname())
                 .chefId(review.getChefId())
                 .dishScore(review.getDishScore())
                 .serviceScore(review.getServiceScore())
