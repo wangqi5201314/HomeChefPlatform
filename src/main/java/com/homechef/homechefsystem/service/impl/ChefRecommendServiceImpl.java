@@ -13,7 +13,7 @@ import com.homechef.homechefsystem.mapper.ChefScheduleMapper;
 import com.homechef.homechefsystem.mapper.ChefServiceLocationMapper;
 import com.homechef.homechefsystem.mapper.UserAddressMapper;
 import com.homechef.homechefsystem.service.ChefRecommendService;
-import com.homechef.homechefsystem.utils.GeoDistanceUtil;
+import com.homechef.homechefsystem.service.GeoDistanceService;
 import com.homechef.homechefsystem.vo.ChefRecommendVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -44,6 +44,7 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
     private final ChefMapper chefMapper;
     private final ChefServiceLocationMapper chefServiceLocationMapper;
     private final ChefScheduleMapper chefScheduleMapper;
+    private final GeoDistanceService geoDistanceService;
 
     @Override
     public List<ChefRecommendVO> recommend(ChefRecommendQueryDTO chefRecommendQueryDTO) {
@@ -121,11 +122,11 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
             return null;
         }
 
-        double distanceKm = GeoDistanceUtil.distanceKm(
-                userAddress.getLatitude().doubleValue(),
-                userAddress.getLongitude().doubleValue(),
-                chefServiceLocation.getLatitude().doubleValue(),
-                chefServiceLocation.getLongitude().doubleValue()
+        double distanceKm = geoDistanceService.distanceKm(
+                userAddress.getLatitude(),
+                userAddress.getLongitude(),
+                chefServiceLocation.getLatitude(),
+                chefServiceLocation.getLongitude()
         );
         if (distanceKm > chef.getServiceRadiusKm()) {
             return null;

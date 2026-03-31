@@ -15,8 +15,8 @@ import com.homechef.homechefsystem.mapper.ChefMapper;
 import com.homechef.homechefsystem.mapper.ChefServiceLocationMapper;
 import com.homechef.homechefsystem.mapper.OrderMapper;
 import com.homechef.homechefsystem.mapper.UserAddressMapper;
+import com.homechef.homechefsystem.service.GeoDistanceService;
 import com.homechef.homechefsystem.service.OrderService;
-import com.homechef.homechefsystem.utils.GeoDistanceUtil;
 import com.homechef.homechefsystem.vo.OrderDetailVO;
 import com.homechef.homechefsystem.vo.OrderListVO;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +39,7 @@ public class OrderServiceImpl implements OrderService {
     private final UserAddressMapper userAddressMapper;
     private final ChefMapper chefMapper;
     private final ChefServiceLocationMapper chefServiceLocationMapper;
+    private final GeoDistanceService geoDistanceService;
 
     @Override
     public OrderDetailVO createOrder(OrderCreateDTO orderCreateDTO) {
@@ -237,11 +238,11 @@ public class OrderServiceImpl implements OrderService {
             throw new BusinessException(ResultCodeEnum.FAIL, "厨师启用中的服务位置缺少坐标信息");
         }
 
-        double distanceKm = GeoDistanceUtil.distanceKm(
-                userAddress.getLatitude().doubleValue(),
-                userAddress.getLongitude().doubleValue(),
-                chefServiceLocation.getLatitude().doubleValue(),
-                chefServiceLocation.getLongitude().doubleValue()
+        double distanceKm = geoDistanceService.distanceKm(
+                userAddress.getLatitude(),
+                userAddress.getLongitude(),
+                chefServiceLocation.getLatitude(),
+                chefServiceLocation.getLongitude()
         );
         double serviceRadiusKm = chef.getServiceRadiusKm().doubleValue();
         if (distanceKm > serviceRadiusKm) {
