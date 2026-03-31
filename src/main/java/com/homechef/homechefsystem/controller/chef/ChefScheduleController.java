@@ -38,6 +38,12 @@ public class ChefScheduleController {
         return Result.success(chefScheduleService.getScheduleList(queryDTO));
     }
 
+    @Operation(summary = "禁用指定厨师的过期档期")
+    @PostMapping("/{chefId}/schedule/disable-expired")
+    public Result<Integer> disableExpiredSchedulesByChefId(@PathVariable Long chefId) {
+        return Result.success(chefScheduleService.disableExpiredAvailableSchedulesByChefId(chefId));
+    }
+
     @RequireLogin
     @Operation(summary = "查询我的档期列表")
     @GetMapping("/schedule/my")

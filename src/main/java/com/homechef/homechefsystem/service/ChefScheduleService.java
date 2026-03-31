@@ -37,4 +37,6 @@ public interface ChefScheduleService {
     int disableExpiredAvailableSchedules();
 
     int disableCurrentChefExpiredAvailableSchedules();
+
+    int disableExpiredAvailableSchedulesByChefId(Long chefId);
 }
