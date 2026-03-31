@@ -129,7 +129,7 @@ public class ChefServiceImpl implements ChefService {
                 .orderCount(0)
                 .onTimeRate(null)
                 .goodReviewRate(null)
-                .certStatus(ChefCertStatusEnum.PENDING.getCode())
+                .certStatus(ChefCertStatusEnum.WAIT_UPLOAD.getCode())
                 .status(ChefStatusEnum.NORMAL.getCode())
                 .createdAt(now)
                 .updatedAt(now)

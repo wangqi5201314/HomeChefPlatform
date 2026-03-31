@@ -7,6 +7,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ChefCertStatusEnum {
 
+    WAIT_UPLOAD(3, "待上传"),
     PENDING(0, "待审核"),
     APPROVED(1, "已通过"),
     REJECTED(2, "已拒绝");
