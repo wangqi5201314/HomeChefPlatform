@@ -60,6 +60,18 @@ public interface UserAddressMapper {
     })
     UserAddress selectById(@Param("id") Long id);
 
+    @Select("""
+            SELECT id, user_id, contact_name, contact_phone, province, city, district, town,
+                   detail_address, longitude, latitude, is_default, status,
+                   created_at, updated_at
+            FROM user_address
+            WHERE id = #{id}
+              AND user_id = #{userId}
+              AND status = 1
+            """)
+    @ResultMap("userAddressResultMap")
+    UserAddress selectByIdAndUserId(@Param("id") Long id, @Param("userId") Long userId);
+
     @SelectProvider(type = UserAddressSqlProvider.class, method = "buildSelectListSql")
     @ResultMap("userAddressResultMap")
     List<UserAddress> selectList(UserAddressQueryDTO queryDTO);

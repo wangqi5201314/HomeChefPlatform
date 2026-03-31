@@ -71,6 +71,16 @@ public interface ChefScheduleMapper {
                                 @Param("timeSlot") String timeSlot,
                                 @Param("id") Long id);
 
+    @Select("""
+            SELECT DISTINCT chef_id
+            FROM chef_schedule
+            WHERE service_date = #{serviceDate}
+              AND time_slot = #{timeSlot}
+              AND is_available = 1
+            """)
+    List<Long> selectAvailableChefIdsByDateAndTimeSlot(@Param("serviceDate") LocalDate serviceDate,
+                                                       @Param("timeSlot") String timeSlot);
+
     @Insert("""
             INSERT INTO chef_schedule (
                 chef_id, service_date, time_slot, start_time, end_time,

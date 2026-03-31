@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Result;
+import org.apache.ibatis.annotations.ResultMap;
 import org.apache.ibatis.annotations.Results;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.SelectProvider;
@@ -118,6 +119,19 @@ public interface ChefMapper {
             @Result(property = "updatedAt", column = "updated_at")
     })
     Chef selectByPhone(@Param("phone") String phone);
+
+    @Select("""
+            SELECT id, name, phone, password, avatar, gender, age, introduction, specialty_cuisine,
+                   specialty_tags, years_of_experience, service_radius_km, service_mode,
+                   rating_avg, order_count, on_time_rate, good_review_rate, cert_status,
+                   status, created_at, updated_at
+            FROM chef
+            WHERE status = 1
+              AND cert_status = 1
+            ORDER BY id DESC
+            """)
+    @ResultMap("chefDetailResultMap")
+    List<Chef> selectRecommendCandidates();
 
     @Insert("""
             INSERT INTO chef (

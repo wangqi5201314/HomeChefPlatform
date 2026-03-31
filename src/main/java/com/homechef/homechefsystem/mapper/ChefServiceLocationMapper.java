@@ -73,6 +73,22 @@ public interface ChefServiceLocationMapper {
     @ResultMap("chefServiceLocationResultMap")
     ChefServiceLocation selectActiveByChefId(@Param("chefId") Long chefId);
 
+    @Select({
+            "<script>",
+            "SELECT id, chef_id, location_name, province, city, district, town, detail_address,",
+            "       longitude, latitude, is_active, created_at, updated_at",
+            "FROM chef_service_location",
+            "WHERE is_active = 1",
+            "  AND chef_id IN",
+            "  <foreach collection='chefIds' item='chefId' open='(' separator=',' close=')'>",
+            "    #{chefId}",
+            "  </foreach>",
+            "ORDER BY id DESC",
+            "</script>"
+    })
+    @ResultMap("chefServiceLocationResultMap")
+    List<ChefServiceLocation> selectActiveListByChefIds(@Param("chefIds") List<Long> chefIds);
+
     @Insert("""
             INSERT INTO chef_service_location (
                 chef_id, location_name, province, city, district, town, detail_address,
