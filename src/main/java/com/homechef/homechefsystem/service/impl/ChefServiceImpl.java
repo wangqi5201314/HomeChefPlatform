@@ -12,8 +12,10 @@ import com.homechef.homechefsystem.dto.ChefRegisterDTO;
 import com.homechef.homechefsystem.dto.ChefUpdateDTO;
 import com.homechef.homechefsystem.entity.Chef;
 import com.homechef.homechefsystem.entity.ChefServiceLocation;
+import com.homechef.homechefsystem.entity.User;
 import com.homechef.homechefsystem.mapper.ChefMapper;
 import com.homechef.homechefsystem.mapper.ChefServiceLocationMapper;
+import com.homechef.homechefsystem.mapper.UserMapper;
 import com.homechef.homechefsystem.service.ChefService;
 import com.homechef.homechefsystem.utils.LoginUserContext;
 import com.homechef.homechefsystem.vo.ChefDetailVO;
@@ -35,6 +37,7 @@ public class ChefServiceImpl implements ChefService {
 
     private final ChefMapper chefMapper;
     private final ChefServiceLocationMapper chefServiceLocationMapper;
+    private final UserMapper userMapper;
     private final BCryptPasswordEncoder passwordEncoder;
 
     @Override
@@ -106,10 +109,7 @@ public class ChefServiceImpl implements ChefService {
     @Override
     public ChefVO register(ChefRegisterDTO chefRegisterDTO) {
         validateRegister(chefRegisterDTO);
-
-        if (chefMapper.selectByPhone(chefRegisterDTO.getPhone()) != null) {
-            throw new BusinessException(ResultCodeEnum.FAIL, "phone already exists");
-        }
+        ensurePhoneAvailable(chefRegisterDTO.getPhone(), null);
 
         LocalDateTime now = LocalDateTime.now();
         Chef chef = Chef.builder()
@@ -164,8 +164,10 @@ public class ChefServiceImpl implements ChefService {
         }
 
         validateServiceMode(chefUpdateDTO.getServiceMode());
+        applyPhoneIfPresent(existingChef, chefUpdateDTO.getPhone());
 
         existingChef.setName(chefUpdateDTO.getName());
+        existingChef.setPhone(existingChef.getPhone());
         existingChef.setAvatar(chefUpdateDTO.getAvatar());
         existingChef.setGender(chefUpdateDTO.getGender());
         existingChef.setAge(chefUpdateDTO.getAge());
@@ -184,6 +186,37 @@ public class ChefServiceImpl implements ChefService {
             return null;
         }
         return toChefVO(chefMapper.selectById(currentChefId));
+    }
+
+    private void applyPhoneIfPresent(Chef existingChef, String phone) {
+        if (!StringUtils.hasText(phone)) {
+            return;
+        }
+        String normalizedPhone = phone.trim();
+        ensurePhoneAvailable(normalizedPhone, existingChef.getId());
+        existingChef.setPhone(normalizedPhone);
+    }
+
+    private void ensurePhoneAvailable(String phone, Long currentChefId) {
+        if (!StringUtils.hasText(phone)) {
+            return;
+        }
+
+        String normalizedPhone = phone.trim();
+        Chef chefPhoneOwner = chefMapper.selectByPhone(normalizedPhone);
+        if (chefPhoneOwner != null && (currentChefId == null || !chefPhoneOwner.getId().equals(currentChefId))) {
+            throw new BusinessException(ResultCodeEnum.FAIL, "phone already exists");
+        }
+
+        User userPhoneOwner = userMapper.selectByPhone(normalizedPhone);
+        if (userPhoneOwner != null) {
+            throw new BusinessException(ResultCodeEnum.FAIL, "phone already exists");
+        }
+
+        User emergencyPhoneOwner = userMapper.selectByEmergencyContactPhone(normalizedPhone);
+        if (emergencyPhoneOwner != null) {
+            throw new BusinessException(ResultCodeEnum.FAIL, "phone already exists");
+        }
     }
 
     @Override

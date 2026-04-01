@@ -13,6 +13,8 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class UserUpdateDTO {
 
+    private String phone;
+
     private String nickname;
 
     private String avatar;

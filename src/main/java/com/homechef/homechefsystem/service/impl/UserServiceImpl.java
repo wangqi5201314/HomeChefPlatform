@@ -8,7 +8,9 @@ import com.homechef.homechefsystem.dto.UserLoginDTO;
 import com.homechef.homechefsystem.dto.UserRegisterDTO;
 import com.homechef.homechefsystem.dto.UserUpdateDTO;
 import com.homechef.homechefsystem.dto.UserWechatLoginDTO;
+import com.homechef.homechefsystem.entity.Chef;
 import com.homechef.homechefsystem.entity.User;
+import com.homechef.homechefsystem.mapper.ChefMapper;
 import com.homechef.homechefsystem.mapper.UserMapper;
 import com.homechef.homechefsystem.service.UserService;
 import com.homechef.homechefsystem.service.WechatMiniProgramService;
@@ -26,6 +28,7 @@ import java.time.LocalDateTime;
 public class UserServiceImpl implements UserService {
 
     private final UserMapper userMapper;
+    private final ChefMapper chefMapper;
     private final BCryptPasswordEncoder passwordEncoder;
     private final WechatMiniProgramService wechatMiniProgramService;
 
@@ -64,10 +67,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserVO register(UserRegisterDTO userRegisterDTO) {
         validateRegister(userRegisterDTO);
-
-        if (userMapper.selectByPhone(userRegisterDTO.getPhone()) != null) {
-            throw new BusinessException(ResultCodeEnum.FAIL, "phone already exists");
-        }
+        ensurePhoneAvailable(userRegisterDTO.getPhone(), null);
 
         LocalDateTime now = LocalDateTime.now();
         User user = User.builder()
@@ -144,6 +144,7 @@ public class UserServiceImpl implements UserService {
             return null;
         }
 
+        applyPhoneIfPresent(existingUser, userUpdateDTO.getPhone());
         existingUser.setNickname(userUpdateDTO.getNickname());
         existingUser.setAvatar(userUpdateDTO.getAvatar());
         existingUser.setGender(userUpdateDTO.getGender());
@@ -151,6 +152,7 @@ public class UserServiceImpl implements UserService {
         existingUser.setTastePreference(userUpdateDTO.getTastePreference());
         existingUser.setAllergyInfo(userUpdateDTO.getAllergyInfo());
         existingUser.setEmergencyContactName(userUpdateDTO.getEmergencyContactName());
+        validateEmergencyContactPhone(userUpdateDTO.getEmergencyContactPhone(), existingUser.getId(), existingUser.getPhone());
         existingUser.setEmergencyContactPhone(userUpdateDTO.getEmergencyContactPhone());
         existingUser.setUpdatedAt(LocalDateTime.now());
 
@@ -159,6 +161,63 @@ public class UserServiceImpl implements UserService {
             return null;
         }
         return toUserVO(userMapper.selectById(currentUserId));
+    }
+
+    private void applyPhoneIfPresent(User existingUser, String phone) {
+        if (!StringUtils.hasText(phone)) {
+            return;
+        }
+        String normalizedPhone = phone.trim();
+        ensurePhoneAvailable(normalizedPhone, existingUser.getId());
+        existingUser.setPhone(normalizedPhone);
+    }
+
+    private void ensurePhoneAvailable(String phone, Long currentUserId) {
+        if (!StringUtils.hasText(phone)) {
+            return;
+        }
+
+        String normalizedPhone = phone.trim();
+        User userPhoneOwner = userMapper.selectByPhone(normalizedPhone);
+        if (userPhoneOwner != null && (currentUserId == null || !userPhoneOwner.getId().equals(currentUserId))) {
+            throw new BusinessException(ResultCodeEnum.FAIL, "phone already exists");
+        }
+
+        Chef chefPhoneOwner = chefMapper.selectByPhone(normalizedPhone);
+        if (chefPhoneOwner != null) {
+            throw new BusinessException(ResultCodeEnum.FAIL, "phone already exists");
+        }
+
+        User emergencyPhoneOwner = userMapper.selectByEmergencyContactPhone(normalizedPhone);
+        if (emergencyPhoneOwner != null && (currentUserId == null || !emergencyPhoneOwner.getId().equals(currentUserId))) {
+            throw new BusinessException(ResultCodeEnum.FAIL, "phone already exists");
+        }
+    }
+
+    private void validateEmergencyContactPhone(String emergencyContactPhone, Long currentUserId, String currentUserPhone) {
+        if (!StringUtils.hasText(emergencyContactPhone)) {
+            return;
+        }
+
+        String normalizedEmergencyContactPhone = emergencyContactPhone.trim();
+        if (StringUtils.hasText(currentUserPhone) && normalizedEmergencyContactPhone.equals(currentUserPhone.trim())) {
+            throw new BusinessException(ResultCodeEnum.FAIL, "emergencyContactPhone already exists");
+        }
+
+        User userPhoneOwner = userMapper.selectByPhone(normalizedEmergencyContactPhone);
+        if (userPhoneOwner != null && (currentUserId == null || !userPhoneOwner.getId().equals(currentUserId))) {
+            throw new BusinessException(ResultCodeEnum.FAIL, "emergencyContactPhone already exists");
+        }
+
+        Chef chefPhoneOwner = chefMapper.selectByPhone(normalizedEmergencyContactPhone);
+        if (chefPhoneOwner != null) {
+            throw new BusinessException(ResultCodeEnum.FAIL, "emergencyContactPhone already exists");
+        }
+
+        User emergencyPhoneOwner = userMapper.selectByEmergencyContactPhone(normalizedEmergencyContactPhone);
+        if (emergencyPhoneOwner != null && (currentUserId == null || !emergencyPhoneOwner.getId().equals(currentUserId))) {
+            throw new BusinessException(ResultCodeEnum.FAIL, "emergencyContactPhone already exists");
+        }
     }
 
     private User createWechatUser(WechatMiniProgramService.WechatLoginInfo wechatLoginInfo) {

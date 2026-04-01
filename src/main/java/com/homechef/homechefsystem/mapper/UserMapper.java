@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Result;
+import org.apache.ibatis.annotations.ResultMap;
 import org.apache.ibatis.annotations.Results;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.SelectProvider;
@@ -95,6 +96,18 @@ public interface UserMapper {
             @Result(property = "updatedAt", column = "updated_at")
     })
     User selectByPhone(@Param("phone") String phone);
+
+    @Select("""
+            SELECT id, openid, unionid, phone, password, nickname, avatar, gender, birthday,
+                   taste_preference, allergy_info, emergency_contact_name, emergency_contact_phone,
+                   status, last_login_time, created_at, updated_at
+            FROM `user`
+            WHERE emergency_contact_phone = #{emergencyContactPhone}
+            ORDER BY id DESC
+            LIMIT 1
+            """)
+    @ResultMap("userResultMap")
+    User selectByEmergencyContactPhone(@Param("emergencyContactPhone") String emergencyContactPhone);
 
     @Select("""
             SELECT id, openid, unionid, phone, password, nickname, avatar, gender, birthday,
