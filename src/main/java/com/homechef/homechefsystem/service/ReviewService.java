@@ -21,4 +21,6 @@ public interface ReviewService {
     boolean existsByOrderId(Long orderId);
 
     ReviewVO getByOrderId(Long orderId);
+
+    ReviewVO getByOrderNo(String orderNo);
 }

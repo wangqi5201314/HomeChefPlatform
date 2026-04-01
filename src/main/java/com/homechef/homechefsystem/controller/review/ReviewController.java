@@ -9,11 +9,13 @@ import com.homechef.homechefsystem.vo.ReviewVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -33,6 +35,24 @@ public class ReviewController {
         ReviewVO reviewVO = reviewService.create(reviewCreateDTO);
         if (reviewVO == null) {
             return Result.error(500, "create review failed");
+        }
+        return Result.success(reviewVO);
+    }
+
+    @Operation(summary = "按订单ID或订单号查询单条评价")
+    @GetMapping("/single")
+    public Result<ReviewVO> getSingle(@RequestParam(required = false) Long orderId,
+                                      @RequestParam(required = false) String orderNo) {
+        if ((orderId == null && !StringUtils.hasText(orderNo))
+                || (orderId != null && StringUtils.hasText(orderNo))) {
+            return Result.error(400, "orderId 和 orderNo 必须二选一");
+        }
+
+        ReviewVO reviewVO = orderId != null
+                ? reviewService.getByOrderId(orderId)
+                : reviewService.getByOrderNo(orderNo);
+        if (reviewVO == null) {
+            return Result.error(404, "review not found");
         }
         return Result.success(reviewVO);
     }

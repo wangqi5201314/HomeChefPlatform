@@ -152,6 +152,18 @@ public class ReviewServiceImpl implements ReviewService {
         return toReviewVO(reviewMapper.selectByOrderId(orderId));
     }
 
+    @Override
+    public ReviewVO getByOrderNo(String orderNo) {
+        if (orderNo == null || orderNo.trim().isEmpty()) {
+            return null;
+        }
+        Order order = orderMapper.selectByOrderNo(orderNo.trim());
+        if (order == null) {
+            return null;
+        }
+        return toReviewVO(reviewMapper.selectByOrderId(order.getId()));
+    }
+
     private BigDecimal calculateOverallScore(Integer dishScore,
                                              Integer serviceScore,
                                              Integer skillScore,

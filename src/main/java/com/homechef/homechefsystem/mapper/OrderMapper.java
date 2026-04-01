@@ -121,6 +121,23 @@ public interface OrderMapper {
                    EXISTS(SELECT 1 FROM review r WHERE r.order_id = orders.id) AS reviewed,
                    created_at, updated_at
             FROM orders
+            WHERE order_no = #{orderNo}
+            ORDER BY id DESC
+            LIMIT 1
+            """)
+    @ResultMap("orderResultMap")
+    Order selectByOrderNo(@Param("orderNo") String orderNo);
+
+    @Select("""
+            SELECT id, order_no, user_id, chef_id, address_id, service_date, time_slot,
+                   service_start_time, service_end_time, people_count, taste_preference,
+                   taboo_food, special_requirement, ingredient_mode, ingredient_list,
+                   contact_name, contact_phone, full_address, longitude, latitude,
+                   confirm_code, total_amount, discount_amount, pay_amount, order_status,
+                   cancel_reason, refund_reason, user_deleted, chef_deleted,
+                   EXISTS(SELECT 1 FROM review r WHERE r.order_id = orders.id) AS reviewed,
+                   created_at, updated_at
+            FROM orders
             WHERE id = #{id}
               AND chef_id = #{chefId}
               AND chef_deleted = 0
