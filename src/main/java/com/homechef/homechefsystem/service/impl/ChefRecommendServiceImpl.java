@@ -6,6 +6,7 @@ import com.homechef.homechefsystem.common.enums.TimeSlotEnum;
 import com.homechef.homechefsystem.common.exception.BusinessException;
 import com.homechef.homechefsystem.dto.ChefRecommendQueryDTO;
 import com.homechef.homechefsystem.entity.Chef;
+import com.homechef.homechefsystem.entity.ChefSchedule;
 import com.homechef.homechefsystem.entity.ChefServiceLocation;
 import com.homechef.homechefsystem.entity.UserAddress;
 import com.homechef.homechefsystem.mapper.ChefMapper;
@@ -21,6 +22,7 @@ import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -50,26 +52,13 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
     public List<ChefRecommendVO> recommend(ChefRecommendQueryDTO chefRecommendQueryDTO) {
         validateIngredientMode(chefRecommendQueryDTO.getIngredientMode());
         String timeSlot = normalizeTimeSlot(chefRecommendQueryDTO.getTimeSlot());
-
-        UserAddress userAddress = userAddressMapper.selectByIdAndUserId(
-                chefRecommendQueryDTO.getAddressId(),
-                chefRecommendQueryDTO.getUserId()
+        UserAddress userAddress = requireUserAddress(
+                chefRecommendQueryDTO.getUserId(),
+                chefRecommendQueryDTO.getAddressId()
         );
-        if (userAddress == null) {
-            throw new BusinessException(ResultCodeEnum.NOT_FOUND, "地址不存在");
-        }
-        if (userAddress.getLongitude() == null || userAddress.getLatitude() == null) {
-            throw new BusinessException(ResultCodeEnum.FAIL, "地址坐标缺失");
-        }
 
-        List<Chef> chefList = chefMapper.selectRecommendCandidates();
-        if (chefList == null || chefList.isEmpty()) {
-            throw new BusinessException(ResultCodeEnum.NOT_FOUND, "无可推荐厨师");
-        }
-
-        List<Long> chefIds = chefList.stream()
-                .map(Chef::getId)
-                .collect(Collectors.toList());
+        List<Chef> chefList = requireRecommendCandidates();
+        List<Long> chefIds = extractChefIds(chefList);
         Map<Long, ChefServiceLocation> activeLocationMap = buildActiveLocationMap(chefIds);
         Set<Long> availableChefIdSet = buildAvailableChefIdSet(chefRecommendQueryDTO.getServiceDate(), timeSlot);
 
@@ -85,6 +74,48 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
             throw new BusinessException(ResultCodeEnum.NOT_FOUND, "无可推荐厨师");
         }
         return recommendVOList;
+    }
+
+    @Override
+    public List<ChefRecommendVO> recommendDefault(Long userId, Long addressId) {
+        UserAddress userAddress = requireUserAddress(userId, addressId);
+        List<Chef> chefList = requireRecommendCandidates();
+        List<Long> chefIds = extractChefIds(chefList);
+        Map<Long, ChefServiceLocation> activeLocationMap = buildActiveLocationMap(chefIds);
+        Map<Long, ChefSchedule> nearestScheduleMap = buildNearestScheduleMap(chefIds);
+
+        List<ChefRecommendVO> recommendVOList = chefList.stream()
+                .map(chef -> toDefaultChefRecommendVO(
+                        chef,
+                        activeLocationMap.get(chef.getId()),
+                        nearestScheduleMap.get(chef.getId()),
+                        userAddress
+                ))
+                .filter(java.util.Objects::nonNull)
+                .sorted(buildDefaultHomeComparator())
+                .collect(Collectors.toList());
+
+        if (recommendVOList.isEmpty()) {
+            throw new BusinessException(ResultCodeEnum.NOT_FOUND, "无可推荐厨师");
+        }
+        return recommendVOList;
+    }
+
+    private List<Chef> requireRecommendCandidates() {
+        List<Chef> chefList = chefMapper.selectRecommendCandidates();
+        if (chefList == null || chefList.isEmpty()) {
+            throw new BusinessException(ResultCodeEnum.NOT_FOUND, "无可推荐厨师");
+        }
+        return chefList;
+    }
+
+    private List<Long> extractChefIds(List<Chef> chefList) {
+        if (chefList == null || chefList.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return chefList.stream()
+                .map(Chef::getId)
+                .collect(Collectors.toList());
     }
 
     private Map<Long, ChefServiceLocation> buildActiveLocationMap(List<Long> chefIds) {
@@ -103,12 +134,48 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
         ));
     }
 
-    private Set<Long> buildAvailableChefIdSet(java.time.LocalDate serviceDate, String timeSlot) {
+    private Map<Long, ChefSchedule> buildNearestScheduleMap(List<Long> chefIds) {
+        if (chefIds == null || chefIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        LocalDate startDate = LocalDate.now();
+        LocalDate endDate = startDate.plusDays(6);
+        List<ChefSchedule> chefScheduleList = chefScheduleMapper.selectAvailableListByChefIdsAndDateRange(
+                chefIds,
+                startDate,
+                endDate
+        );
+        if (chefScheduleList == null || chefScheduleList.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        Map<Long, ChefSchedule> nearestScheduleMap = new LinkedHashMap<>();
+        for (ChefSchedule chefSchedule : chefScheduleList) {
+            if (chefSchedule == null || chefSchedule.getChefId() == null) {
+                continue;
+            }
+            nearestScheduleMap.putIfAbsent(chefSchedule.getChefId(), chefSchedule);
+        }
+        return nearestScheduleMap;
+    }
+
+    private Set<Long> buildAvailableChefIdSet(LocalDate serviceDate, String timeSlot) {
         List<Long> availableChefIds = chefScheduleMapper.selectAvailableChefIdsByDateAndTimeSlot(serviceDate, timeSlot);
         if (availableChefIds == null || availableChefIds.isEmpty()) {
             return Collections.emptySet();
         }
         return Set.copyOf(availableChefIds);
+    }
+
+    private UserAddress requireUserAddress(Long userId, Long addressId) {
+        UserAddress userAddress = userAddressMapper.selectByIdAndUserId(addressId, userId);
+        if (userAddress == null) {
+            throw new BusinessException(ResultCodeEnum.NOT_FOUND, "地址不存在");
+        }
+        if (userAddress.getLongitude() == null || userAddress.getLatitude() == null) {
+            throw new BusinessException(ResultCodeEnum.FAIL, "地址坐标缺失");
+        }
+        return userAddress;
     }
 
     private ChefRecommendVO toChefRecommendVO(Chef chef, ChefServiceLocation chefServiceLocation, UserAddress userAddress) {
@@ -149,6 +216,22 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
                 .build();
     }
 
+    private ChefRecommendVO toDefaultChefRecommendVO(
+            Chef chef,
+            ChefServiceLocation chefServiceLocation,
+            ChefSchedule nearestSchedule,
+            UserAddress userAddress
+    ) {
+        ChefRecommendVO chefRecommendVO = toChefRecommendVO(chef, chefServiceLocation, userAddress);
+        if (chefRecommendVO == null || nearestSchedule == null) {
+            return null;
+        }
+        chefRecommendVO.setNearestAvailableDate(nearestSchedule.getServiceDate());
+        chefRecommendVO.setNearestAvailableTimeSlot(nearestSchedule.getTimeSlot());
+        chefRecommendVO.setNearestAvailableTimeSlotDesc(TimeSlotEnum.getDescByCode(nearestSchedule.getTimeSlot()));
+        return chefRecommendVO;
+    }
+
     private Comparator<ChefRecommendVO> buildComparator(String sortType) {
         Comparator<ChefRecommendVO> defaultComparator = Comparator
                 .comparing(ChefRecommendVO::getDistanceKm, this::compareBigDecimalAsc)
@@ -175,6 +258,15 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
                     .thenComparing(ChefRecommendVO::getOrderCount, this::compareIntegerDesc);
             default -> defaultComparator;
         };
+    }
+
+    private Comparator<ChefRecommendVO> buildDefaultHomeComparator() {
+        return Comparator
+                .comparing(ChefRecommendVO::getNearestAvailableDate, Comparator.nullsLast(LocalDate::compareTo))
+                .thenComparing(ChefRecommendVO::getDistanceKm, this::compareBigDecimalAsc)
+                .thenComparing(ChefRecommendVO::getRatingAvg, this::compareBigDecimalDesc)
+                .thenComparing(ChefRecommendVO::getOrderCount, this::compareIntegerDesc)
+                .thenComparing(ChefRecommendVO::getGoodReviewRate, this::compareBigDecimalDesc);
     }
 
     private int compareBigDecimalAsc(BigDecimal left, BigDecimal right) {

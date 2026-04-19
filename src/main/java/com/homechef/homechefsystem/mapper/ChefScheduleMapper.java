@@ -82,6 +82,26 @@ public interface ChefScheduleMapper {
                                                        @Param("timeSlot") String timeSlot);
 
     @Select("""
+            <script>
+            SELECT id, chef_id, service_date, time_slot, start_time, end_time,
+                   is_available, locked_order_id, remark, created_at, updated_at
+            FROM chef_schedule
+            WHERE is_available = 1
+              AND service_date <![CDATA[>=]]> #{startDate}
+              AND service_date <![CDATA[<=]]> #{endDate}
+              AND chef_id IN
+              <foreach collection="chefIds" item="chefId" open="(" separator="," close=")">
+                #{chefId}
+              </foreach>
+            ORDER BY service_date ASC, start_time ASC, time_slot ASC
+            </script>
+            """)
+    @ResultMap("chefScheduleResultMap")
+    List<ChefSchedule> selectAvailableListByChefIdsAndDateRange(@Param("chefIds") List<Long> chefIds,
+                                                                @Param("startDate") LocalDate startDate,
+                                                                @Param("endDate") LocalDate endDate);
+
+    @Select("""
             SELECT id, chef_id, service_date, time_slot, start_time, end_time,
                    is_available, locked_order_id, remark, created_at, updated_at
             FROM chef_schedule

@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Data
 @Builder
@@ -38,4 +39,10 @@ public class ChefRecommendVO {
     private String serviceAreaText;
 
     private BigDecimal distanceKm;
+
+    private LocalDate nearestAvailableDate;
+
+    private String nearestAvailableTimeSlot;
+
+    private String nearestAvailableTimeSlotDesc;
 }
