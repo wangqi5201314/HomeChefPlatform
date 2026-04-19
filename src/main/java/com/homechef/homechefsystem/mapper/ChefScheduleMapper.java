@@ -81,6 +81,22 @@ public interface ChefScheduleMapper {
     List<Long> selectAvailableChefIdsByDateAndTimeSlot(@Param("serviceDate") LocalDate serviceDate,
                                                        @Param("timeSlot") String timeSlot);
 
+    @Select("""
+            SELECT id, chef_id, service_date, time_slot, start_time, end_time,
+                   is_available, locked_order_id, remark, created_at, updated_at
+            FROM chef_schedule
+            WHERE chef_id = #{chefId}
+              AND service_date = #{serviceDate}
+              AND time_slot = #{timeSlot}
+              AND is_available = 1
+            LIMIT 1
+            FOR UPDATE
+            """)
+    @ResultMap("chefScheduleResultMap")
+    ChefSchedule selectAvailableByChefIdAndDateAndTimeSlotForUpdate(@Param("chefId") Long chefId,
+                                                                    @Param("serviceDate") LocalDate serviceDate,
+                                                                    @Param("timeSlot") String timeSlot);
+
     @Insert("""
             INSERT INTO chef_schedule (
                 chef_id, service_date, time_slot, start_time, end_time,
@@ -114,6 +130,28 @@ public interface ChefScheduleMapper {
             """)
     int updateAvailabilityById(@Param("id") Long id,
                                @Param("isAvailable") Integer isAvailable,
+                               @Param("updatedAt") LocalDateTime updatedAt);
+
+    @Update("""
+            UPDATE chef_schedule
+            SET is_available = 0,
+                locked_order_id = #{orderId},
+                updated_at = #{updatedAt}
+            WHERE id = #{id}
+              AND is_available = 1
+            """)
+    int lockById(@Param("id") Long id,
+                 @Param("orderId") Long orderId,
+                 @Param("updatedAt") LocalDateTime updatedAt);
+
+    @Update("""
+            UPDATE chef_schedule
+            SET is_available = 1,
+                locked_order_id = NULL,
+                updated_at = #{updatedAt}
+            WHERE locked_order_id = #{orderId}
+            """)
+    int releaseByLockedOrderId(@Param("orderId") Long orderId,
                                @Param("updatedAt") LocalDateTime updatedAt);
 
     @Update("""

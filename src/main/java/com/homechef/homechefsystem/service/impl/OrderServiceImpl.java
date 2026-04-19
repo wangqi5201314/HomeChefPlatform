@@ -8,10 +8,12 @@ import com.homechef.homechefsystem.dto.OrderCancelDTO;
 import com.homechef.homechefsystem.dto.OrderCreateDTO;
 import com.homechef.homechefsystem.dto.OrderQueryDTO;
 import com.homechef.homechefsystem.entity.Chef;
+import com.homechef.homechefsystem.entity.ChefSchedule;
 import com.homechef.homechefsystem.entity.ChefServiceLocation;
 import com.homechef.homechefsystem.entity.Order;
 import com.homechef.homechefsystem.entity.UserAddress;
 import com.homechef.homechefsystem.mapper.ChefMapper;
+import com.homechef.homechefsystem.mapper.ChefScheduleMapper;
 import com.homechef.homechefsystem.mapper.ChefServiceLocationMapper;
 import com.homechef.homechefsystem.mapper.OrderMapper;
 import com.homechef.homechefsystem.mapper.UserAddressMapper;
@@ -21,6 +23,7 @@ import com.homechef.homechefsystem.vo.OrderDetailVO;
 import com.homechef.homechefsystem.vo.OrderListVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
@@ -38,14 +41,18 @@ public class OrderServiceImpl implements OrderService {
     private final OrderMapper orderMapper;
     private final UserAddressMapper userAddressMapper;
     private final ChefMapper chefMapper;
+    private final ChefScheduleMapper chefScheduleMapper;
     private final ChefServiceLocationMapper chefServiceLocationMapper;
     private final GeoDistanceService geoDistanceService;
 
     @Override
+    @Transactional
     public OrderDetailVO createOrder(OrderCreateDTO orderCreateDTO) {
         LocalDateTime now = LocalDateTime.now();
         String timeSlot = normalizeTimeSlot(orderCreateDTO.getTimeSlot());
         validateServiceRange(orderCreateDTO);
+        ChefSchedule lockedSchedule = lockAvailableSchedule(orderCreateDTO.getChefId(), orderCreateDTO.getServiceDate(), timeSlot);
+
         Order order = Order.builder()
                 .orderNo(generateOrderNo())
                 .userId(orderCreateDTO.getUserId())
@@ -81,7 +88,12 @@ public class OrderServiceImpl implements OrderService {
 
         int rows = orderMapper.insert(order);
         if (rows <= 0) {
-            return null;
+            throw new BusinessException(ResultCodeEnum.SYSTEM_ERROR, "create order failed");
+        }
+
+        int scheduleRows = chefScheduleMapper.lockById(lockedSchedule.getId(), order.getId(), now);
+        if (scheduleRows <= 0) {
+            throw new BusinessException(ResultCodeEnum.FAIL, "当前档期已不可预约，请刷新后重试");
         }
         return toOrderDetailVO(orderMapper.selectById(order.getId()));
     }
@@ -103,6 +115,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional
     public OrderDetailVO cancelById(Long id, OrderCancelDTO orderCancelDTO) {
         Order existingOrder = orderMapper.selectById(id);
         if (existingOrder == null) {
@@ -126,6 +139,7 @@ public class OrderServiceImpl implements OrderService {
         if (rows <= 0) {
             return null;
         }
+        chefScheduleMapper.releaseByLockedOrderId(id, LocalDateTime.now());
         return toOrderDetailVO(orderMapper.selectById(id));
     }
 
@@ -211,6 +225,18 @@ public class OrderServiceImpl implements OrderService {
             throw new BusinessException(ResultCodeEnum.PARAM_ERROR, TimeSlotEnum.INVALID_MESSAGE);
         }
         return timeSlotEnum.getCode();
+    }
+
+    private ChefSchedule lockAvailableSchedule(Long chefId, java.time.LocalDate serviceDate, String timeSlot) {
+        ChefSchedule chefSchedule = chefScheduleMapper.selectAvailableByChefIdAndDateAndTimeSlotForUpdate(
+                chefId,
+                serviceDate,
+                timeSlot
+        );
+        if (chefSchedule == null) {
+            throw new BusinessException(ResultCodeEnum.FAIL, "当前档期不可预约");
+        }
+        return chefSchedule;
     }
 
     private void validateServiceRange(OrderCreateDTO orderCreateDTO) {

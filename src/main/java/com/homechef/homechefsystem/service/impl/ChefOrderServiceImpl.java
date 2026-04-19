@@ -7,6 +7,7 @@ import com.homechef.homechefsystem.common.exception.BusinessException;
 import com.homechef.homechefsystem.dto.ChefOrderRejectDTO;
 import com.homechef.homechefsystem.entity.Order;
 import com.homechef.homechefsystem.mapper.ChefMapper;
+import com.homechef.homechefsystem.mapper.ChefScheduleMapper;
 import com.homechef.homechefsystem.mapper.OrderMapper;
 import com.homechef.homechefsystem.service.ChefOrderService;
 import com.homechef.homechefsystem.utils.LoginUserContext;
@@ -28,6 +29,7 @@ public class ChefOrderServiceImpl implements ChefOrderService {
 
     private final OrderMapper orderMapper;
     private final ChefMapper chefMapper;
+    private final ChefScheduleMapper chefScheduleMapper;
 
     @Override
     public List<ChefOrderListVO> getCurrentChefOrderList(String orderStatus) {
@@ -59,11 +61,12 @@ public class ChefOrderServiceImpl implements ChefOrderService {
     }
 
     @Override
+    @Transactional
     public ChefOrderDetailVO reject(Long id, ChefOrderRejectDTO chefOrderRejectDTO) {
         Order order = getOwnedOrder(id);
         ensureOrderStatus(order, OrderStatusEnum.PENDING_CONFIRM, "待确认订单之外不能拒单");
-        // orders 表当前没有 reject_reason 字段，这里复用 cancel_reason 存储拒单原因。
         updateOrderStatus(order, OrderStatusEnum.REJECTED.getCode(), chefOrderRejectDTO.getReason());
+        chefScheduleMapper.releaseByLockedOrderId(order.getId(), LocalDateTime.now());
         return toChefOrderDetailVO(getOwnedOrder(id));
     }
 
