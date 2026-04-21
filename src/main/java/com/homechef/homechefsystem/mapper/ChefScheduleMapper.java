@@ -101,6 +101,7 @@ public interface ChefScheduleMapper {
                                                                 @Param("startDate") LocalDate startDate,
                                                                 @Param("endDate") LocalDate endDate);
 
+    // 下单时使用 FOR UPDATE 锁住可用档期行；必须配合 Service 层事务，才能防止并发重复下单。
     @Select("""
             SELECT id, chef_id, service_date, time_slot, start_time, end_time,
                    is_available, locked_order_id, remark, created_at, updated_at
@@ -164,6 +165,7 @@ public interface ChefScheduleMapper {
                  @Param("orderId") Long orderId,
                  @Param("updatedAt") LocalDateTime updatedAt);
 
+    // 订单取消或厨师拒单时，通过 locked_order_id 找回被占用档期并恢复可预约。
     @Update("""
             UPDATE chef_schedule
             SET is_available = 1,

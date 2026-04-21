@@ -66,6 +66,7 @@ public class ChefOrderServiceImpl implements ChefOrderService {
         Order order = getOwnedOrder(id);
         ensureOrderStatus(order, OrderStatusEnum.PENDING_CONFIRM, "待确认订单之外不能拒单");
         updateOrderStatus(order, OrderStatusEnum.REJECTED.getCode(), chefOrderRejectDTO.getReason());
+        // 厨师拒单后，之前下单时锁住的档期需要恢复为可预约，供其他用户继续选择。
         chefScheduleMapper.releaseByLockedOrderId(order.getId(), LocalDateTime.now());
         return toChefOrderDetailVO(getOwnedOrder(id));
     }

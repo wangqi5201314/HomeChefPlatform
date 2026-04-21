@@ -25,6 +25,7 @@ public class GeoDistanceServiceImpl implements GeoDistanceService {
             throw new IllegalArgumentException("coordinates must not be null");
         }
 
+        // 业务上更希望使用道路导航距离；腾讯地图不可用时回退直线距离，避免下单/推荐被第三方服务阻断。
         return tencentMapClient.getDrivingDistanceKm(fromLatitude, fromLongitude, toLatitude, toLongitude)
                 .orElseGet(() -> {
                     log.debug("fallback to haversine distance");

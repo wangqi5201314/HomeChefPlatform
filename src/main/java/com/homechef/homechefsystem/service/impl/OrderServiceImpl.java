@@ -50,7 +50,9 @@ public class OrderServiceImpl implements OrderService {
     public OrderDetailVO createOrder(OrderCreateDTO orderCreateDTO) {
         LocalDateTime now = LocalDateTime.now();
         String timeSlot = normalizeTimeSlot(orderCreateDTO.getTimeSlot());
+        // 下单前先做服务范围校验，避免超出厨师服务半径的订单进入后续锁档期流程。
         validateServiceRange(orderCreateDTO);
+        // 这里会使用 SELECT ... FOR UPDATE 锁住对应档期行，防止并发请求同时抢到同一个档期。
         ChefSchedule lockedSchedule = lockAvailableSchedule(orderCreateDTO.getChefId(), orderCreateDTO.getServiceDate(), timeSlot);
 
         Order order = Order.builder()
@@ -91,6 +93,7 @@ public class OrderServiceImpl implements OrderService {
             throw new BusinessException(ResultCodeEnum.SYSTEM_ERROR, "create order failed");
         }
 
+        // 订单创建成功后立即占用档期，并记录 locked_order_id，后续取消/拒单可通过订单ID释放档期。
         int scheduleRows = chefScheduleMapper.lockById(lockedSchedule.getId(), order.getId(), now);
         if (scheduleRows <= 0) {
             throw new BusinessException(ResultCodeEnum.FAIL, "当前档期已不可预约，请刷新后重试");
@@ -139,6 +142,7 @@ public class OrderServiceImpl implements OrderService {
         if (rows <= 0) {
             return null;
         }
+        // 用户取消待确认/待支付订单时，释放之前被该订单锁定的档期。
         chefScheduleMapper.releaseByLockedOrderId(id, LocalDateTime.now());
         return toOrderDetailVO(orderMapper.selectById(id));
     }
@@ -228,6 +232,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private ChefSchedule lockAvailableSchedule(Long chefId, java.time.LocalDate serviceDate, String timeSlot) {
+        // 当前方法必须在事务中调用，否则 MySQL 行锁会在查询结束后立刻释放，无法保护后续创建订单操作。
         ChefSchedule chefSchedule = chefScheduleMapper.selectAvailableByChefIdAndDateAndTimeSlotForUpdate(
                 chefId,
                 serviceDate,
@@ -264,6 +269,7 @@ public class OrderServiceImpl implements OrderService {
             throw new BusinessException(ResultCodeEnum.FAIL, "厨师启用中的服务位置缺少坐标信息");
         }
 
+        // 优先使用腾讯地图导航距离，失败时 GeoDistanceService 内部会自动回退为 Haversine 直线距离。
         double distanceKm = geoDistanceService.distanceKm(
                 userAddress.getLatitude(),
                 userAddress.getLongitude(),

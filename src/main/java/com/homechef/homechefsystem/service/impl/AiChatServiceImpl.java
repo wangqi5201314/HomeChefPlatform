@@ -35,6 +35,7 @@ public class AiChatServiceImpl implements AiChatService {
     public SseEmitter chat(AiChatRequestDTO aiChatRequestDTO) {
         List<BailianClient.BailianMessage> messages = buildMessages(aiChatRequestDTO);
 
+        // SSE 连接不能阻塞 Controller 线程，所以异步调用模型并持续向前端推送分片内容。
         SseEmitter emitter = new SseEmitter(0L);
         CompletableFuture.runAsync(() -> streamChat(emitter, messages));
         return emitter;
@@ -59,6 +60,7 @@ public class AiChatServiceImpl implements AiChatService {
         }
 
         List<BailianClient.BailianMessage> messages = new ArrayList<>();
+        // system prompt 用来固定“小嘉AI”的角色和回答边界，避免模型变成通用闲聊助手。
         messages.add(BailianClient.BailianMessage.builder()
                 .role("system")
                 .content(SYSTEM_PROMPT)
@@ -84,6 +86,7 @@ public class AiChatServiceImpl implements AiChatService {
         }
 
         int fromIndex = Math.max(0, validHistory.size() - MAX_HISTORY_MESSAGES);
+        // 只携带最近若干条上下文，既保留多轮对话能力，也控制模型请求长度。
         List<AiHistoryMessageDTO> recentHistory = validHistory.subList(fromIndex, validHistory.size());
 
         List<BailianClient.BailianMessage> messages = new ArrayList<>(recentHistory.size());

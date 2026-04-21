@@ -52,11 +52,13 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
     public List<ChefRecommendVO> recommend(ChefRecommendQueryDTO chefRecommendQueryDTO) {
         validateIngredientMode(chefRecommendQueryDTO.getIngredientMode());
         String timeSlot = normalizeTimeSlot(chefRecommendQueryDTO.getTimeSlot());
+        // 推荐接口以用户当前选择的地址为基准，后续所有服务范围判断都围绕该地址进行。
         UserAddress userAddress = requireUserAddress(
                 chefRecommendQueryDTO.getUserId(),
                 chefRecommendQueryDTO.getAddressId()
         );
 
+        // 先批量拿候选厨师、启用服务位置和可用档期，再在内存中做组合过滤，避免前端多次循环请求。
         List<Chef> chefList = requireRecommendCandidates();
         List<Long> chefIds = extractChefIds(chefList);
         Map<Long, ChefServiceLocation> activeLocationMap = buildActiveLocationMap(chefIds);
@@ -82,6 +84,7 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
         List<Chef> chefList = requireRecommendCandidates();
         List<Long> chefIds = extractChefIds(chefList);
         Map<Long, ChefServiceLocation> activeLocationMap = buildActiveLocationMap(chefIds);
+        // 首页默认推荐不限定时段，只要未来7天内存在任意可预约档期即可进入候选。
         Map<Long, ChefSchedule> nearestScheduleMap = buildNearestScheduleMap(chefIds);
 
         List<ChefRecommendVO> recommendVOList = chefList.stream()
@@ -122,6 +125,7 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
         if (chefIds == null || chefIds.isEmpty()) {
             return Collections.emptyMap();
         }
+        // 厨师可能有多个服务位置，但推荐和下单只使用当前启用中的那一个。
         List<ChefServiceLocation> activeLocationList = chefServiceLocationMapper.selectActiveListByChefIds(chefIds);
         if (activeLocationList == null || activeLocationList.isEmpty()) {
             return Collections.emptyMap();
@@ -154,6 +158,7 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
             if (chefSchedule == null || chefSchedule.getChefId() == null) {
                 continue;
             }
+            // SQL 已按日期和开始时间升序排列，第一次放入的就是该厨师最近可预约档期。
             nearestScheduleMap.putIfAbsent(chefSchedule.getChefId(), chefSchedule);
         }
         return nearestScheduleMap;
@@ -182,6 +187,7 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
         if (chef == null || chefServiceLocation == null) {
             return null;
         }
+        // 返回 null 表示该厨师不满足推荐条件，调用方会统一 filter 掉。
         if (chef.getServiceRadiusKm() == null || chef.getServiceRadiusKm() <= 0) {
             return null;
         }
@@ -261,6 +267,7 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
     }
 
     private Comparator<ChefRecommendVO> buildDefaultHomeComparator() {
+        // 首页默认排序优先让用户看到“最近可约”的厨师，再兼顾距离、评分、订单量和好评率。
         return Comparator
                 .comparing(ChefRecommendVO::getNearestAvailableDate, Comparator.nullsLast(LocalDate::compareTo))
                 .thenComparing(ChefRecommendVO::getDistanceKm, this::compareBigDecimalAsc)
