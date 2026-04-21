@@ -9,8 +9,6 @@ import com.homechef.homechefsystem.entity.Order;
 import com.homechef.homechefsystem.entity.User;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Result;
-import org.apache.ibatis.annotations.Results;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.SelectProvider;
 import org.apache.ibatis.annotations.Update;
@@ -27,17 +25,6 @@ public interface AdminMapper {
             FROM admin
             WHERE username = #{username}
             """)
-    @Results(id = "adminResultMap", value = {
-            @Result(property = "id", column = "id"),
-            @Result(property = "username", column = "username"),
-            @Result(property = "password", column = "password"),
-            @Result(property = "realName", column = "real_name"),
-            @Result(property = "role", column = "role"),
-            @Result(property = "status", column = "status"),
-            @Result(property = "lastLoginTime", column = "last_login_time"),
-            @Result(property = "createdAt", column = "created_at"),
-            @Result(property = "updatedAt", column = "updated_at")
-    })
     Admin selectByUsername(@Param("username") String username);
 
     @Select("""
@@ -45,17 +32,6 @@ public interface AdminMapper {
             FROM admin
             WHERE id = #{id}
             """)
-    @Results(id = "adminDetailResultMap", value = {
-            @Result(property = "id", column = "id"),
-            @Result(property = "username", column = "username"),
-            @Result(property = "password", column = "password"),
-            @Result(property = "realName", column = "real_name"),
-            @Result(property = "role", column = "role"),
-            @Result(property = "status", column = "status"),
-            @Result(property = "lastLoginTime", column = "last_login_time"),
-            @Result(property = "createdAt", column = "created_at"),
-            @Result(property = "updatedAt", column = "updated_at")
-    })
     Admin selectById(@Param("id") Long id);
 
     @Update("""
@@ -79,24 +55,6 @@ public interface AdminMapper {
                            @Param("updatedAt") LocalDateTime updatedAt);
 
     @SelectProvider(type = AdminSqlProvider.class, method = "buildSelectUserListSql")
-    @Results(id = "adminUserResultMap", value = {
-            @Result(property = "id", column = "id"),
-            @Result(property = "openid", column = "openid"),
-            @Result(property = "unionid", column = "unionid"),
-            @Result(property = "phone", column = "phone"),
-            @Result(property = "nickname", column = "nickname"),
-            @Result(property = "avatar", column = "avatar"),
-            @Result(property = "gender", column = "gender"),
-            @Result(property = "birthday", column = "birthday"),
-            @Result(property = "tastePreference", column = "taste_preference"),
-            @Result(property = "allergyInfo", column = "allergy_info"),
-            @Result(property = "emergencyContactName", column = "emergency_contact_name"),
-            @Result(property = "emergencyContactPhone", column = "emergency_contact_phone"),
-            @Result(property = "status", column = "status"),
-            @Result(property = "lastLoginTime", column = "last_login_time"),
-            @Result(property = "createdAt", column = "created_at"),
-            @Result(property = "updatedAt", column = "updated_at")
-    })
     List<User> selectUserList(AdminUserQueryDTO queryDTO);
 
     @Update("""
@@ -110,28 +68,6 @@ public interface AdminMapper {
                              @Param("updatedAt") LocalDateTime updatedAt);
 
     @SelectProvider(type = AdminSqlProvider.class, method = "buildSelectChefListSql")
-    @Results(id = "adminChefResultMap", value = {
-            @Result(property = "id", column = "id"),
-            @Result(property = "name", column = "name"),
-            @Result(property = "phone", column = "phone"),
-            @Result(property = "avatar", column = "avatar"),
-            @Result(property = "gender", column = "gender"),
-            @Result(property = "age", column = "age"),
-            @Result(property = "introduction", column = "introduction"),
-            @Result(property = "specialtyCuisine", column = "specialty_cuisine"),
-            @Result(property = "specialtyTags", column = "specialty_tags"),
-            @Result(property = "yearsOfExperience", column = "years_of_experience"),
-            @Result(property = "serviceRadiusKm", column = "service_radius_km"),
-            @Result(property = "serviceMode", column = "service_mode"),
-            @Result(property = "ratingAvg", column = "rating_avg"),
-            @Result(property = "orderCount", column = "order_count"),
-            @Result(property = "onTimeRate", column = "on_time_rate"),
-            @Result(property = "goodReviewRate", column = "good_review_rate"),
-            @Result(property = "certStatus", column = "cert_status"),
-            @Result(property = "status", column = "status"),
-            @Result(property = "createdAt", column = "created_at"),
-            @Result(property = "updatedAt", column = "updated_at")
-    })
     List<Chef> selectChefList(AdminChefQueryDTO queryDTO);
 
     @Update("""
@@ -145,39 +81,6 @@ public interface AdminMapper {
                              @Param("updatedAt") LocalDateTime updatedAt);
 
     @SelectProvider(type = AdminSqlProvider.class, method = "buildSelectOrderListSql")
-    @Results(id = "adminOrderResultMap", value = {
-            @Result(property = "id", column = "id"),
-            @Result(property = "orderNo", column = "order_no"),
-            @Result(property = "userId", column = "user_id"),
-            @Result(property = "chefId", column = "chef_id"),
-            @Result(property = "addressId", column = "address_id"),
-            @Result(property = "serviceDate", column = "service_date"),
-            @Result(property = "timeSlot", column = "time_slot"),
-            @Result(property = "serviceStartTime", column = "service_start_time"),
-            @Result(property = "serviceEndTime", column = "service_end_time"),
-            @Result(property = "peopleCount", column = "people_count"),
-            @Result(property = "tastePreference", column = "taste_preference"),
-            @Result(property = "tabooFood", column = "taboo_food"),
-            @Result(property = "specialRequirement", column = "special_requirement"),
-            @Result(property = "ingredientMode", column = "ingredient_mode"),
-            @Result(property = "ingredientList", column = "ingredient_list"),
-            @Result(property = "contactName", column = "contact_name"),
-            @Result(property = "contactPhone", column = "contact_phone"),
-            @Result(property = "fullAddress", column = "full_address"),
-            @Result(property = "longitude", column = "longitude"),
-            @Result(property = "latitude", column = "latitude"),
-            @Result(property = "confirmCode", column = "confirm_code"),
-            @Result(property = "totalAmount", column = "total_amount"),
-            @Result(property = "discountAmount", column = "discount_amount"),
-            @Result(property = "payAmount", column = "pay_amount"),
-            @Result(property = "orderStatus", column = "order_status"),
-            @Result(property = "cancelReason", column = "cancel_reason"),
-            @Result(property = "refundReason", column = "refund_reason"),
-            @Result(property = "userDeleted", column = "user_deleted"),
-            @Result(property = "chefDeleted", column = "chef_deleted"),
-            @Result(property = "createdAt", column = "created_at"),
-            @Result(property = "updatedAt", column = "updated_at")
-    })
     List<Order> selectOrderList(AdminOrderQueryDTO queryDTO);
 
     class AdminSqlProvider {
@@ -247,3 +150,4 @@ public interface AdminMapper {
         }
     }
 }
+

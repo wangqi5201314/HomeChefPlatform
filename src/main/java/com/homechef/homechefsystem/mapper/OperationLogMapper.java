@@ -20,3 +20,4 @@ public interface OperationLogMapper {
     @Options(useGeneratedKeys = true, keyProperty = "id")
     int insert(OperationLog operationLog);
 }
+
