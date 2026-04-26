@@ -48,10 +48,12 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
     private final ChefScheduleMapper chefScheduleMapper;
     private final GeoDistanceService geoDistanceService;
 
-    @Override
     /**
-     * 按筛选条件和排序规则推荐厨师列表。
+     * 方法说明：按用户选择的地址、食材模式、日期、时段和排序规则返回可推荐厨师列表。
+     * 主要作用：这是首页定向推荐的核心方法，用来一次性完成候选过滤、距离判断和排序，避免前端循环请求多个接口自行拼装。
+     * 实现逻辑：方法会先校验入参并获取用户地址，然后批量加载候选厨师、启用服务位置和可预约档期，再在内存中过滤服务范围、食材模式和档期条件，最后按指定规则排序后返回。
      */
+    @Override
     public List<ChefRecommendVO> recommend(ChefRecommendQueryDTO chefRecommendQueryDTO) {
         validateIngredientMode(chefRecommendQueryDTO.getIngredientMode());
         String timeSlot = normalizeTimeSlot(chefRecommendQueryDTO.getTimeSlot());
@@ -81,10 +83,12 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
         return recommendVOList;
     }
 
-    @Override
     /**
-     * 返回首页默认推荐的厨师列表。
+     * 方法说明：返回首页默认推荐的厨师列表，条件为未来七天内至少存在一个可预约档期。
+     * 主要作用：它用于用户未选择具体日期和时段时的首页展示，让系统优先给出近期可约且距离合适的厨师。
+     * 实现逻辑：方法会先校验默认地址，再批量加载候选厨师、启用位置和未来七天档期，筛出可服务且有最近可预约时间的厨师，并按默认综合规则排序。
      */
+    @Override
     public List<ChefRecommendVO> recommendDefault(Long userId, Long addressId) {
         UserAddress userAddress = requireUserAddress(userId, addressId);
         List<Chef> chefList = requireRecommendCandidates();
@@ -111,7 +115,9 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
     }
 
     /**
-     * 获取可参与推荐的厨师候选集。
+     * 方法说明：获取当前业务必需的数据，并在取不到时立即中断流程。
+     * 主要作用：它把 首页厨师推荐服务实现 中“查询 + 非空校验”的重复套路合并成一个辅助方法，让主流程更聚焦业务本身。
+     * 实现逻辑：实现时会先根据身份信息或业务键查询目标数据，再补充坐标、状态或归属校验，不满足条件时直接抛出业务异常。
      */
     private List<Chef> requireRecommendCandidates() {
         List<Chef> chefList = chefMapper.selectRecommendCandidates();
@@ -122,7 +128,9 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
     }
 
     /**
-     * 从厨师列表中提取厨师 ID 集合。
+     * 方法说明：在 首页厨师推荐服务实现 中处理 extractChefIds 相关的业务逻辑。
+     * 主要作用：该方法用于承接当前模块中的一个独立职责点，帮助主流程保持清晰并减少重复代码。
+     * 实现逻辑：实现逻辑会围绕当前方法职责完成必要的数据查询、规则判断、字段加工或结果返回，并在发现异常场景时及时中断流程。
      */
     private List<Long> extractChefIds(List<Chef> chefList) {
         if (chefList == null || chefList.isEmpty()) {
@@ -134,7 +142,9 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
     }
 
     /**
-     * 构建厨师启用服务位置的映射关系。
+     * 方法说明：构建当前业务流程后续需要复用的中间结果。
+     * 主要作用：这个辅助方法把 首页厨师推荐服务实现 中重复使用的数据结构提前整理好，减少主流程中的重复计算和分支判断。
+     * 实现逻辑：实现逻辑通常会对输入参数做空值保护，再根据业务规则拼装映射、集合、文本或比较器，供后续步骤直接复用。
      */
     private Map<Long, ChefServiceLocation> buildActiveLocationMap(List<Long> chefIds) {
         if (chefIds == null || chefIds.isEmpty()) {
@@ -154,7 +164,9 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
     }
 
     /**
-     * 构建每个厨师最近可预约档期的映射关系。
+     * 方法说明：构建当前业务流程后续需要复用的中间结果。
+     * 主要作用：这个辅助方法把 首页厨师推荐服务实现 中重复使用的数据结构提前整理好，减少主流程中的重复计算和分支判断。
+     * 实现逻辑：实现逻辑通常会对输入参数做空值保护，再根据业务规则拼装映射、集合、文本或比较器，供后续步骤直接复用。
      */
     private Map<Long, ChefSchedule> buildNearestScheduleMap(List<Long> chefIds) {
         if (chefIds == null || chefIds.isEmpty()) {
@@ -183,7 +195,9 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
     }
 
     /**
-     * 构建指定日期和时段下有可用档期的厨师 ID 集合。
+     * 方法说明：构建当前业务流程后续需要复用的中间结果。
+     * 主要作用：这个辅助方法把 首页厨师推荐服务实现 中重复使用的数据结构提前整理好，减少主流程中的重复计算和分支判断。
+     * 实现逻辑：实现逻辑通常会对输入参数做空值保护，再根据业务规则拼装映射、集合、文本或比较器，供后续步骤直接复用。
      */
     private Set<Long> buildAvailableChefIdSet(LocalDate serviceDate, String timeSlot) {
         List<Long> availableChefIds = chefScheduleMapper.selectAvailableChefIdsByDateAndTimeSlot(serviceDate, timeSlot);
@@ -194,7 +208,9 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
     }
 
     /**
-     * 获取并校验用户地址信息。
+     * 方法说明：获取当前业务必需的数据，并在取不到时立即中断流程。
+     * 主要作用：它把 首页厨师推荐服务实现 中“查询 + 非空校验”的重复套路合并成一个辅助方法，让主流程更聚焦业务本身。
+     * 实现逻辑：实现时会先根据身份信息或业务键查询目标数据，再补充坐标、状态或归属校验，不满足条件时直接抛出业务异常。
      */
     private UserAddress requireUserAddress(Long userId, Long addressId) {
         UserAddress userAddress = userAddressMapper.selectByIdAndUserId(addressId, userId);
@@ -208,7 +224,9 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
     }
 
     /**
-     * 将实体对象转换为前端返回 VO。
+     * 方法说明：将实体对象或中间结果转换为接口返回所需的 VO 对象。
+     * 主要作用：该方法把 首页厨师推荐服务实现 中对外展示需要的字段映射集中在一起，避免多个业务入口重复编写相同的转换代码。
+     * 实现逻辑：实现时会先判断入参是否为空，然后逐项拷贝基础字段，必要时补充枚举描述、派生文本或关联展示信息后返回。
      */
     private ChefRecommendVO toChefRecommendVO(Chef chef, ChefServiceLocation chefServiceLocation, UserAddress userAddress) {
         if (chef == null || chefServiceLocation == null) {
@@ -250,7 +268,9 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
     }
 
     /**
-     * 将实体对象转换为前端返回 VO。
+     * 方法说明：将实体对象或中间结果转换为接口返回所需的 VO 对象。
+     * 主要作用：该方法把 首页厨师推荐服务实现 中对外展示需要的字段映射集中在一起，避免多个业务入口重复编写相同的转换代码。
+     * 实现逻辑：实现时会先判断入参是否为空，然后逐项拷贝基础字段，必要时补充枚举描述、派生文本或关联展示信息后返回。
      */
     private ChefRecommendVO toDefaultChefRecommendVO(
             Chef chef,
@@ -269,7 +289,9 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
     }
 
     /**
-     * 根据排序类型构建厨师推荐排序器。
+     * 方法说明：构建当前业务流程后续需要复用的中间结果。
+     * 主要作用：这个辅助方法把 首页厨师推荐服务实现 中重复使用的数据结构提前整理好，减少主流程中的重复计算和分支判断。
+     * 实现逻辑：实现逻辑通常会对输入参数做空值保护，再根据业务规则拼装映射、集合、文本或比较器，供后续步骤直接复用。
      */
     private Comparator<ChefRecommendVO> buildComparator(String sortType) {
         Comparator<ChefRecommendVO> defaultComparator = Comparator
@@ -300,7 +322,9 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
     }
 
     /**
-     * 构建首页默认推荐使用的综合排序器。
+     * 方法说明：构建当前业务流程后续需要复用的中间结果。
+     * 主要作用：这个辅助方法把 首页厨师推荐服务实现 中重复使用的数据结构提前整理好，减少主流程中的重复计算和分支判断。
+     * 实现逻辑：实现逻辑通常会对输入参数做空值保护，再根据业务规则拼装映射、集合、文本或比较器，供后续步骤直接复用。
      */
     private Comparator<ChefRecommendVO> buildDefaultHomeComparator() {
         // 首页默认排序优先让用户看到“最近可约”的厨师，再兼顾距离、评分、订单量和好评率。
@@ -313,42 +337,54 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
     }
 
     /**
-     * 按升序比较两个数值字段。
+     * 方法说明：比较两个排序字段的大小关系。
+     * 主要作用：它用于封装 首页厨师推荐服务实现 中的局部排序规则，减少主比较器里重复书写空值处理和升降序细节。
+     * 实现逻辑：实现时会先把可能为空的字段转成安全值，再按约定的升序或降序规则返回比较结果。
      */
     private int compareBigDecimalAsc(BigDecimal left, BigDecimal right) {
         return defaultBigDecimal(left).compareTo(defaultBigDecimal(right));
     }
 
     /**
-     * 按降序比较两个数值字段。
+     * 方法说明：比较两个排序字段的大小关系。
+     * 主要作用：它用于封装 首页厨师推荐服务实现 中的局部排序规则，减少主比较器里重复书写空值处理和升降序细节。
+     * 实现逻辑：实现时会先把可能为空的字段转成安全值，再按约定的升序或降序规则返回比较结果。
      */
     private int compareBigDecimalDesc(BigDecimal left, BigDecimal right) {
         return defaultBigDecimal(right).compareTo(defaultBigDecimal(left));
     }
 
     /**
-     * 按降序比较两个整数指标。
+     * 方法说明：比较两个排序字段的大小关系。
+     * 主要作用：它用于封装 首页厨师推荐服务实现 中的局部排序规则，减少主比较器里重复书写空值处理和升降序细节。
+     * 实现逻辑：实现时会先把可能为空的字段转成安全值，再按约定的升序或降序规则返回比较结果。
      */
     private int compareIntegerDesc(Integer left, Integer right) {
         return Integer.compare(defaultInteger(right), defaultInteger(left));
     }
 
     /**
-     * 为空值数值字段提供默认值。
+     * 方法说明：为可能为空的排序或计算字段提供默认值。
+     * 主要作用：它用于保证 首页厨师推荐服务实现 中的数值比较逻辑稳定执行，避免空指针影响排序或统计结果。
+     * 实现逻辑：实现时会先判断传入值是否为空；若为空则返回预设默认值，否则直接返回原值。
      */
     private BigDecimal defaultBigDecimal(BigDecimal value) {
         return value == null ? BigDecimal.ZERO : value;
     }
 
     /**
-     * 为空值整数字段提供默认值。
+     * 方法说明：为可能为空的排序或计算字段提供默认值。
+     * 主要作用：它用于保证 首页厨师推荐服务实现 中的数值比较逻辑稳定执行，避免空指针影响排序或统计结果。
+     * 实现逻辑：实现时会先判断传入值是否为空；若为空则返回预设默认值，否则直接返回原值。
      */
     private Integer defaultInteger(Integer value) {
         return value == null ? 0 : value;
     }
 
     /**
-     * 判断厨师是否支持当前食材模式。
+     * 方法说明：在 首页厨师推荐服务实现 中处理 supportsIngredientMode 相关的业务逻辑。
+     * 主要作用：该方法用于承接当前模块中的一个独立职责点，帮助主流程保持清晰并减少重复代码。
+     * 实现逻辑：实现逻辑会围绕当前方法职责完成必要的数据查询、规则判断、字段加工或结果返回，并在发现异常场景时及时中断流程。
      */
     private boolean supportsIngredientMode(Integer serviceMode, Integer ingredientMode) {
         if (serviceMode == null || ingredientMode == null) {
@@ -364,7 +400,9 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
     }
 
     /**
-     * 校验食材模式参数是否合法。
+     * 方法说明：校验当前业务输入或状态是否满足执行条件。
+     * 主要作用：它用于把 首页厨师推荐服务实现 中的前置规则集中收口，避免核心流程夹杂过多重复的条件判断。
+     * 实现逻辑：实现逻辑会逐项检查关键字段、状态或业务约束，一旦发现不满足条件的情况就立即抛出业务异常阻断流程。
      */
     private void validateIngredientMode(Integer ingredientMode) {
         if (ingredientMode == null || (ingredientMode != 1 && ingredientMode != 2)) {
@@ -373,7 +411,9 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
     }
 
     /**
-     * 标准化并校验时段枚举值。
+     * 方法说明：对输入值做统一的格式化和规范化处理。
+     * 主要作用：该方法用于消除 首页厨师推荐服务实现 中大小写、空白字符或别名写法带来的差异，保证后续逻辑按统一格式处理数据。
+     * 实现逻辑：实现时会先做空值判断，再进行 trim、大小写转换或枚举标准化，最终返回可直接参与业务判断的值。
      */
     private String normalizeTimeSlot(String timeSlot) {
         TimeSlotEnum timeSlotEnum = TimeSlotEnum.fromCode(timeSlot);
@@ -384,7 +424,9 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
     }
 
     /**
-     * 标准化排序类型参数。
+     * 方法说明：对输入值做统一的格式化和规范化处理。
+     * 主要作用：该方法用于消除 首页厨师推荐服务实现 中大小写、空白字符或别名写法带来的差异，保证后续逻辑按统一格式处理数据。
+     * 实现逻辑：实现时会先做空值判断，再进行 trim、大小写转换或枚举标准化，最终返回可直接参与业务判断的值。
      */
     private String normalizeSortType(String sortType) {
         if (!StringUtils.hasText(sortType)) {
@@ -394,7 +436,9 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
     }
 
     /**
-     * 拼接服务区域的文本摘要。
+     * 方法说明：构建当前业务流程后续需要复用的中间结果。
+     * 主要作用：这个辅助方法把 首页厨师推荐服务实现 中重复使用的数据结构提前整理好，减少主流程中的重复计算和分支判断。
+     * 实现逻辑：实现逻辑通常会对输入参数做空值保护，再根据业务规则拼装映射、集合、文本或比较器，供后续步骤直接复用。
      */
     private String buildServiceAreaText(ChefServiceLocation chefServiceLocation) {
         if (chefServiceLocation == null) {
@@ -409,7 +453,9 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
     }
 
     /**
-     * 向区域摘要中追加一段非空文本。
+     * 方法说明：在 首页厨师推荐服务实现 中处理 appendAreaPart 相关的业务逻辑。
+     * 主要作用：该方法用于承接当前模块中的一个独立职责点，帮助主流程保持清晰并减少重复代码。
+     * 实现逻辑：实现逻辑会围绕当前方法职责完成必要的数据查询、规则判断、字段加工或结果返回，并在发现异常场景时及时中断流程。
      */
     private void appendAreaPart(StringBuilder builder, String areaPart) {
         if (StringUtils.hasText(areaPart)) {

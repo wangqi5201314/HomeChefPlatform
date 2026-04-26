@@ -28,10 +28,12 @@ public class ChefCertificationServiceImpl implements ChefCertificationService {
 
     private final ChefMapper chefMapper;
 
-    @Override
     /**
-     * 提交业务数据并返回处理结果。
+     * 方法说明：在 厨师认证服务实现 中处理 submit 相关的业务逻辑。
+     * 主要作用：该方法用于承接当前模块中的一个独立职责点，帮助主流程保持清晰并减少重复代码。
+     * 实现逻辑：实现逻辑会围绕当前方法职责完成必要的数据查询、规则判断、字段加工或结果返回，并在发现异常场景时及时中断流程。
      */
+    @Override
     public ChefCertificationVO submit(ChefCertificationSubmitDTO chefCertificationSubmitDTO) {
         LocalDateTime now = LocalDateTime.now();
         ChefCertification existingCertification = chefCertificationMapper.selectByChefId(chefCertificationSubmitDTO.getChefId());
@@ -81,18 +83,22 @@ public class ChefCertificationServiceImpl implements ChefCertificationService {
         return toChefCertificationVO(chefCertificationMapper.selectByChefId(chefCertificationSubmitDTO.getChefId()));
     }
 
-    @Override
     /**
-     * 根据厨师 ID 查询对应数据。
+     * 方法说明：查询一条当前业务所需的详情数据。
+     * 主要作用：该方法用于 厨师认证服务实现 中的详情展示、状态流转前校验或后续业务处理前的数据加载。
+     * 实现逻辑：实现时会根据主键、关联键或当前登录身份查出目标记录，再按需要转换成 VO，必要时会补充关联字段或做存在性校验。
      */
+    @Override
     public ChefCertificationVO getByChefId(Long chefId) {
         return toChefCertificationVO(chefCertificationMapper.selectByChefId(chefId));
     }
 
-    @Override
     /**
-     * 处理 g et li st 相关逻辑。
+     * 方法说明：查询符合条件的列表数据。
+     * 主要作用：它为 厨师认证服务实现 提供页面列表、后台筛选或批量展示所需的数据集合。
+     * 实现逻辑：实现逻辑通常是根据查询条件调用 Mapper 获取记录列表，再按需要转换为 VO 集合；当结果为空时会返回空集合或由上层统一处理。
      */
+    @Override
     public List<ChefCertificationVO> getList(ChefCertificationQueryDTO queryDTO) {
         List<ChefCertification> certificationList = chefCertificationMapper.selectList(queryDTO);
         if (certificationList == null || certificationList.isEmpty()) {
@@ -103,10 +109,12 @@ public class ChefCertificationServiceImpl implements ChefCertificationService {
                 .collect(Collectors.toList());
     }
 
-    @Override
     /**
-     * 根据 ID 审核指定记录。
+     * 方法说明：在 厨师认证服务实现 中处理 auditById 相关的业务逻辑。
+     * 主要作用：该方法用于承接当前模块中的一个独立职责点，帮助主流程保持清晰并减少重复代码。
+     * 实现逻辑：实现逻辑会围绕当前方法职责完成必要的数据查询、规则判断、字段加工或结果返回，并在发现异常场景时及时中断流程。
      */
+    @Override
     public ChefCertificationVO auditById(Long id, ChefCertificationAuditDTO chefCertificationAuditDTO) {
         ChefCertification existingCertification = chefCertificationMapper.selectById(id);
         if (existingCertification == null) {
@@ -131,26 +139,32 @@ public class ChefCertificationServiceImpl implements ChefCertificationService {
         return toChefCertificationVO(chefCertificationMapper.selectById(id));
     }
 
-    @Override
     /**
-     * 处理 c he fe xi st s 相关逻辑。
+     * 方法说明：判断指定业务数据是否已经存在。
+     * 主要作用：该方法用于 厨师认证服务实现 中的前置去重或存在性验证，避免重复创建或引用无效数据。
+     * 实现逻辑：实现逻辑通常会根据主键、业务唯一键或关联条件调用 Mapper 统计结果，再把是否存在返回给上层流程使用。
      */
+    @Override
     public boolean chefExists(Long chefId) {
         return chefMapper.selectById(chefId) != null;
     }
 
-    @Override
     /**
-     * 获取当前登录厨师的认证信息。
+     * 方法说明：查询一条当前业务所需的详情数据。
+     * 主要作用：该方法用于 厨师认证服务实现 中的详情展示、状态流转前校验或后续业务处理前的数据加载。
+     * 实现逻辑：实现时会根据主键、关联键或当前登录身份查出目标记录，再按需要转换成 VO，必要时会补充关联字段或做存在性校验。
      */
+    @Override
     public ChefCertificationVO getCurrentChefCertification() {
         return getByChefId(requireCurrentChefId());
     }
 
-    @Override
     /**
-     * 提交当前登录厨师的认证资料。
+     * 方法说明：在 厨师认证服务实现 中处理 submitCurrentChefCertification 相关的业务逻辑。
+     * 主要作用：该方法用于承接当前模块中的一个独立职责点，帮助主流程保持清晰并减少重复代码。
+     * 实现逻辑：实现逻辑会围绕当前方法职责完成必要的数据查询、规则判断、字段加工或结果返回，并在发现异常场景时及时中断流程。
      */
+    @Override
     public ChefCertificationVO submitCurrentChefCertification(ChefCertificationSubmitDTO chefCertificationSubmitDTO) {
         Long chefId = requireCurrentChefId();
         chefCertificationSubmitDTO.setChefId(chefId);
@@ -165,7 +179,9 @@ public class ChefCertificationServiceImpl implements ChefCertificationService {
     }
 
     /**
-     * 获取并校验当前登录厨师的 ID。
+     * 方法说明：获取当前业务必需的数据，并在取不到时立即中断流程。
+     * 主要作用：它把 厨师认证服务实现 中“查询 + 非空校验”的重复套路合并成一个辅助方法，让主流程更聚焦业务本身。
+     * 实现逻辑：实现时会先根据身份信息或业务键查询目标数据，再补充坐标、状态或归属校验，不满足条件时直接抛出业务异常。
      */
     private Long requireCurrentChefId() {
         Long chefId = LoginUserContext.getChefId();
@@ -176,7 +192,9 @@ public class ChefCertificationServiceImpl implements ChefCertificationService {
     }
 
     /**
-     * 将实体对象转换为前端返回 VO。
+     * 方法说明：将实体对象或中间结果转换为接口返回所需的 VO 对象。
+     * 主要作用：该方法把 厨师认证服务实现 中对外展示需要的字段映射集中在一起，避免多个业务入口重复编写相同的转换代码。
+     * 实现逻辑：实现时会先判断入参是否为空，然后逐项拷贝基础字段，必要时补充枚举描述、派生文本或关联展示信息后返回。
      */
     private ChefCertificationVO toChefCertificationVO(ChefCertification chefCertification) {
         if (chefCertification == null) {

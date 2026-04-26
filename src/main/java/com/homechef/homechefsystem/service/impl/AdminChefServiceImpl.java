@@ -21,10 +21,12 @@ public class AdminChefServiceImpl implements AdminChefService {
 
     private final ChefMapper chefMapper;
 
-    @Override
     /**
-     * 处理 u pd at ec he fs ta tu s 相关逻辑。
+     * 方法说明：更新一条当前业务场景下的数据记录或状态。
+     * 主要作用：该方法用于 后台厨师管理服务实现 中的编辑、状态变更或流程推进，保证外部只能修改业务允许变动的部分。
+     * 实现逻辑：实现时会先查询原始数据并做归属或状态校验，再回填可编辑字段执行更新，必要时返回更新后的详情结果。
      */
+    @Override
     public void updateChefStatus(Long id, AdminStatusUpdateDTO statusUpdateDTO) {
         if (!ChefStatusEnum.isValid(statusUpdateDTO.getStatus())) {
             throw new BusinessException(ResultCodeEnum.PARAM_ERROR, "chef status 取值非法，只能为 0、1");
@@ -41,16 +43,20 @@ public class AdminChefServiceImpl implements AdminChefService {
         }
     }
 
-    @Override
     /**
-     * 查询详情数据并返回结果。
+     * 方法说明：查询一条当前业务所需的详情数据。
+     * 主要作用：该方法用于 后台厨师管理服务实现 中的详情展示、状态流转前校验或后续业务处理前的数据加载。
+     * 实现逻辑：实现时会根据主键、关联键或当前登录身份查出目标记录，再按需要转换成 VO，必要时会补充关联字段或做存在性校验。
      */
+    @Override
     public AdminChefDetailVO getChefDetail(Long id) {
         return toAdminChefDetailVO(chefMapper.selectById(id));
     }
 
     /**
-     * 将实体对象转换为前端返回 VO。
+     * 方法说明：将实体对象或中间结果转换为接口返回所需的 VO 对象。
+     * 主要作用：该方法把 后台厨师管理服务实现 中对外展示需要的字段映射集中在一起，避免多个业务入口重复编写相同的转换代码。
+     * 实现逻辑：实现时会先判断入参是否为空，然后逐项拷贝基础字段，必要时补充枚举描述、派生文本或关联展示信息后返回。
      */
     private AdminChefDetailVO toAdminChefDetailVO(Chef chef) {
         if (chef == null) {

@@ -30,10 +30,12 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentMapper paymentMapper;
     private final OrderMapper orderMapper;
 
-    @Override
     /**
-     * 创建数据并返回处理结果。
+     * 方法说明：新增一条当前业务场景下的数据记录。
+     * 主要作用：它承担 支付服务实现 中的新增入口，把前端入参转换为可持久化的实体数据。
+     * 实现逻辑：实现逻辑通常会先校验关键字段和归属关系，再组装实体写入数据库，最后返回新增后的最新结果。
      */
+    @Override
     public PaymentVO create(PaymentCreateDTO paymentCreateDTO) {
         Payment existingPayment = paymentMapper.selectByOrderId(paymentCreateDTO.getOrderId());
         if (existingPayment != null) {
@@ -69,18 +71,22 @@ public class PaymentServiceImpl implements PaymentService {
         return toPaymentVO(paymentMapper.selectByOrderId(order.getId()));
     }
 
-    @Override
     /**
-     * 查询指定订单对应的支付状态。
+     * 方法说明：查询一条当前业务所需的详情数据。
+     * 主要作用：该方法用于 支付服务实现 中的详情展示、状态流转前校验或后续业务处理前的数据加载。
+     * 实现逻辑：实现时会根据主键、关联键或当前登录身份查出目标记录，再按需要转换成 VO，必要时会补充关联字段或做存在性校验。
      */
+    @Override
     public PaymentStatusVO getStatusByOrderId(Long orderId) {
         return toPaymentStatusVO(paymentMapper.selectByOrderId(orderId));
     }
 
-    @Override
     /**
-     * 模拟指定订单支付成功。
+     * 方法说明：在 支付服务实现 中处理 mockSuccessByOrderId 相关的业务逻辑。
+     * 主要作用：该方法用于承接当前模块中的一个独立职责点，帮助主流程保持清晰并减少重复代码。
+     * 实现逻辑：实现逻辑会围绕当前方法职责完成必要的数据查询、规则判断、字段加工或结果返回，并在发现异常场景时及时中断流程。
      */
+    @Override
     public PaymentStatusVO mockSuccessByOrderId(Long orderId) {
         Payment payment = paymentMapper.selectByOrderId(orderId);
         if (payment == null) {
@@ -111,10 +117,12 @@ public class PaymentServiceImpl implements PaymentService {
         return toPaymentStatusVO(paymentMapper.selectByOrderId(orderId));
     }
 
-    @Override
     /**
-     * 处理 r ef un d 相关逻辑。
+     * 方法说明：在 支付服务实现 中处理 refund 相关的业务逻辑。
+     * 主要作用：该方法用于承接当前模块中的一个独立职责点，帮助主流程保持清晰并减少重复代码。
+     * 实现逻辑：实现逻辑会围绕当前方法职责完成必要的数据查询、规则判断、字段加工或结果返回，并在发现异常场景时及时中断流程。
      */
+    @Override
     public PaymentStatusVO refund(PaymentRefundDTO paymentRefundDTO) {
         Payment payment = paymentMapper.selectByOrderId(paymentRefundDTO.getOrderId());
         if (payment == null) {
@@ -143,16 +151,20 @@ public class PaymentServiceImpl implements PaymentService {
         return toPaymentStatusVO(paymentMapper.selectByOrderId(paymentRefundDTO.getOrderId()));
     }
 
-    @Override
     /**
-     * 处理 o rd er ex is ts 相关逻辑。
+     * 方法说明：判断指定业务数据是否已经存在。
+     * 主要作用：该方法用于 支付服务实现 中的前置去重或存在性验证，避免重复创建或引用无效数据。
+     * 实现逻辑：实现逻辑通常会根据主键、业务唯一键或关联条件调用 Mapper 统计结果，再把是否存在返回给上层流程使用。
      */
+    @Override
     public boolean orderExists(Long orderId) {
         return orderMapper.selectById(orderId) != null;
     }
 
     /**
-     * 将实体对象转换为前端返回 VO。
+     * 方法说明：将实体对象或中间结果转换为接口返回所需的 VO 对象。
+     * 主要作用：该方法把 支付服务实现 中对外展示需要的字段映射集中在一起，避免多个业务入口重复编写相同的转换代码。
+     * 实现逻辑：实现时会先判断入参是否为空，然后逐项拷贝基础字段，必要时补充枚举描述、派生文本或关联展示信息后返回。
      */
     private PaymentVO toPaymentVO(Payment payment) {
         if (payment == null) {
@@ -171,7 +183,9 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     /**
-     * 将实体对象转换为前端返回 VO。
+     * 方法说明：将实体对象或中间结果转换为接口返回所需的 VO 对象。
+     * 主要作用：该方法把 支付服务实现 中对外展示需要的字段映射集中在一起，避免多个业务入口重复编写相同的转换代码。
+     * 实现逻辑：实现时会先判断入参是否为空，然后逐项拷贝基础字段，必要时补充枚举描述、派生文本或关联展示信息后返回。
      */
     private PaymentStatusVO toPaymentStatusVO(Payment payment) {
         if (payment == null) {
@@ -193,7 +207,9 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     /**
-     * 生成支付单号。
+     * 方法说明：生成当前业务流程所需的编号、验证码或标识值。
+     * 主要作用：它为 支付服务实现 提供统一的标识生成能力，避免在主流程中混入随机数或格式拼接细节。
+     * 实现逻辑：实现逻辑通常会结合时间、随机数或固定前缀构造结果，并确保生成值满足当前业务展示或唯一性需求。
      */
     private String generatePayNo() {
         return "PAY" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
@@ -201,7 +217,9 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     /**
-     * 生成模拟交易流水号。
+     * 方法说明：生成当前业务流程所需的编号、验证码或标识值。
+     * 主要作用：它为 支付服务实现 提供统一的标识生成能力，避免在主流程中混入随机数或格式拼接细节。
+     * 实现逻辑：实现逻辑通常会结合时间、随机数或固定前缀构造结果，并确保生成值满足当前业务展示或唯一性需求。
      */
     private String generateTransactionId() {
         return "TXN" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
@@ -209,7 +227,9 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     /**
-     * 生成退款单号。
+     * 方法说明：生成当前业务流程所需的编号、验证码或标识值。
+     * 主要作用：它为 支付服务实现 提供统一的标识生成能力，避免在主流程中混入随机数或格式拼接细节。
+     * 实现逻辑：实现逻辑通常会结合时间、随机数或固定前缀构造结果，并确保生成值满足当前业务展示或唯一性需求。
      */
     private String generateRefundNo() {
         return "REF" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))

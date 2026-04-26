@@ -40,10 +40,12 @@ public class ChefServiceImpl implements ChefService {
     private final UserMapper userMapper;
     private final BCryptPasswordEncoder passwordEncoder;
 
-    @Override
     /**
-     * 查询列表数据并返回结果。
+     * 方法说明：查询符合条件的列表数据。
+     * 主要作用：它为 厨师资料服务实现 提供页面列表、后台筛选或批量展示所需的数据集合。
+     * 实现逻辑：实现逻辑通常是根据查询条件调用 Mapper 获取记录列表，再按需要转换为 VO 集合；当结果为空时会返回空集合或由上层统一处理。
      */
+    @Override
     public List<ChefListVO> getChefList(ChefQueryDTO queryDTO) {
         List<Chef> chefList = chefMapper.selectList(queryDTO);
         if (chefList == null || chefList.isEmpty()) {
@@ -54,18 +56,22 @@ public class ChefServiceImpl implements ChefService {
                 .collect(Collectors.toList());
     }
 
-    @Override
     /**
-     * 根据 ID 查询对应数据。
+     * 方法说明：查询一条当前业务所需的详情数据。
+     * 主要作用：该方法用于 厨师资料服务实现 中的详情展示、状态流转前校验或后续业务处理前的数据加载。
+     * 实现逻辑：实现时会根据主键、关联键或当前登录身份查出目标记录，再按需要转换成 VO，必要时会补充关联字段或做存在性校验。
      */
+    @Override
     public ChefDetailVO getById(Long id) {
         return toChefDetailVO(chefMapper.selectById(id));
     }
 
-    @Override
     /**
-     * 根据 ID 更新数据。
+     * 方法说明：更新一条当前业务场景下的数据记录或状态。
+     * 主要作用：该方法用于 厨师资料服务实现 中的编辑、状态变更或流程推进，保证外部只能修改业务允许变动的部分。
+     * 实现逻辑：实现时会先查询原始数据并做归属或状态校验，再回填可编辑字段执行更新，必要时返回更新后的详情结果。
      */
+    @Override
     public ChefDetailVO updateById(Long id, ChefUpdateDTO chefUpdateDTO) {
         Chef existingChef = chefMapper.selectById(id);
         if (existingChef == null) {
@@ -97,10 +103,12 @@ public class ChefServiceImpl implements ChefService {
         return toChefDetailVO(chefMapper.selectById(id));
     }
 
-    @Override
     /**
-     * 执行登录校验并返回登录结果。
+     * 方法说明：在 厨师资料服务实现 中处理 login 相关的业务逻辑。
+     * 主要作用：该方法用于承接当前模块中的一个独立职责点，帮助主流程保持清晰并减少重复代码。
+     * 实现逻辑：实现逻辑会围绕当前方法职责完成必要的数据查询、规则判断、字段加工或结果返回，并在发现异常场景时及时中断流程。
      */
+    @Override
     public ChefVO login(ChefLoginDTO chefLoginDTO) {
         Chef chef = chefMapper.selectByPhone(chefLoginDTO.getPhone());
         if (chef == null) {
@@ -118,10 +126,12 @@ public class ChefServiceImpl implements ChefService {
         return toChefVO(chefMapper.selectById(chef.getId()));
     }
 
-    @Override
     /**
-     * 执行注册流程并返回注册结果。
+     * 方法说明：在 厨师资料服务实现 中处理 register 相关的业务逻辑。
+     * 主要作用：该方法用于承接当前模块中的一个独立职责点，帮助主流程保持清晰并减少重复代码。
+     * 实现逻辑：实现逻辑会围绕当前方法职责完成必要的数据查询、规则判断、字段加工或结果返回，并在发现异常场景时及时中断流程。
      */
+    @Override
     public ChefVO register(ChefRegisterDTO chefRegisterDTO) {
         validateRegister(chefRegisterDTO);
         ensurePhoneAvailable(chefRegisterDTO.getPhone(), null);
@@ -157,10 +167,12 @@ public class ChefServiceImpl implements ChefService {
         return toChefVO(chefMapper.selectById(chef.getId()));
     }
 
-    @Override
     /**
-     * 获取当前登录主体的资料信息。
+     * 方法说明：查询一条当前业务所需的详情数据。
+     * 主要作用：该方法用于 厨师资料服务实现 中的详情展示、状态流转前校验或后续业务处理前的数据加载。
+     * 实现逻辑：实现时会根据主键、关联键或当前登录身份查出目标记录，再按需要转换成 VO，必要时会补充关联字段或做存在性校验。
      */
+    @Override
     public ChefVO getCurrentChef() {
         Long currentChefId = LoginUserContext.getChefId();
         if (currentChefId == null) {
@@ -169,10 +181,12 @@ public class ChefServiceImpl implements ChefService {
         return toChefVO(chefMapper.selectById(currentChefId));
     }
 
-    @Override
     /**
-     * 更新当前登录主体的资料信息。
+     * 方法说明：修改当前登录厨师的个人资料与服务能力信息。
+     * 主要作用：该方法用于厨师端完善资料、更新展示信息和调整服务能力参数，同时保证关键字段符合业务约束。
+     * 实现逻辑：实现时会先加载当前厨师记录，再处理手机号唯一性、服务模式合法性等校验，最后更新可编辑字段并返回最新资料。
      */
+    @Override
     public ChefVO updateCurrentChef(ChefUpdateDTO chefUpdateDTO) {
         Long currentChefId = LoginUserContext.getChefId();
         if (currentChefId == null) {
@@ -210,7 +224,9 @@ public class ChefServiceImpl implements ChefService {
     }
 
     /**
-     * 按需将输入值应用到目标对象。
+     * 方法说明：在 厨师资料服务实现 中处理 applyPhoneIfPresent 相关的业务逻辑。
+     * 主要作用：该方法用于承接当前模块中的一个独立职责点，帮助主流程保持清晰并减少重复代码。
+     * 实现逻辑：实现逻辑会围绕当前方法职责完成必要的数据查询、规则判断、字段加工或结果返回，并在发现异常场景时及时中断流程。
      */
     private void applyPhoneIfPresent(Chef existingChef, String phone) {
         if (!StringUtils.hasText(phone)) {
@@ -222,7 +238,9 @@ public class ChefServiceImpl implements ChefService {
     }
 
     /**
-     * 校验并确保当前业务条件成立。
+     * 方法说明：确保当前业务状态满足继续执行的要求。
+     * 主要作用：它用于把 厨师资料服务实现 中必须成立的约束条件显式收口，避免非法状态继续向后流转。
+     * 实现逻辑：实现时会读取当前对象的关键状态或字段，并与目标要求进行比较；若不满足则立即抛出业务异常。
      */
     private void ensurePhoneAvailable(String phone, Long currentChefId) {
         if (!StringUtils.hasText(phone)) {
@@ -246,10 +264,12 @@ public class ChefServiceImpl implements ChefService {
         }
     }
 
-    @Override
     /**
-     * 修改当前主体的登录密码。
+     * 方法说明：在 厨师资料服务实现 中处理 changePassword 相关的业务逻辑。
+     * 主要作用：该方法用于承接当前模块中的一个独立职责点，帮助主流程保持清晰并减少重复代码。
+     * 实现逻辑：实现逻辑会围绕当前方法职责完成必要的数据查询、规则判断、字段加工或结果返回，并在发现异常场景时及时中断流程。
      */
+    @Override
     public void changePassword(ChefChangePasswordDTO chefChangePasswordDTO) {
         Long currentChefId = LoginUserContext.getChefId();
         if (currentChefId == null) {
@@ -281,7 +301,9 @@ public class ChefServiceImpl implements ChefService {
     }
 
     /**
-     * 校验输入参数或业务状态是否合法。
+     * 方法说明：校验当前业务输入或状态是否满足执行条件。
+     * 主要作用：它用于把 厨师资料服务实现 中的前置规则集中收口，避免核心流程夹杂过多重复的条件判断。
+     * 实现逻辑：实现逻辑会逐项检查关键字段、状态或业务约束，一旦发现不满足条件的情况就立即抛出业务异常阻断流程。
      */
     private void validateRegister(ChefRegisterDTO chefRegisterDTO) {
         if (!chefRegisterDTO.getPassword().equals(chefRegisterDTO.getConfirmPassword())) {
@@ -290,7 +312,9 @@ public class ChefServiceImpl implements ChefService {
     }
 
     /**
-     * 生成厨师展示名称。
+     * 方法说明：构建当前业务流程后续需要复用的中间结果。
+     * 主要作用：这个辅助方法把 厨师资料服务实现 中重复使用的数据结构提前整理好，减少主流程中的重复计算和分支判断。
+     * 实现逻辑：实现逻辑通常会对输入参数做空值保护，再根据业务规则拼装映射、集合、文本或比较器，供后续步骤直接复用。
      */
     private String buildChefName(String phone, String name) {
         if (StringUtils.hasText(name)) {
@@ -303,7 +327,9 @@ public class ChefServiceImpl implements ChefService {
     }
 
     /**
-     * 校验输入参数或业务状态是否合法。
+     * 方法说明：校验当前业务输入或状态是否满足执行条件。
+     * 主要作用：它用于把 厨师资料服务实现 中的前置规则集中收口，避免核心流程夹杂过多重复的条件判断。
+     * 实现逻辑：实现逻辑会逐项检查关键字段、状态或业务约束，一旦发现不满足条件的情况就立即抛出业务异常阻断流程。
      */
     private void validateServiceMode(Integer serviceMode) {
         if (serviceMode != null && !ChefServiceModeEnum.isValid(serviceMode)) {
@@ -312,7 +338,9 @@ public class ChefServiceImpl implements ChefService {
     }
 
     /**
-     * 将实体对象转换为前端返回 VO。
+     * 方法说明：将实体对象或中间结果转换为接口返回所需的 VO 对象。
+     * 主要作用：该方法把 厨师资料服务实现 中对外展示需要的字段映射集中在一起，避免多个业务入口重复编写相同的转换代码。
+     * 实现逻辑：实现时会先判断入参是否为空，然后逐项拷贝基础字段，必要时补充枚举描述、派生文本或关联展示信息后返回。
      */
     private ChefListVO toChefListVO(Chef chef) {
         if (chef == null) {
@@ -333,7 +361,9 @@ public class ChefServiceImpl implements ChefService {
     }
 
     /**
-     * 将实体对象转换为前端返回 VO。
+     * 方法说明：将实体对象或中间结果转换为接口返回所需的 VO 对象。
+     * 主要作用：该方法把 厨师资料服务实现 中对外展示需要的字段映射集中在一起，避免多个业务入口重复编写相同的转换代码。
+     * 实现逻辑：实现时会先判断入参是否为空，然后逐项拷贝基础字段，必要时补充枚举描述、派生文本或关联展示信息后返回。
      */
     private ChefDetailVO toChefDetailVO(Chef chef) {
         if (chef == null) {
@@ -371,35 +401,45 @@ public class ChefServiceImpl implements ChefService {
     }
 
     /**
-     * 处理 g et se rv ic ea re ap ro vi nc e 相关逻辑。
+     * 方法说明：查询一条当前业务所需的详情数据。
+     * 主要作用：该方法用于 厨师资料服务实现 中的详情展示、状态流转前校验或后续业务处理前的数据加载。
+     * 实现逻辑：实现时会根据主键、关联键或当前登录身份查出目标记录，再按需要转换成 VO，必要时会补充关联字段或做存在性校验。
      */
     private String getServiceAreaProvince(ChefServiceLocation chefServiceLocation) {
         return chefServiceLocation == null ? null : chefServiceLocation.getProvince();
     }
 
     /**
-     * 处理 g et se rv ic ea re ac it y 相关逻辑。
+     * 方法说明：查询一条当前业务所需的详情数据。
+     * 主要作用：该方法用于 厨师资料服务实现 中的详情展示、状态流转前校验或后续业务处理前的数据加载。
+     * 实现逻辑：实现时会根据主键、关联键或当前登录身份查出目标记录，再按需要转换成 VO，必要时会补充关联字段或做存在性校验。
      */
     private String getServiceAreaCity(ChefServiceLocation chefServiceLocation) {
         return chefServiceLocation == null ? null : chefServiceLocation.getCity();
     }
 
     /**
-     * 处理 g et se rv ic ea re ad is tr ic t 相关逻辑。
+     * 方法说明：查询一条当前业务所需的详情数据。
+     * 主要作用：该方法用于 厨师资料服务实现 中的详情展示、状态流转前校验或后续业务处理前的数据加载。
+     * 实现逻辑：实现时会根据主键、关联键或当前登录身份查出目标记录，再按需要转换成 VO，必要时会补充关联字段或做存在性校验。
      */
     private String getServiceAreaDistrict(ChefServiceLocation chefServiceLocation) {
         return chefServiceLocation == null ? null : chefServiceLocation.getDistrict();
     }
 
     /**
-     * 处理 g et se rv ic ea re at ow n 相关逻辑。
+     * 方法说明：查询一条当前业务所需的详情数据。
+     * 主要作用：该方法用于 厨师资料服务实现 中的详情展示、状态流转前校验或后续业务处理前的数据加载。
+     * 实现逻辑：实现时会根据主键、关联键或当前登录身份查出目标记录，再按需要转换成 VO，必要时会补充关联字段或做存在性校验。
      */
     private String getServiceAreaTown(ChefServiceLocation chefServiceLocation) {
         return chefServiceLocation == null ? null : chefServiceLocation.getTown();
     }
 
     /**
-     * 将实体对象转换为前端返回 VO。
+     * 方法说明：将实体对象或中间结果转换为接口返回所需的 VO 对象。
+     * 主要作用：该方法把 厨师资料服务实现 中对外展示需要的字段映射集中在一起，避免多个业务入口重复编写相同的转换代码。
+     * 实现逻辑：实现时会先判断入参是否为空，然后逐项拷贝基础字段，必要时补充枚举描述、派生文本或关联展示信息后返回。
      */
     private ChefVO toChefVO(Chef chef) {
         if (chef == null) {
@@ -431,7 +471,9 @@ public class ChefServiceImpl implements ChefService {
     }
 
     /**
-     * 拼接服务区域的文本摘要。
+     * 方法说明：构建当前业务流程后续需要复用的中间结果。
+     * 主要作用：这个辅助方法把 厨师资料服务实现 中重复使用的数据结构提前整理好，减少主流程中的重复计算和分支判断。
+     * 实现逻辑：实现逻辑通常会对输入参数做空值保护，再根据业务规则拼装映射、集合、文本或比较器，供后续步骤直接复用。
      */
     private String buildServiceAreaText(ChefServiceLocation chefServiceLocation) {
         if (chefServiceLocation == null) {
@@ -446,7 +488,9 @@ public class ChefServiceImpl implements ChefService {
     }
 
     /**
-     * 向区域摘要中追加一段非空文本。
+     * 方法说明：在 厨师资料服务实现 中处理 appendAreaPart 相关的业务逻辑。
+     * 主要作用：该方法用于承接当前模块中的一个独立职责点，帮助主流程保持清晰并减少重复代码。
+     * 实现逻辑：实现逻辑会围绕当前方法职责完成必要的数据查询、规则判断、字段加工或结果返回，并在发现异常场景时及时中断流程。
      */
     private void appendAreaPart(StringBuilder builder, String areaPart) {
         if (StringUtils.hasText(areaPart)) {

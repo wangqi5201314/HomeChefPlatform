@@ -23,10 +23,12 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
     private final ChefCertificationMapper chefCertificationMapper;
     private final OrderMapper orderMapper;
 
-    @Override
     /**
-     * 汇总后台首页需要展示的概览统计信息。
+     * 方法说明：查询一条当前业务所需的详情数据。
+     * 主要作用：该方法用于 后台数据看板服务实现 中的详情展示、状态流转前校验或后续业务处理前的数据加载。
+     * 实现逻辑：实现时会根据主键、关联键或当前登录身份查出目标记录，再按需要转换成 VO，必要时会补充关联字段或做存在性校验。
      */
+    @Override
     public AdminDashboardOverviewVO getOverview() {
         LocalDate today = LocalDate.now();
         LocalDateTime startTime = today.atStartOfDay();

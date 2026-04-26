@@ -24,10 +24,12 @@ public class AdminUserServiceImpl implements AdminUserService {
 
     private final UserMapper userMapper;
 
-    @Override
     /**
-     * 查询列表数据并返回结果。
+     * 方法说明：查询符合条件的列表数据。
+     * 主要作用：它为 后台用户管理服务实现 提供页面列表、后台筛选或批量展示所需的数据集合。
+     * 实现逻辑：实现逻辑通常是根据查询条件调用 Mapper 获取记录列表，再按需要转换为 VO 集合；当结果为空时会返回空集合或由上层统一处理。
      */
+    @Override
     public List<AdminUserVO> getUserList(AdminUserQueryDTO queryDTO) {
         List<User> userList = userMapper.selectAdminList(queryDTO);
         if (userList == null || userList.isEmpty()) {
@@ -38,18 +40,22 @@ public class AdminUserServiceImpl implements AdminUserService {
                 .collect(Collectors.toList());
     }
 
-    @Override
     /**
-     * 查询详情数据并返回结果。
+     * 方法说明：查询一条当前业务所需的详情数据。
+     * 主要作用：该方法用于 后台用户管理服务实现 中的详情展示、状态流转前校验或后续业务处理前的数据加载。
+     * 实现逻辑：实现时会根据主键、关联键或当前登录身份查出目标记录，再按需要转换成 VO，必要时会补充关联字段或做存在性校验。
      */
+    @Override
     public AdminUserDetailVO getUserDetail(Long id) {
         return toAdminUserDetailVO(userMapper.selectById(id));
     }
 
-    @Override
     /**
-     * 处理 u pd at eu se rs ta tu s 相关逻辑。
+     * 方法说明：更新一条当前业务场景下的数据记录或状态。
+     * 主要作用：该方法用于 后台用户管理服务实现 中的编辑、状态变更或流程推进，保证外部只能修改业务允许变动的部分。
+     * 实现逻辑：实现时会先查询原始数据并做归属或状态校验，再回填可编辑字段执行更新，必要时返回更新后的详情结果。
      */
+    @Override
     public AdminUserVO updateUserStatus(Long id, AdminStatusUpdateDTO statusUpdateDTO) {
         if (!UserStatusEnum.isValid(statusUpdateDTO.getStatus())) {
             throw new BusinessException(ResultCodeEnum.PARAM_ERROR, "user status 取值非法，只能为 0、1");
@@ -70,7 +76,9 @@ public class AdminUserServiceImpl implements AdminUserService {
     }
 
     /**
-     * 将实体对象转换为前端返回 VO。
+     * 方法说明：将实体对象或中间结果转换为接口返回所需的 VO 对象。
+     * 主要作用：该方法把 后台用户管理服务实现 中对外展示需要的字段映射集中在一起，避免多个业务入口重复编写相同的转换代码。
+     * 实现逻辑：实现时会先判断入参是否为空，然后逐项拷贝基础字段，必要时补充枚举描述、派生文本或关联展示信息后返回。
      */
     private AdminUserVO toAdminUserVO(User user) {
         if (user == null) {
@@ -90,7 +98,9 @@ public class AdminUserServiceImpl implements AdminUserService {
     }
 
     /**
-     * 将实体对象转换为前端返回 VO。
+     * 方法说明：将实体对象或中间结果转换为接口返回所需的 VO 对象。
+     * 主要作用：该方法把 后台用户管理服务实现 中对外展示需要的字段映射集中在一起，避免多个业务入口重复编写相同的转换代码。
+     * 实现逻辑：实现时会先判断入参是否为空，然后逐项拷贝基础字段，必要时补充枚举描述、派生文本或关联展示信息后返回。
      */
     private AdminUserDetailVO toAdminUserDetailVO(User user) {
         if (user == null) {

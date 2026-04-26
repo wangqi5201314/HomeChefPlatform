@@ -29,10 +29,12 @@ public class UploadServiceImpl implements UploadService {
     private final OSS ossClient;
     private final OssProperties ossProperties;
 
-    @Override
     /**
-     * 上传图片并返回可访问的文件信息。
+     * 方法说明：校验并上传图片文件到对象存储，随后返回可访问地址。
+     * 主要作用：它为头像、认证材料等上传场景提供统一入口，避免不同业务各自处理文件校验和 OSS 路径拼接。
+     * 实现逻辑：方法会先检查文件是否为空、格式是否合法，再生成对象键并上传到 OSS，最后拼接出外部访问 URL 返回给调用方。
      */
+    @Override
     public FileUploadVO uploadImage(MultipartFile file) {
         validateFile(file);
 
@@ -61,7 +63,9 @@ public class UploadServiceImpl implements UploadService {
     }
 
     /**
-     * 校验输入参数或业务状态是否合法。
+     * 方法说明：校验当前业务输入或状态是否满足执行条件。
+     * 主要作用：它用于把 文件上传服务实现 中的前置规则集中收口，避免核心流程夹杂过多重复的条件判断。
+     * 实现逻辑：实现逻辑会逐项检查关键字段、状态或业务约束，一旦发现不满足条件的情况就立即抛出业务异常阻断流程。
      */
     private void validateFile(MultipartFile file) {
         if (file == null || file.isEmpty()) {
@@ -80,7 +84,9 @@ public class UploadServiceImpl implements UploadService {
     }
 
     /**
-     * 获取当前允许上传的文件类型集合。
+     * 方法说明：查询一条当前业务所需的详情数据。
+     * 主要作用：该方法用于 文件上传服务实现 中的详情展示、状态流转前校验或后续业务处理前的数据加载。
+     * 实现逻辑：实现时会根据主键、关联键或当前登录身份查出目标记录，再按需要转换成 VO，必要时会补充关联字段或做存在性校验。
      */
     private Set<String> getAllowedTypes() {
         if (!StringUtils.hasText(ossProperties.getAllowedTypes())) {
@@ -93,7 +99,9 @@ public class UploadServiceImpl implements UploadService {
     }
 
     /**
-     * 生成上传到对象存储时使用的对象路径。
+     * 方法说明：构建当前业务流程后续需要复用的中间结果。
+     * 主要作用：这个辅助方法把 文件上传服务实现 中重复使用的数据结构提前整理好，减少主流程中的重复计算和分支判断。
+     * 实现逻辑：实现逻辑通常会对输入参数做空值保护，再根据业务规则拼装映射、集合、文本或比较器，供后续步骤直接复用。
      */
     private String buildObjectKey(String fileName) {
         String prefix = trimSlashes(ossProperties.getUploadPrefix());
@@ -104,7 +112,9 @@ public class UploadServiceImpl implements UploadService {
     }
 
     /**
-     * 根据对象路径拼接文件访问地址。
+     * 方法说明：构建当前业务流程后续需要复用的中间结果。
+     * 主要作用：这个辅助方法把 文件上传服务实现 中重复使用的数据结构提前整理好，减少主流程中的重复计算和分支判断。
+     * 实现逻辑：实现逻辑通常会对输入参数做空值保护，再根据业务规则拼装映射、集合、文本或比较器，供后续步骤直接复用。
      */
     private String buildFileUrl(String objectKey) {
         if (StringUtils.hasText(ossProperties.getCustomDomain())) {
@@ -114,7 +124,9 @@ public class UploadServiceImpl implements UploadService {
     }
 
     /**
-     * 提取文件扩展名。
+     * 方法说明：查询一条当前业务所需的详情数据。
+     * 主要作用：该方法用于 文件上传服务实现 中的详情展示、状态流转前校验或后续业务处理前的数据加载。
+     * 实现逻辑：实现时会根据主键、关联键或当前登录身份查出目标记录，再按需要转换成 VO，必要时会补充关联字段或做存在性校验。
      */
     private String getExtension(String fileName) {
         if (!StringUtils.hasText(fileName) || !fileName.contains(".")) {
@@ -124,7 +136,9 @@ public class UploadServiceImpl implements UploadService {
     }
 
     /**
-     * 确定上传文件的内容类型。
+     * 方法说明：在 文件上传服务实现 中处理 resolveContentType 相关的业务逻辑。
+     * 主要作用：该方法用于承接当前模块中的一个独立职责点，帮助主流程保持清晰并减少重复代码。
+     * 实现逻辑：实现逻辑会围绕当前方法职责完成必要的数据查询、规则判断、字段加工或结果返回，并在发现异常场景时及时中断流程。
      */
     private String resolveContentType(String extension, String contentType) {
         if (StringUtils.hasText(contentType)) {
@@ -139,7 +153,9 @@ public class UploadServiceImpl implements UploadService {
     }
 
     /**
-     * 去除字符串首尾多余的斜杠。
+     * 方法说明：在 文件上传服务实现 中处理 trimSlashes 相关的业务逻辑。
+     * 主要作用：该方法用于承接当前模块中的一个独立职责点，帮助主流程保持清晰并减少重复代码。
+     * 实现逻辑：实现逻辑会围绕当前方法职责完成必要的数据查询、规则判断、字段加工或结果返回，并在发现异常场景时及时中断流程。
      */
     private String trimSlashes(String value) {
         if (!StringUtils.hasText(value)) {
@@ -156,7 +172,9 @@ public class UploadServiceImpl implements UploadService {
     }
 
     /**
-     * 去除字符串末尾的斜杠。
+     * 方法说明：在 文件上传服务实现 中处理 trimTrailingSlash 相关的业务逻辑。
+     * 主要作用：该方法用于承接当前模块中的一个独立职责点，帮助主流程保持清晰并减少重复代码。
+     * 实现逻辑：实现逻辑会围绕当前方法职责完成必要的数据查询、规则判断、字段加工或结果返回，并在发现异常场景时及时中断流程。
      */
     private String trimTrailingSlash(String value) {
         if (!StringUtils.hasText(value)) {
@@ -170,7 +188,9 @@ public class UploadServiceImpl implements UploadService {
     }
 
     /**
-     * 去除地址中的协议头。
+     * 方法说明：在 文件上传服务实现 中处理 trimProtocol 相关的业务逻辑。
+     * 主要作用：该方法用于承接当前模块中的一个独立职责点，帮助主流程保持清晰并减少重复代码。
+     * 实现逻辑：实现逻辑会围绕当前方法职责完成必要的数据查询、规则判断、字段加工或结果返回，并在发现异常场景时及时中断流程。
      */
     private String trimProtocol(String endpoint) {
         String result = endpoint.trim();

@@ -45,10 +45,12 @@ public class AdminServiceImpl implements AdminService {
 
     private final BCryptPasswordEncoder passwordEncoder;
 
-    @Override
     /**
-     * 执行登录校验并返回登录结果。
+     * 方法说明：在 后台综合管理服务实现 中处理 login 相关的业务逻辑。
+     * 主要作用：该方法用于承接当前模块中的一个独立职责点，帮助主流程保持清晰并减少重复代码。
+     * 实现逻辑：实现逻辑会围绕当前方法职责完成必要的数据查询、规则判断、字段加工或结果返回，并在发现异常场景时及时中断流程。
      */
+    @Override
     public AdminLoginVO login(AdminLoginDTO adminLoginDTO) {
         Admin admin = adminMapper.selectByUsername(adminLoginDTO.getUsername());
         if (admin == null) {
@@ -63,10 +65,12 @@ public class AdminServiceImpl implements AdminService {
         return toAdminLoginVO(adminMapper.selectByUsername(adminLoginDTO.getUsername()));
     }
 
-    @Override
     /**
-     * 修改当前主体的登录密码。
+     * 方法说明：在 后台综合管理服务实现 中处理 changePassword 相关的业务逻辑。
+     * 主要作用：该方法用于承接当前模块中的一个独立职责点，帮助主流程保持清晰并减少重复代码。
+     * 实现逻辑：实现逻辑会围绕当前方法职责完成必要的数据查询、规则判断、字段加工或结果返回，并在发现异常场景时及时中断流程。
      */
+    @Override
     public void changePassword(AdminChangePasswordDTO adminChangePasswordDTO) {
         Long currentAdminId = LoginUserContext.getAdminId();
         if (currentAdminId == null) {
@@ -97,10 +101,12 @@ public class AdminServiceImpl implements AdminService {
         }
     }
 
-    @Override
     /**
-     * 查询列表数据并返回结果。
+     * 方法说明：查询符合条件的列表数据。
+     * 主要作用：它为 后台综合管理服务实现 提供页面列表、后台筛选或批量展示所需的数据集合。
+     * 实现逻辑：实现逻辑通常是根据查询条件调用 Mapper 获取记录列表，再按需要转换为 VO 集合；当结果为空时会返回空集合或由上层统一处理。
      */
+    @Override
     public List<AdminUserVO> getUserList(AdminUserQueryDTO queryDTO) {
         List<User> userList = adminMapper.selectUserList(queryDTO);
         if (userList == null || userList.isEmpty()) {
@@ -111,10 +117,12 @@ public class AdminServiceImpl implements AdminService {
                 .collect(Collectors.toList());
     }
 
-    @Override
     /**
-     * 处理 u pd at eu se rs ta tu s 相关逻辑。
+     * 方法说明：更新一条当前业务场景下的数据记录或状态。
+     * 主要作用：该方法用于 后台综合管理服务实现 中的编辑、状态变更或流程推进，保证外部只能修改业务允许变动的部分。
+     * 实现逻辑：实现时会先查询原始数据并做归属或状态校验，再回填可编辑字段执行更新，必要时返回更新后的详情结果。
      */
+    @Override
     public AdminUserVO updateUserStatus(Long id, AdminStatusUpdateDTO statusUpdateDTO) {
         if (!UserStatusEnum.isValid(statusUpdateDTO.getStatus())) {
             throw new BusinessException(ResultCodeEnum.PARAM_ERROR, "user status 取值非法，只能为 0、1");
@@ -138,10 +146,12 @@ public class AdminServiceImpl implements AdminService {
         return toAdminUserVO(targetUser);
     }
 
-    @Override
     /**
-     * 查询列表数据并返回结果。
+     * 方法说明：查询符合条件的列表数据。
+     * 主要作用：它为 后台综合管理服务实现 提供页面列表、后台筛选或批量展示所需的数据集合。
+     * 实现逻辑：实现逻辑通常是根据查询条件调用 Mapper 获取记录列表，再按需要转换为 VO 集合；当结果为空时会返回空集合或由上层统一处理。
      */
+    @Override
     public List<AdminChefVO> getChefList(AdminChefQueryDTO queryDTO) {
         List<Chef> chefList = adminMapper.selectChefList(queryDTO);
         if (chefList == null || chefList.isEmpty()) {
@@ -152,10 +162,12 @@ public class AdminServiceImpl implements AdminService {
                 .collect(Collectors.toList());
     }
 
-    @Override
     /**
-     * 处理 u pd at ec he fs ta tu s 相关逻辑。
+     * 方法说明：更新一条当前业务场景下的数据记录或状态。
+     * 主要作用：该方法用于 后台综合管理服务实现 中的编辑、状态变更或流程推进，保证外部只能修改业务允许变动的部分。
+     * 实现逻辑：实现时会先查询原始数据并做归属或状态校验，再回填可编辑字段执行更新，必要时返回更新后的详情结果。
      */
+    @Override
     public AdminChefVO updateChefStatus(Long id, AdminStatusUpdateDTO statusUpdateDTO) {
         if (!ChefStatusEnum.isValid(statusUpdateDTO.getStatus())) {
             throw new BusinessException(ResultCodeEnum.PARAM_ERROR, "chef status 取值非法，只能为 0、1");
@@ -179,10 +191,12 @@ public class AdminServiceImpl implements AdminService {
         return toAdminChefVO(targetChef);
     }
 
-    @Override
     /**
-     * 查询列表数据并返回结果。
+     * 方法说明：查询符合条件的列表数据。
+     * 主要作用：它为 后台综合管理服务实现 提供页面列表、后台筛选或批量展示所需的数据集合。
+     * 实现逻辑：实现逻辑通常是根据查询条件调用 Mapper 获取记录列表，再按需要转换为 VO 集合；当结果为空时会返回空集合或由上层统一处理。
      */
+    @Override
     public List<AdminOrderVO> getOrderList(AdminOrderQueryDTO queryDTO) {
         List<Order> orderList = adminMapper.selectOrderList(queryDTO);
         if (orderList == null || orderList.isEmpty()) {
@@ -193,16 +207,20 @@ public class AdminServiceImpl implements AdminService {
                 .collect(Collectors.toList());
     }
 
-    @Override
     /**
-     * 查询详情数据并返回结果。
+     * 方法说明：查询一条当前业务所需的详情数据。
+     * 主要作用：该方法用于 后台综合管理服务实现 中的详情展示、状态流转前校验或后续业务处理前的数据加载。
+     * 实现逻辑：实现时会根据主键、关联键或当前登录身份查出目标记录，再按需要转换成 VO，必要时会补充关联字段或做存在性校验。
      */
+    @Override
     public OrderDetailVO getOrderDetail(Long id) {
         return toOrderDetailVO(orderMapper.selectById(id));
     }
 
     /**
-     * 将实体对象转换为前端返回 VO。
+     * 方法说明：将实体对象或中间结果转换为接口返回所需的 VO 对象。
+     * 主要作用：该方法把 后台综合管理服务实现 中对外展示需要的字段映射集中在一起，避免多个业务入口重复编写相同的转换代码。
+     * 实现逻辑：实现时会先判断入参是否为空，然后逐项拷贝基础字段，必要时补充枚举描述、派生文本或关联展示信息后返回。
      */
     private AdminLoginVO toAdminLoginVO(Admin admin) {
         if (admin == null) {
@@ -218,7 +236,9 @@ public class AdminServiceImpl implements AdminService {
     }
 
     /**
-     * 比较原始密码和已存储密码是否匹配。
+     * 方法说明：在 后台综合管理服务实现 中处理 passwordMatches 相关的业务逻辑。
+     * 主要作用：该方法用于承接当前模块中的一个独立职责点，帮助主流程保持清晰并减少重复代码。
+     * 实现逻辑：实现逻辑会围绕当前方法职责完成必要的数据查询、规则判断、字段加工或结果返回，并在发现异常场景时及时中断流程。
      */
     private boolean passwordMatches(String rawPassword, String storedPassword) {
         if (!StringUtils.hasText(storedPassword)) {
@@ -233,7 +253,9 @@ public class AdminServiceImpl implements AdminService {
     }
 
     /**
-     * 将实体对象转换为前端返回 VO。
+     * 方法说明：将实体对象或中间结果转换为接口返回所需的 VO 对象。
+     * 主要作用：该方法把 后台综合管理服务实现 中对外展示需要的字段映射集中在一起，避免多个业务入口重复编写相同的转换代码。
+     * 实现逻辑：实现时会先判断入参是否为空，然后逐项拷贝基础字段，必要时补充枚举描述、派生文本或关联展示信息后返回。
      */
     private AdminUserVO toAdminUserVO(User user) {
         if (user == null) {
@@ -252,7 +274,9 @@ public class AdminServiceImpl implements AdminService {
     }
 
     /**
-     * 将实体对象转换为前端返回 VO。
+     * 方法说明：将实体对象或中间结果转换为接口返回所需的 VO 对象。
+     * 主要作用：该方法把 后台综合管理服务实现 中对外展示需要的字段映射集中在一起，避免多个业务入口重复编写相同的转换代码。
+     * 实现逻辑：实现时会先判断入参是否为空，然后逐项拷贝基础字段，必要时补充枚举描述、派生文本或关联展示信息后返回。
      */
     private AdminChefVO toAdminChefVO(Chef chef) {
         if (chef == null) {
@@ -274,7 +298,9 @@ public class AdminServiceImpl implements AdminService {
     }
 
     /**
-     * 将实体对象转换为前端返回 VO。
+     * 方法说明：将实体对象或中间结果转换为接口返回所需的 VO 对象。
+     * 主要作用：该方法把 后台综合管理服务实现 中对外展示需要的字段映射集中在一起，避免多个业务入口重复编写相同的转换代码。
+     * 实现逻辑：实现时会先判断入参是否为空，然后逐项拷贝基础字段，必要时补充枚举描述、派生文本或关联展示信息后返回。
      */
     private AdminOrderVO toAdminOrderVO(Order order) {
         if (order == null) {
@@ -298,7 +324,9 @@ public class AdminServiceImpl implements AdminService {
     }
 
     /**
-     * 将实体对象转换为前端返回 VO。
+     * 方法说明：将实体对象或中间结果转换为接口返回所需的 VO 对象。
+     * 主要作用：该方法把 后台综合管理服务实现 中对外展示需要的字段映射集中在一起，避免多个业务入口重复编写相同的转换代码。
+     * 实现逻辑：实现时会先判断入参是否为空，然后逐项拷贝基础字段，必要时补充枚举描述、派生文本或关联展示信息后返回。
      */
     private OrderDetailVO toOrderDetailVO(Order order) {
         if (order == null) {

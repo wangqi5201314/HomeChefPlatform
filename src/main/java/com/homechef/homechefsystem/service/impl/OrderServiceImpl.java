@@ -45,11 +45,13 @@ public class OrderServiceImpl implements OrderService {
     private final ChefServiceLocationMapper chefServiceLocationMapper;
     private final GeoDistanceService geoDistanceService;
 
+    /**
+     * 方法说明：根据用户提交的下单信息创建订单，并在同一事务中锁定对应档期。
+     * 主要作用：这是用户端下单的核心方法，用来防止同一档期在并发请求下被重复占用，同时把订单主数据一次性落库。
+     * 实现逻辑：方法会先规范化 timeSlot 并校验服务范围，然后通过 FOR UPDATE 锁住可预约档期；锁定成功后写入订单，再把档期更新为不可预约，任意一步失败都会随事务一起回滚。
+     */
     @Override
     @Transactional
-    /**
-     * 创建订单并在同一事务中锁定对应档期。
-     */
     public OrderDetailVO createOrder(OrderCreateDTO orderCreateDTO) {
         LocalDateTime now = LocalDateTime.now();
         String timeSlot = normalizeTimeSlot(orderCreateDTO.getTimeSlot());
@@ -104,18 +106,22 @@ public class OrderServiceImpl implements OrderService {
         return toOrderDetailVO(orderMapper.selectById(order.getId()));
     }
 
-    @Override
     /**
-     * 根据 ID 查询对应数据。
+     * 方法说明：查询一条当前业务所需的详情数据。
+     * 主要作用：该方法用于 用户端订单服务实现 中的详情展示、状态流转前校验或后续业务处理前的数据加载。
+     * 实现逻辑：实现时会根据主键、关联键或当前登录身份查出目标记录，再按需要转换成 VO，必要时会补充关联字段或做存在性校验。
      */
+    @Override
     public OrderDetailVO getById(Long id) {
         return toOrderDetailVO(orderMapper.selectById(id));
     }
 
-    @Override
     /**
-     * 查询列表数据并返回结果。
+     * 方法说明：查询符合条件的列表数据。
+     * 主要作用：它为 用户端订单服务实现 提供页面列表、后台筛选或批量展示所需的数据集合。
+     * 实现逻辑：实现逻辑通常是根据查询条件调用 Mapper 获取记录列表，再按需要转换为 VO 集合；当结果为空时会返回空集合或由上层统一处理。
      */
+    @Override
     public List<OrderListVO> getOrderList(OrderQueryDTO queryDTO) {
         List<Order> orderList = orderMapper.selectList(queryDTO);
         if (orderList == null || orderList.isEmpty()) {
@@ -126,11 +132,13 @@ public class OrderServiceImpl implements OrderService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 方法说明：取消指定订单，并在需要时释放该订单占用的厨师档期。
+     * 主要作用：它用来处理用户主动取消订单的场景，确保订单状态变更后，之前被锁定的可预约资源能够重新开放。
+     * 实现逻辑：方法会先查询订单并校验当前状态是否允许取消，再补齐取消原因、更新订单状态，最后按照 lockedOrderId 释放对应档期。
+     */
     @Override
     @Transactional
-    /**
-     * 取消指定订单并释放已锁定的档期。
-     */
     public OrderDetailVO cancelById(Long id, OrderCancelDTO orderCancelDTO) {
         Order existingOrder = orderMapper.selectById(id);
         if (existingOrder == null) {
@@ -160,7 +168,9 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * 处理 c an ca nc el by us er 相关逻辑。
+     * 方法说明：在 用户端订单服务实现 中处理 canCancelByUser 相关的业务逻辑。
+     * 主要作用：该方法用于承接当前模块中的一个独立职责点，帮助主流程保持清晰并减少重复代码。
+     * 实现逻辑：实现逻辑会围绕当前方法职责完成必要的数据查询、规则判断、字段加工或结果返回，并在发现异常场景时及时中断流程。
      */
     private boolean canCancelByUser(String orderStatus) {
         return OrderStatusEnum.PENDING_CONFIRM.equalsCode(orderStatus)
@@ -168,7 +178,9 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * 将实体对象转换为前端返回 VO。
+     * 方法说明：将实体对象或中间结果转换为接口返回所需的 VO 对象。
+     * 主要作用：该方法把 用户端订单服务实现 中对外展示需要的字段映射集中在一起，避免多个业务入口重复编写相同的转换代码。
+     * 实现逻辑：实现时会先判断入参是否为空，然后逐项拷贝基础字段，必要时补充枚举描述、派生文本或关联展示信息后返回。
      */
     private OrderListVO toOrderListVO(Order order) {
         if (order == null) {
@@ -195,7 +207,9 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * 将实体对象转换为前端返回 VO。
+     * 方法说明：将实体对象或中间结果转换为接口返回所需的 VO 对象。
+     * 主要作用：该方法把 用户端订单服务实现 中对外展示需要的字段映射集中在一起，避免多个业务入口重复编写相同的转换代码。
+     * 实现逻辑：实现时会先判断入参是否为空，然后逐项拷贝基础字段，必要时补充枚举描述、派生文本或关联展示信息后返回。
      */
     private OrderDetailVO toOrderDetailVO(Order order) {
         if (order == null) {
@@ -236,7 +250,9 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * 生成业务订单编号。
+     * 方法说明：生成当前业务流程所需的编号、验证码或标识值。
+     * 主要作用：它为 用户端订单服务实现 提供统一的标识生成能力，避免在主流程中混入随机数或格式拼接细节。
+     * 实现逻辑：实现逻辑通常会结合时间、随机数或固定前缀构造结果，并确保生成值满足当前业务展示或唯一性需求。
      */
     private String generateOrderNo() {
         return "ORD" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
@@ -244,14 +260,18 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * 生成订单确认码。
+     * 方法说明：生成当前业务流程所需的编号、验证码或标识值。
+     * 主要作用：它为 用户端订单服务实现 提供统一的标识生成能力，避免在主流程中混入随机数或格式拼接细节。
+     * 实现逻辑：实现逻辑通常会结合时间、随机数或固定前缀构造结果，并确保生成值满足当前业务展示或唯一性需求。
      */
     private String generateConfirmCode() {
         return String.valueOf(ThreadLocalRandom.current().nextInt(100000, 1000000));
     }
 
     /**
-     * 标准化并校验时段枚举值。
+     * 方法说明：对输入值做统一的格式化和规范化处理。
+     * 主要作用：该方法用于消除 用户端订单服务实现 中大小写、空白字符或别名写法带来的差异，保证后续逻辑按统一格式处理数据。
+     * 实现逻辑：实现时会先做空值判断，再进行 trim、大小写转换或枚举标准化，最终返回可直接参与业务判断的值。
      */
     private String normalizeTimeSlot(String timeSlot) {
         TimeSlotEnum timeSlotEnum = TimeSlotEnum.fromCode(timeSlot);
@@ -262,7 +282,9 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * 处理 l oc ka va il ab le sc he du le 相关逻辑。
+     * 方法说明：锁定指定厨师在指定日期和时段下仍可预约的档期记录。
+     * 主要作用：这个辅助方法用于控制并发下单，保证同一档期在同一时刻只会被一个事务成功占用。
+     * 实现逻辑：实现时会按厨师、服务日期和时段查询可预约档期，并通过 FOR UPDATE 加行锁；如果未查到记录，则直接提示当前档期不可预约。
      */
     private ChefSchedule lockAvailableSchedule(Long chefId, java.time.LocalDate serviceDate, String timeSlot) {
         // 当前方法必须在事务中调用，否则 MySQL 行锁会在查询结束后立刻释放，无法保护后续创建订单操作。
@@ -278,7 +300,9 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * 校验输入参数或业务状态是否合法。
+     * 方法说明：校验本次下单地址是否处于厨师当前服务半径范围内。
+     * 主要作用：它负责在订单正式创建前拦截超出服务范围的请求，避免无效订单继续进入档期锁定和支付流程。
+     * 实现逻辑：方法会依次加载用户地址、厨师信息和启用中的服务位置，检查经纬度及服务半径配置，再调用距离服务计算两点距离并与服务半径比较。
      */
     private void validateServiceRange(OrderCreateDTO orderCreateDTO) {
         UserAddress userAddress = userAddressMapper.selectById(orderCreateDTO.getAddressId());

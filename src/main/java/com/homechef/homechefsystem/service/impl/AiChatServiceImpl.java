@@ -31,10 +31,12 @@ public class AiChatServiceImpl implements AiChatService {
 
     private final BailianClient bailianClient;
 
-    @Override
     /**
-     * 处理 AI 对话请求并返回流式响应。
+     * 方法说明：接收前端聊天请求并开启一条面向小程序的 AI 流式会话。
+     * 主要作用：这是“小嘉AI”对外暴露的核心入口，用来把用户问题和历史上下文整理后，以 SSE 的方式实时返回模型输出。
+     * 实现逻辑：方法会先构建包含系统提示词、历史消息和当前提问的消息列表，再创建 SseEmitter，并在异步线程中调用流式对话处理逻辑。
      */
+    @Override
     public SseEmitter chat(AiChatRequestDTO aiChatRequestDTO) {
         List<BailianClient.BailianMessage> messages = buildMessages(aiChatRequestDTO);
 
@@ -45,7 +47,9 @@ public class AiChatServiceImpl implements AiChatService {
     }
 
     /**
-     * 以流式方式调用模型并将分片结果持续推送给前端。
+     * 方法说明：把整理好的消息发送给大模型，并把返回内容持续推送给前端。
+     * 主要作用：该方法承担了 AI 模块真正的流式交互工作，让用户可以边生成边看到回答内容。
+     * 实现逻辑：实现时会调用百炼客户端进行流式请求，每收到一段文本就通过 SSE 推送 message 事件，完成后发送 done 事件，异常时则发送 error 事件。
      */
     private void streamChat(SseEmitter emitter, List<BailianClient.BailianMessage> messages) {
         try {
@@ -60,7 +64,9 @@ public class AiChatServiceImpl implements AiChatService {
     }
 
     /**
-     * 组装发送给模型的完整消息列表。
+     * 方法说明：构建发往大模型的完整消息列表。
+     * 主要作用：它的作用是把系统角色设定、历史对话和本轮用户输入按模型要求的顺序拼接起来，保证回答风格与上下文连续性。
+     * 实现逻辑：方法会先放入系统提示词，再附加经过清洗和裁剪的历史消息，最后追加当前用户消息，形成最终调用模型的 messages 数组。
      */
     private List<BailianClient.BailianMessage> buildMessages(AiChatRequestDTO aiChatRequestDTO) {
         String message = aiChatRequestDTO.getMessage();
@@ -83,7 +89,9 @@ public class AiChatServiceImpl implements AiChatService {
     }
 
     /**
-     * 过滤并截取最近的历史消息作为上下文。
+     * 方法说明：清洗并裁剪前端传入的历史对话记录。
+     * 主要作用：该方法用于控制上下文规模，既尽量保留最近对话，又避免把过长历史直接发送给模型造成额外开销。
+     * 实现逻辑：实现时会校验角色是否合法、过滤空内容，并仅保留最近限定条数的消息，再转换为模型客户端需要的消息对象。
      */
     private List<BailianClient.BailianMessage> buildHistoryMessages(List<AiHistoryMessageDTO> history) {
         if (history == null || history.isEmpty()) {
@@ -116,7 +124,9 @@ public class AiChatServiceImpl implements AiChatService {
     }
 
     /**
-     * 向前端发送一段 AI 流式回复内容。
+     * 方法说明：在 小嘉AI对话服务实现 中处理 sendMessageChunk 相关的业务逻辑。
+     * 主要作用：该方法用于承接当前模块中的一个独立职责点，帮助主流程保持清晰并减少重复代码。
+     * 实现逻辑：实现逻辑会围绕当前方法职责完成必要的数据查询、规则判断、字段加工或结果返回，并在发现异常场景时及时中断流程。
      */
     private void sendMessageChunk(SseEmitter emitter, String chunk) {
         try {
@@ -131,7 +141,9 @@ public class AiChatServiceImpl implements AiChatService {
     }
 
     /**
-     * 在 AI 流式调用失败时向前端发送错误事件。
+     * 方法说明：在 小嘉AI对话服务实现 中处理 sendErrorEvent 相关的业务逻辑。
+     * 主要作用：该方法用于承接当前模块中的一个独立职责点，帮助主流程保持清晰并减少重复代码。
+     * 实现逻辑：实现逻辑会围绕当前方法职责完成必要的数据查询、规则判断、字段加工或结果返回，并在发现异常场景时及时中断流程。
      */
     private void sendErrorEvent(SseEmitter emitter, Exception exception) {
         String message = exception instanceof BusinessException

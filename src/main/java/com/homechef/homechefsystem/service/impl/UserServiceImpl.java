@@ -32,10 +32,12 @@ public class UserServiceImpl implements UserService {
     private final BCryptPasswordEncoder passwordEncoder;
     private final WechatMiniProgramService wechatMiniProgramService;
 
-    @Override
     /**
-     * 执行登录校验并返回登录结果。
+     * 方法说明：在 用户服务实现 中处理 login 相关的业务逻辑。
+     * 主要作用：该方法用于承接当前模块中的一个独立职责点，帮助主流程保持清晰并减少重复代码。
+     * 实现逻辑：实现逻辑会围绕当前方法职责完成必要的数据查询、规则判断、字段加工或结果返回，并在发现异常场景时及时中断流程。
      */
+    @Override
     public UserVO login(UserLoginDTO userLoginDTO) {
         User user = userMapper.selectByPhone(userLoginDTO.getPhone());
         if (user == null) {
@@ -52,10 +54,12 @@ public class UserServiceImpl implements UserService {
         return finishLogin(user);
     }
 
-    @Override
     /**
-     * 使用微信登录信息完成用户登录。
+     * 方法说明：通过微信小程序登录态完成平台用户登录或自动注册。
+     * 主要作用：它让用户可以用微信 code 直接进入系统，减少传统账号密码登录门槛。
+     * 实现逻辑：方法会先调用微信登录服务换取 openid，再按 openid 查询本地用户；若用户不存在则自动创建，最后统一执行登录收尾并返回 token。
      */
+    @Override
     public UserVO loginByWechat(UserWechatLoginDTO userWechatLoginDTO) {
         WechatMiniProgramService.WechatLoginInfo wechatLoginInfo =
                 wechatMiniProgramService.code2Session(userWechatLoginDTO.getCode());
@@ -70,10 +74,12 @@ public class UserServiceImpl implements UserService {
         return finishLogin(user);
     }
 
-    @Override
     /**
-     * 执行注册流程并返回注册结果。
+     * 方法说明：在 用户服务实现 中处理 register 相关的业务逻辑。
+     * 主要作用：该方法用于承接当前模块中的一个独立职责点，帮助主流程保持清晰并减少重复代码。
+     * 实现逻辑：实现逻辑会围绕当前方法职责完成必要的数据查询、规则判断、字段加工或结果返回，并在发现异常场景时及时中断流程。
      */
+    @Override
     public UserVO register(UserRegisterDTO userRegisterDTO) {
         validateRegister(userRegisterDTO);
         ensurePhoneAvailable(userRegisterDTO.getPhone(), null);
@@ -97,10 +103,12 @@ public class UserServiceImpl implements UserService {
         return toUserVO(userMapper.selectById(user.getId()));
     }
 
-    @Override
     /**
-     * 修改当前主体的登录密码。
+     * 方法说明：在 用户服务实现 中处理 changePassword 相关的业务逻辑。
+     * 主要作用：该方法用于承接当前模块中的一个独立职责点，帮助主流程保持清晰并减少重复代码。
+     * 实现逻辑：实现逻辑会围绕当前方法职责完成必要的数据查询、规则判断、字段加工或结果返回，并在发现异常场景时及时中断流程。
      */
+    @Override
     public void changePassword(UserChangePasswordDTO userChangePasswordDTO) {
         Long currentUserId = LoginUserContext.getUserId();
         if (currentUserId == null) {
@@ -130,18 +138,22 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    @Override
     /**
-     * 根据 ID 查询对应数据。
+     * 方法说明：查询一条当前业务所需的详情数据。
+     * 主要作用：该方法用于 用户服务实现 中的详情展示、状态流转前校验或后续业务处理前的数据加载。
+     * 实现逻辑：实现时会根据主键、关联键或当前登录身份查出目标记录，再按需要转换成 VO，必要时会补充关联字段或做存在性校验。
      */
+    @Override
     public UserVO getById(Long id) {
         return toUserVO(userMapper.selectById(id));
     }
 
-    @Override
     /**
-     * 获取当前登录主体的资料信息。
+     * 方法说明：查询一条当前业务所需的详情数据。
+     * 主要作用：该方法用于 用户服务实现 中的详情展示、状态流转前校验或后续业务处理前的数据加载。
+     * 实现逻辑：实现时会根据主键、关联键或当前登录身份查出目标记录，再按需要转换成 VO，必要时会补充关联字段或做存在性校验。
      */
+    @Override
     public UserVO getCurrentUser() {
         Long currentUserId = LoginUserContext.getUserId();
         if (currentUserId == null) {
@@ -150,10 +162,12 @@ public class UserServiceImpl implements UserService {
         return getById(currentUserId);
     }
 
-    @Override
     /**
-     * 更新当前登录主体的资料信息。
+     * 方法说明：修改当前登录用户的个人资料。
+     * 主要作用：它把昵称、头像、手机号和紧急联系人等个人信息更新集中到一个入口，方便前端统一提交。
+     * 实现逻辑：方法会先查询当前用户，再分别处理手机号和紧急联系人手机号的唯一性校验，最后更新实体并返回最新用户资料。
      */
+    @Override
     public UserVO updateCurrentUser(UserUpdateDTO userUpdateDTO) {
         Long currentUserId = LoginUserContext.getUserId();
         if (currentUserId == null) {
@@ -185,7 +199,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 按需将输入值应用到目标对象。
+     * 方法说明：在 用户服务实现 中处理 applyPhoneIfPresent 相关的业务逻辑。
+     * 主要作用：该方法用于承接当前模块中的一个独立职责点，帮助主流程保持清晰并减少重复代码。
+     * 实现逻辑：实现逻辑会围绕当前方法职责完成必要的数据查询、规则判断、字段加工或结果返回，并在发现异常场景时及时中断流程。
      */
     private void applyPhoneIfPresent(User existingUser, String phone) {
         if (!StringUtils.hasText(phone)) {
@@ -197,7 +213,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 校验并确保当前业务条件成立。
+     * 方法说明：确保当前业务状态满足继续执行的要求。
+     * 主要作用：它用于把 用户服务实现 中必须成立的约束条件显式收口，避免非法状态继续向后流转。
+     * 实现逻辑：实现时会读取当前对象的关键状态或字段，并与目标要求进行比较；若不满足则立即抛出业务异常。
      */
     private void ensurePhoneAvailable(String phone, Long currentUserId) {
         if (!StringUtils.hasText(phone)) {
@@ -222,7 +240,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 校验输入参数或业务状态是否合法。
+     * 方法说明：校验当前业务输入或状态是否满足执行条件。
+     * 主要作用：它用于把 用户服务实现 中的前置规则集中收口，避免核心流程夹杂过多重复的条件判断。
+     * 实现逻辑：实现逻辑会逐项检查关键字段、状态或业务约束，一旦发现不满足条件的情况就立即抛出业务异常阻断流程。
      */
     private void validateEmergencyContactPhone(String emergencyContactPhone, Long currentUserId, String currentUserPhone) {
         if (!StringUtils.hasText(emergencyContactPhone)) {
@@ -251,7 +271,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 创建一个基于微信身份的新用户。
+     * 方法说明：新增一条当前业务场景下的数据记录。
+     * 主要作用：它承担 用户服务实现 中的新增入口，把前端入参转换为可持久化的实体数据。
+     * 实现逻辑：实现逻辑通常会先校验关键字段和归属关系，再组装实体写入数据库，最后返回新增后的最新结果。
      */
     private User createWechatUser(WechatMiniProgramService.WechatLoginInfo wechatLoginInfo) {
         LocalDateTime now = LocalDateTime.now();
@@ -281,7 +303,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 补充登录后置处理并返回用户信息。
+     * 方法说明：在 用户服务实现 中处理 finishLogin 相关的业务逻辑。
+     * 主要作用：该方法用于承接当前模块中的一个独立职责点，帮助主流程保持清晰并减少重复代码。
+     * 实现逻辑：实现逻辑会围绕当前方法职责完成必要的数据查询、规则判断、字段加工或结果返回，并在发现异常场景时及时中断流程。
      */
     private UserVO finishLogin(User user) {
         LocalDateTime now = LocalDateTime.now();
@@ -290,7 +314,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 校验输入参数或业务状态是否合法。
+     * 方法说明：校验当前业务输入或状态是否满足执行条件。
+     * 主要作用：它用于把 用户服务实现 中的前置规则集中收口，避免核心流程夹杂过多重复的条件判断。
+     * 实现逻辑：实现逻辑会逐项检查关键字段、状态或业务约束，一旦发现不满足条件的情况就立即抛出业务异常阻断流程。
      */
     private void validateUserForLogin(User user) {
         if (user.getStatus() == null || !UserStatusEnum.NORMAL.getCode().equals(user.getStatus())) {
@@ -299,7 +325,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 校验输入参数或业务状态是否合法。
+     * 方法说明：校验当前业务输入或状态是否满足执行条件。
+     * 主要作用：它用于把 用户服务实现 中的前置规则集中收口，避免核心流程夹杂过多重复的条件判断。
+     * 实现逻辑：实现逻辑会逐项检查关键字段、状态或业务约束，一旦发现不满足条件的情况就立即抛出业务异常阻断流程。
      */
     private void validateRegister(UserRegisterDTO userRegisterDTO) {
         if (!userRegisterDTO.getPassword().equals(userRegisterDTO.getConfirmPassword())) {
@@ -308,7 +336,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 校验输入参数或业务状态是否合法。
+     * 方法说明：校验当前业务输入或状态是否满足执行条件。
+     * 主要作用：它用于把 用户服务实现 中的前置规则集中收口，避免核心流程夹杂过多重复的条件判断。
+     * 实现逻辑：实现逻辑会逐项检查关键字段、状态或业务约束，一旦发现不满足条件的情况就立即抛出业务异常阻断流程。
      */
     private void validateChangePassword(UserChangePasswordDTO userChangePasswordDTO) {
         if (!userChangePasswordDTO.getNewPassword().equals(userChangePasswordDTO.getConfirmPassword())) {
@@ -317,7 +347,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 基于手机号生成默认昵称。
+     * 方法说明：构建当前业务流程后续需要复用的中间结果。
+     * 主要作用：这个辅助方法把 用户服务实现 中重复使用的数据结构提前整理好，减少主流程中的重复计算和分支判断。
+     * 实现逻辑：实现逻辑通常会对输入参数做空值保护，再根据业务规则拼装映射、集合、文本或比较器，供后续步骤直接复用。
      */
     private String buildPhoneNickname(String phone, String nickname) {
         if (StringUtils.hasText(nickname)) {
@@ -330,7 +362,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 基于微信 openid 生成默认昵称。
+     * 方法说明：构建当前业务流程后续需要复用的中间结果。
+     * 主要作用：这个辅助方法把 用户服务实现 中重复使用的数据结构提前整理好，减少主流程中的重复计算和分支判断。
+     * 实现逻辑：实现逻辑通常会对输入参数做空值保护，再根据业务规则拼装映射、集合、文本或比较器，供后续步骤直接复用。
      */
     private String buildWechatNickname(String openid) {
         if (!StringUtils.hasText(openid)) {
@@ -343,7 +377,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 将实体对象转换为前端返回 VO。
+     * 方法说明：将实体对象或中间结果转换为接口返回所需的 VO 对象。
+     * 主要作用：该方法把 用户服务实现 中对外展示需要的字段映射集中在一起，避免多个业务入口重复编写相同的转换代码。
+     * 实现逻辑：实现时会先判断入参是否为空，然后逐项拷贝基础字段，必要时补充枚举描述、派生文本或关联展示信息后返回。
      */
     private UserVO toUserVO(User user) {
         if (user == null) {
