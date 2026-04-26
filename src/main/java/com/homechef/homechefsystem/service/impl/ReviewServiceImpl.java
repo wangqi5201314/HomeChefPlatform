@@ -38,6 +38,9 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     @Transactional
+    /**
+     * 创建数据并返回处理结果。
+     */
     public ReviewVO create(ReviewCreateDTO reviewCreateDTO) {
         if (reviewCreateDTO.getOrderId() == null) {
             throw new BusinessException(ResultCodeEnum.PARAM_ERROR, "orderId不能为空");
@@ -102,6 +105,9 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
+    /**
+     * 查询列表数据并返回结果。
+     */
     public List<ReviewVO> getChefReviewList(Long chefId) {
         List<Review> reviewList = reviewMapper.selectList(ReviewQueryDTO.builder().chefId(chefId).build());
         if (reviewList == null || reviewList.isEmpty()) {
@@ -113,6 +119,9 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
+    /**
+     * 查询列表数据并返回结果。
+     */
     public List<ReviewVO> getUserReviewList(Long userId) {
         List<Review> reviewList = reviewMapper.selectList(ReviewQueryDTO.builder().userId(userId).build());
         if (reviewList == null || reviewList.isEmpty()) {
@@ -124,6 +133,9 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
+    /**
+     * 根据 ID 回复指定记录。
+     */
     public ReviewVO replyById(Long id, ReviewReplyDTO reviewReplyDTO) {
         Review existingReview = reviewMapper.selectById(id);
         if (existingReview == null) {
@@ -138,21 +150,33 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
+    /**
+     * 处理 o rd er ex is ts 相关逻辑。
+     */
     public boolean orderExists(Long orderId) {
         return orderMapper.selectById(orderId) != null;
     }
 
     @Override
+    /**
+     * 判断指定条件的数据是否存在。
+     */
     public boolean existsByOrderId(Long orderId) {
         return reviewMapper.countByOrderId(orderId) > 0;
     }
 
     @Override
+    /**
+     * 根据订单 ID 查询对应数据。
+     */
     public ReviewVO getByOrderId(Long orderId) {
         return toReviewVO(reviewMapper.selectByOrderId(orderId));
     }
 
     @Override
+    /**
+     * 根据订单编号查询对应数据。
+     */
     public ReviewVO getByOrderNo(String orderNo) {
         if (orderNo == null || orderNo.trim().isEmpty()) {
             return null;
@@ -164,6 +188,9 @@ public class ReviewServiceImpl implements ReviewService {
         return toReviewVO(reviewMapper.selectByOrderId(order.getId()));
     }
 
+    /**
+     * 计算评价的综合评分。
+     */
     private BigDecimal calculateOverallScore(Integer dishScore,
                                              Integer serviceScore,
                                              Integer skillScore,
@@ -179,6 +206,9 @@ public class ReviewServiceImpl implements ReviewService {
         return total.divide(BigDecimal.valueOf(4), 2, RoundingMode.HALF_UP);
     }
 
+    /**
+     * 校验输入参数或业务状态是否合法。
+     */
     private void validateScore(Integer score, String fieldName) {
         if (score == null) {
             throw new BusinessException(ResultCodeEnum.PARAM_ERROR, fieldName + "不能为空");
@@ -188,6 +218,9 @@ public class ReviewServiceImpl implements ReviewService {
         }
     }
 
+    /**
+     * 将实体对象转换为前端返回 VO。
+     */
     private ReviewVO toReviewVO(Review review) {
         if (review == null) {
             return null;

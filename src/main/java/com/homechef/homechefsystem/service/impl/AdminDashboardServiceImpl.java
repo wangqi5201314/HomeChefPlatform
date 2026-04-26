@@ -24,6 +24,9 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
     private final OrderMapper orderMapper;
 
     @Override
+    /**
+     * 汇总后台首页需要展示的概览统计信息。
+     */
     public AdminDashboardOverviewVO getOverview() {
         LocalDate today = LocalDate.now();
         LocalDateTime startTime = today.atStartOfDay();

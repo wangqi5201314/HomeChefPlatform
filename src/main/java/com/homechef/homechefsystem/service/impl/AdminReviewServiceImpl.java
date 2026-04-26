@@ -20,6 +20,9 @@ public class AdminReviewServiceImpl implements AdminReviewService {
     private final ReviewMapper reviewMapper;
 
     @Override
+    /**
+     * 查询列表数据并返回结果。
+     */
     public List<AdminReviewVO> getReviewList(AdminReviewQueryDTO queryDTO) {
         List<Review> reviewList = reviewMapper.selectAdminList(queryDTO);
         if (reviewList == null || reviewList.isEmpty()) {
@@ -31,10 +34,16 @@ public class AdminReviewServiceImpl implements AdminReviewService {
     }
 
     @Override
+    /**
+     * 查询详情数据并返回结果。
+     */
     public AdminReviewDetailVO getReviewDetail(Long id) {
         return toAdminReviewDetailVO(reviewMapper.selectById(id));
     }
 
+    /**
+     * 将实体对象转换为前端返回 VO。
+     */
     private AdminReviewVO toAdminReviewVO(Review review) {
         if (review == null) {
             return null;
@@ -58,6 +67,9 @@ public class AdminReviewServiceImpl implements AdminReviewService {
                 .build();
     }
 
+    /**
+     * 将实体对象转换为前端返回 VO。
+     */
     private AdminReviewDetailVO toAdminReviewDetailVO(Review review) {
         if (review == null) {
             return null;

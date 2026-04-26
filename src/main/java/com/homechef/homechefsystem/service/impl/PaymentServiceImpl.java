@@ -31,6 +31,9 @@ public class PaymentServiceImpl implements PaymentService {
     private final OrderMapper orderMapper;
 
     @Override
+    /**
+     * 创建数据并返回处理结果。
+     */
     public PaymentVO create(PaymentCreateDTO paymentCreateDTO) {
         Payment existingPayment = paymentMapper.selectByOrderId(paymentCreateDTO.getOrderId());
         if (existingPayment != null) {
@@ -67,11 +70,17 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
+    /**
+     * 查询指定订单对应的支付状态。
+     */
     public PaymentStatusVO getStatusByOrderId(Long orderId) {
         return toPaymentStatusVO(paymentMapper.selectByOrderId(orderId));
     }
 
     @Override
+    /**
+     * 模拟指定订单支付成功。
+     */
     public PaymentStatusVO mockSuccessByOrderId(Long orderId) {
         Payment payment = paymentMapper.selectByOrderId(orderId);
         if (payment == null) {
@@ -103,6 +112,9 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
+    /**
+     * 处理 r ef un d 相关逻辑。
+     */
     public PaymentStatusVO refund(PaymentRefundDTO paymentRefundDTO) {
         Payment payment = paymentMapper.selectByOrderId(paymentRefundDTO.getOrderId());
         if (payment == null) {
@@ -132,10 +144,16 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
+    /**
+     * 处理 o rd er ex is ts 相关逻辑。
+     */
     public boolean orderExists(Long orderId) {
         return orderMapper.selectById(orderId) != null;
     }
 
+    /**
+     * 将实体对象转换为前端返回 VO。
+     */
     private PaymentVO toPaymentVO(Payment payment) {
         if (payment == null) {
             return null;
@@ -152,6 +170,9 @@ public class PaymentServiceImpl implements PaymentService {
                 .build();
     }
 
+    /**
+     * 将实体对象转换为前端返回 VO。
+     */
     private PaymentStatusVO toPaymentStatusVO(Payment payment) {
         if (payment == null) {
             return null;
@@ -171,16 +192,25 @@ public class PaymentServiceImpl implements PaymentService {
                 .build();
     }
 
+    /**
+     * 生成支付单号。
+     */
     private String generatePayNo() {
         return "PAY" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
                 + ThreadLocalRandom.current().nextInt(1000, 10000);
     }
 
+    /**
+     * 生成模拟交易流水号。
+     */
     private String generateTransactionId() {
         return "TXN" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
                 + ThreadLocalRandom.current().nextInt(1000, 10000);
     }
 
+    /**
+     * 生成退款单号。
+     */
     private String generateRefundNo() {
         return "REF" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
                 + ThreadLocalRandom.current().nextInt(1000, 10000);

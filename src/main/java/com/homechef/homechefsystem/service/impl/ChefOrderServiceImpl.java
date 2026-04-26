@@ -32,6 +32,9 @@ public class ChefOrderServiceImpl implements ChefOrderService {
     private final ChefScheduleMapper chefScheduleMapper;
 
     @Override
+    /**
+     * 获取当前登录厨师的订单列表。
+     */
     public List<ChefOrderListVO> getCurrentChefOrderList(String orderStatus) {
         Long chefId = requireCurrentChefId();
         if (StringUtils.hasText(orderStatus) && !OrderStatusEnum.isValid(orderStatus)) {
@@ -48,11 +51,17 @@ public class ChefOrderServiceImpl implements ChefOrderService {
     }
 
     @Override
+    /**
+     * 获取当前登录厨师可查看的订单详情。
+     */
     public ChefOrderDetailVO getCurrentChefOrderDetail(Long id) {
         return toChefOrderDetailVO(getOwnedOrder(id));
     }
 
     @Override
+    /**
+     * 执行接单处理。
+     */
     public ChefOrderDetailVO accept(Long id) {
         Order order = getOwnedOrder(id);
         ensureOrderStatus(order, OrderStatusEnum.PENDING_CONFIRM, "待确认订单之外不能接单");
@@ -62,6 +71,9 @@ public class ChefOrderServiceImpl implements ChefOrderService {
 
     @Override
     @Transactional
+    /**
+     * 执行拒单处理。
+     */
     public ChefOrderDetailVO reject(Long id, ChefOrderRejectDTO chefOrderRejectDTO) {
         Order order = getOwnedOrder(id);
         ensureOrderStatus(order, OrderStatusEnum.PENDING_CONFIRM, "待确认订单之外不能拒单");
@@ -72,6 +84,9 @@ public class ChefOrderServiceImpl implements ChefOrderService {
     }
 
     @Override
+    /**
+     * 执行开始服务处理。
+     */
     public ChefOrderDetailVO start(Long id) {
         Order order = getOwnedOrder(id);
         ensureOrderStatus(order, OrderStatusEnum.PAID, "非已支付订单不能开始服务");
@@ -81,6 +96,9 @@ public class ChefOrderServiceImpl implements ChefOrderService {
 
     @Override
     @Transactional
+    /**
+     * 执行完成处理。
+     */
     public ChefOrderDetailVO finish(Long id) {
         Order order = getOwnedOrder(id);
         ensureOrderStatus(order, OrderStatusEnum.IN_SERVICE, "非服务中订单不能完成服务");
@@ -93,6 +111,9 @@ public class ChefOrderServiceImpl implements ChefOrderService {
         return toChefOrderDetailVO(getOwnedOrder(id));
     }
 
+    /**
+     * 获取并校验当前登录厨师的 ID。
+     */
     private Long requireCurrentChefId() {
         Long chefId = LoginUserContext.getChefId();
         if (chefId == null) {
@@ -101,6 +122,9 @@ public class ChefOrderServiceImpl implements ChefOrderService {
         return chefId;
     }
 
+    /**
+     * 处理 g et ow ne do rd er 相关逻辑。
+     */
     private Order getOwnedOrder(Long id) {
         Long chefId = requireCurrentChefId();
         Order order = orderMapper.selectByIdAndChefId(id, chefId);
@@ -110,16 +134,25 @@ public class ChefOrderServiceImpl implements ChefOrderService {
         return order;
     }
 
+    /**
+     * 校验并确保当前业务条件成立。
+     */
     private void ensureOrderStatus(Order order, OrderStatusEnum expectedStatus, String message) {
         if (!expectedStatus.equalsCode(order.getOrderStatus())) {
             throw new BusinessException(ResultCodeEnum.FAIL, message);
         }
     }
 
+    /**
+     * 处理 u pd at eo rd er st at us 相关逻辑。
+     */
     private void updateOrderStatus(Order order, String orderStatus, String reason) {
         updateOrderStatus(order, orderStatus, reason, LocalDateTime.now());
     }
 
+    /**
+     * 处理 u pd at eo rd er st at us 相关逻辑。
+     */
     private void updateOrderStatus(Order order, String orderStatus, String reason, LocalDateTime updatedAt) {
         int rows;
         if (StringUtils.hasText(reason)) {
@@ -132,6 +165,9 @@ public class ChefOrderServiceImpl implements ChefOrderService {
         }
     }
 
+    /**
+     * 将实体对象转换为前端返回 VO。
+     */
     private ChefOrderListVO toChefOrderListVO(Order order) {
         if (order == null) {
             return null;
@@ -155,6 +191,9 @@ public class ChefOrderServiceImpl implements ChefOrderService {
                 .build();
     }
 
+    /**
+     * 将实体对象转换为前端返回 VO。
+     */
     private ChefOrderDetailVO toChefOrderDetailVO(Order order) {
         if (order == null) {
             return null;

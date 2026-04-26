@@ -33,6 +33,9 @@ public class UserServiceImpl implements UserService {
     private final WechatMiniProgramService wechatMiniProgramService;
 
     @Override
+    /**
+     * 执行登录校验并返回登录结果。
+     */
     public UserVO login(UserLoginDTO userLoginDTO) {
         User user = userMapper.selectByPhone(userLoginDTO.getPhone());
         if (user == null) {
@@ -50,6 +53,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    /**
+     * 使用微信登录信息完成用户登录。
+     */
     public UserVO loginByWechat(UserWechatLoginDTO userWechatLoginDTO) {
         WechatMiniProgramService.WechatLoginInfo wechatLoginInfo =
                 wechatMiniProgramService.code2Session(userWechatLoginDTO.getCode());
@@ -65,6 +71,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    /**
+     * 执行注册流程并返回注册结果。
+     */
     public UserVO register(UserRegisterDTO userRegisterDTO) {
         validateRegister(userRegisterDTO);
         ensurePhoneAvailable(userRegisterDTO.getPhone(), null);
@@ -89,6 +98,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    /**
+     * 修改当前主体的登录密码。
+     */
     public void changePassword(UserChangePasswordDTO userChangePasswordDTO) {
         Long currentUserId = LoginUserContext.getUserId();
         if (currentUserId == null) {
@@ -119,11 +131,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    /**
+     * 根据 ID 查询对应数据。
+     */
     public UserVO getById(Long id) {
         return toUserVO(userMapper.selectById(id));
     }
 
     @Override
+    /**
+     * 获取当前登录主体的资料信息。
+     */
     public UserVO getCurrentUser() {
         Long currentUserId = LoginUserContext.getUserId();
         if (currentUserId == null) {
@@ -133,6 +151,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    /**
+     * 更新当前登录主体的资料信息。
+     */
     public UserVO updateCurrentUser(UserUpdateDTO userUpdateDTO) {
         Long currentUserId = LoginUserContext.getUserId();
         if (currentUserId == null) {
@@ -163,6 +184,9 @@ public class UserServiceImpl implements UserService {
         return toUserVO(userMapper.selectById(currentUserId));
     }
 
+    /**
+     * 按需将输入值应用到目标对象。
+     */
     private void applyPhoneIfPresent(User existingUser, String phone) {
         if (!StringUtils.hasText(phone)) {
             return;
@@ -172,6 +196,9 @@ public class UserServiceImpl implements UserService {
         existingUser.setPhone(normalizedPhone);
     }
 
+    /**
+     * 校验并确保当前业务条件成立。
+     */
     private void ensurePhoneAvailable(String phone, Long currentUserId) {
         if (!StringUtils.hasText(phone)) {
             return;
@@ -194,6 +221,9 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    /**
+     * 校验输入参数或业务状态是否合法。
+     */
     private void validateEmergencyContactPhone(String emergencyContactPhone, Long currentUserId, String currentUserPhone) {
         if (!StringUtils.hasText(emergencyContactPhone)) {
             return;
@@ -220,6 +250,9 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    /**
+     * 创建一个基于微信身份的新用户。
+     */
     private User createWechatUser(WechatMiniProgramService.WechatLoginInfo wechatLoginInfo) {
         LocalDateTime now = LocalDateTime.now();
         User user = User.builder()
@@ -247,30 +280,45 @@ public class UserServiceImpl implements UserService {
         return createdUser;
     }
 
+    /**
+     * 补充登录后置处理并返回用户信息。
+     */
     private UserVO finishLogin(User user) {
         LocalDateTime now = LocalDateTime.now();
         userMapper.updateLoginTimeById(user.getId(), now, now);
         return toUserVO(userMapper.selectById(user.getId()));
     }
 
+    /**
+     * 校验输入参数或业务状态是否合法。
+     */
     private void validateUserForLogin(User user) {
         if (user.getStatus() == null || !UserStatusEnum.NORMAL.getCode().equals(user.getStatus())) {
             throw new BusinessException(ResultCodeEnum.FORBIDDEN, "user is disabled");
         }
     }
 
+    /**
+     * 校验输入参数或业务状态是否合法。
+     */
     private void validateRegister(UserRegisterDTO userRegisterDTO) {
         if (!userRegisterDTO.getPassword().equals(userRegisterDTO.getConfirmPassword())) {
             throw new BusinessException(ResultCodeEnum.PARAM_ERROR, "confirmPassword does not match password");
         }
     }
 
+    /**
+     * 校验输入参数或业务状态是否合法。
+     */
     private void validateChangePassword(UserChangePasswordDTO userChangePasswordDTO) {
         if (!userChangePasswordDTO.getNewPassword().equals(userChangePasswordDTO.getConfirmPassword())) {
             throw new BusinessException(ResultCodeEnum.PARAM_ERROR, "confirmPassword does not match newPassword");
         }
     }
 
+    /**
+     * 基于手机号生成默认昵称。
+     */
     private String buildPhoneNickname(String phone, String nickname) {
         if (StringUtils.hasText(nickname)) {
             return nickname.trim();
@@ -281,6 +329,9 @@ public class UserServiceImpl implements UserService {
         return phone;
     }
 
+    /**
+     * 基于微信 openid 生成默认昵称。
+     */
     private String buildWechatNickname(String openid) {
         if (!StringUtils.hasText(openid)) {
             return "微信用户";
@@ -291,6 +342,9 @@ public class UserServiceImpl implements UserService {
         return "微信用户" + openid.substring(openid.length() - 6);
     }
 
+    /**
+     * 将实体对象转换为前端返回 VO。
+     */
     private UserVO toUserVO(User user) {
         if (user == null) {
             return null;

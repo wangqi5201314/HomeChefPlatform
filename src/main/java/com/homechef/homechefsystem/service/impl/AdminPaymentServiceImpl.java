@@ -24,11 +24,17 @@ public class AdminPaymentServiceImpl implements AdminPaymentService {
     private final PaymentMapper paymentMapper;
 
     @Override
+    /**
+     * 处理 g et pa ym en td et ai lb yo rd er id 相关逻辑。
+     */
     public AdminPaymentDetailVO getPaymentDetailByOrderId(Long orderId) {
         return toAdminPaymentDetailVO(paymentMapper.selectByOrderId(orderId));
     }
 
     @Override
+    /**
+     * 查询列表数据并返回结果。
+     */
     public List<AdminPaymentVO> getPaymentList(AdminPaymentQueryDTO queryDTO) {
         validateQuery(queryDTO);
 
@@ -41,6 +47,9 @@ public class AdminPaymentServiceImpl implements AdminPaymentService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 校验输入参数或业务状态是否合法。
+     */
     private void validateQuery(AdminPaymentQueryDTO queryDTO) {
         if (queryDTO == null) {
             return;
@@ -57,6 +66,9 @@ public class AdminPaymentServiceImpl implements AdminPaymentService {
         }
     }
 
+    /**
+     * 将实体对象转换为前端返回 VO。
+     */
     private AdminPaymentVO toAdminPaymentVO(Payment payment) {
         if (payment == null) {
             return null;
@@ -75,6 +87,9 @@ public class AdminPaymentServiceImpl implements AdminPaymentService {
                 .build();
     }
 
+    /**
+     * 将实体对象转换为前端返回 VO。
+     */
     private AdminPaymentDetailVO toAdminPaymentDetailVO(Payment payment) {
         if (payment == null) {
             return null;

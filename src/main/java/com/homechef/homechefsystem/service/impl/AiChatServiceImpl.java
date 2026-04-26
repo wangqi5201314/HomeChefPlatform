@@ -32,6 +32,9 @@ public class AiChatServiceImpl implements AiChatService {
     private final BailianClient bailianClient;
 
     @Override
+    /**
+     * 处理 AI 对话请求并返回流式响应。
+     */
     public SseEmitter chat(AiChatRequestDTO aiChatRequestDTO) {
         List<BailianClient.BailianMessage> messages = buildMessages(aiChatRequestDTO);
 
@@ -41,6 +44,9 @@ public class AiChatServiceImpl implements AiChatService {
         return emitter;
     }
 
+    /**
+     * 以流式方式调用模型并将分片结果持续推送给前端。
+     */
     private void streamChat(SseEmitter emitter, List<BailianClient.BailianMessage> messages) {
         try {
             bailianClient.streamChat(messages, chunk -> sendMessageChunk(emitter, chunk));
@@ -53,6 +59,9 @@ public class AiChatServiceImpl implements AiChatService {
         }
     }
 
+    /**
+     * 组装发送给模型的完整消息列表。
+     */
     private List<BailianClient.BailianMessage> buildMessages(AiChatRequestDTO aiChatRequestDTO) {
         String message = aiChatRequestDTO.getMessage();
         if (!StringUtils.hasText(message)) {
@@ -73,6 +82,9 @@ public class AiChatServiceImpl implements AiChatService {
         return messages;
     }
 
+    /**
+     * 过滤并截取最近的历史消息作为上下文。
+     */
     private List<BailianClient.BailianMessage> buildHistoryMessages(List<AiHistoryMessageDTO> history) {
         if (history == null || history.isEmpty()) {
             return Collections.emptyList();
@@ -103,6 +115,9 @@ public class AiChatServiceImpl implements AiChatService {
         return messages;
     }
 
+    /**
+     * 向前端发送一段 AI 流式回复内容。
+     */
     private void sendMessageChunk(SseEmitter emitter, String chunk) {
         try {
             emitter.send(SseEmitter.event()
@@ -115,6 +130,9 @@ public class AiChatServiceImpl implements AiChatService {
         }
     }
 
+    /**
+     * 在 AI 流式调用失败时向前端发送错误事件。
+     */
     private void sendErrorEvent(SseEmitter emitter, Exception exception) {
         String message = exception instanceof BusinessException
                 ? exception.getMessage()

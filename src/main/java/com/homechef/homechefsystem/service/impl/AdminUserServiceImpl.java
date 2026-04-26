@@ -25,6 +25,9 @@ public class AdminUserServiceImpl implements AdminUserService {
     private final UserMapper userMapper;
 
     @Override
+    /**
+     * 查询列表数据并返回结果。
+     */
     public List<AdminUserVO> getUserList(AdminUserQueryDTO queryDTO) {
         List<User> userList = userMapper.selectAdminList(queryDTO);
         if (userList == null || userList.isEmpty()) {
@@ -36,11 +39,17 @@ public class AdminUserServiceImpl implements AdminUserService {
     }
 
     @Override
+    /**
+     * 查询详情数据并返回结果。
+     */
     public AdminUserDetailVO getUserDetail(Long id) {
         return toAdminUserDetailVO(userMapper.selectById(id));
     }
 
     @Override
+    /**
+     * 处理 u pd at eu se rs ta tu s 相关逻辑。
+     */
     public AdminUserVO updateUserStatus(Long id, AdminStatusUpdateDTO statusUpdateDTO) {
         if (!UserStatusEnum.isValid(statusUpdateDTO.getStatus())) {
             throw new BusinessException(ResultCodeEnum.PARAM_ERROR, "user status 取值非法，只能为 0、1");
@@ -60,6 +69,9 @@ public class AdminUserServiceImpl implements AdminUserService {
         return toAdminUserVO(user);
     }
 
+    /**
+     * 将实体对象转换为前端返回 VO。
+     */
     private AdminUserVO toAdminUserVO(User user) {
         if (user == null) {
             return null;
@@ -77,6 +89,9 @@ public class AdminUserServiceImpl implements AdminUserService {
                 .build();
     }
 
+    /**
+     * 将实体对象转换为前端返回 VO。
+     */
     private AdminUserDetailVO toAdminUserDetailVO(User user) {
         if (user == null) {
             return null;

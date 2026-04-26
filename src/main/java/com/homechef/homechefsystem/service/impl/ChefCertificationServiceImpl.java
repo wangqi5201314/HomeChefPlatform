@@ -29,6 +29,9 @@ public class ChefCertificationServiceImpl implements ChefCertificationService {
     private final ChefMapper chefMapper;
 
     @Override
+    /**
+     * 提交业务数据并返回处理结果。
+     */
     public ChefCertificationVO submit(ChefCertificationSubmitDTO chefCertificationSubmitDTO) {
         LocalDateTime now = LocalDateTime.now();
         ChefCertification existingCertification = chefCertificationMapper.selectByChefId(chefCertificationSubmitDTO.getChefId());
@@ -79,11 +82,17 @@ public class ChefCertificationServiceImpl implements ChefCertificationService {
     }
 
     @Override
+    /**
+     * 根据厨师 ID 查询对应数据。
+     */
     public ChefCertificationVO getByChefId(Long chefId) {
         return toChefCertificationVO(chefCertificationMapper.selectByChefId(chefId));
     }
 
     @Override
+    /**
+     * 处理 g et li st 相关逻辑。
+     */
     public List<ChefCertificationVO> getList(ChefCertificationQueryDTO queryDTO) {
         List<ChefCertification> certificationList = chefCertificationMapper.selectList(queryDTO);
         if (certificationList == null || certificationList.isEmpty()) {
@@ -95,6 +104,9 @@ public class ChefCertificationServiceImpl implements ChefCertificationService {
     }
 
     @Override
+    /**
+     * 根据 ID 审核指定记录。
+     */
     public ChefCertificationVO auditById(Long id, ChefCertificationAuditDTO chefCertificationAuditDTO) {
         ChefCertification existingCertification = chefCertificationMapper.selectById(id);
         if (existingCertification == null) {
@@ -120,16 +132,25 @@ public class ChefCertificationServiceImpl implements ChefCertificationService {
     }
 
     @Override
+    /**
+     * 处理 c he fe xi st s 相关逻辑。
+     */
     public boolean chefExists(Long chefId) {
         return chefMapper.selectById(chefId) != null;
     }
 
     @Override
+    /**
+     * 获取当前登录厨师的认证信息。
+     */
     public ChefCertificationVO getCurrentChefCertification() {
         return getByChefId(requireCurrentChefId());
     }
 
     @Override
+    /**
+     * 提交当前登录厨师的认证资料。
+     */
     public ChefCertificationVO submitCurrentChefCertification(ChefCertificationSubmitDTO chefCertificationSubmitDTO) {
         Long chefId = requireCurrentChefId();
         chefCertificationSubmitDTO.setChefId(chefId);
@@ -143,6 +164,9 @@ public class ChefCertificationServiceImpl implements ChefCertificationService {
         return chefCertificationVO;
     }
 
+    /**
+     * 获取并校验当前登录厨师的 ID。
+     */
     private Long requireCurrentChefId() {
         Long chefId = LoginUserContext.getChefId();
         if (chefId == null) {
@@ -151,6 +175,9 @@ public class ChefCertificationServiceImpl implements ChefCertificationService {
         return chefId;
     }
 
+    /**
+     * 将实体对象转换为前端返回 VO。
+     */
     private ChefCertificationVO toChefCertificationVO(ChefCertification chefCertification) {
         if (chefCertification == null) {
             return null;

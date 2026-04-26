@@ -20,6 +20,9 @@ public class AdminOrderServiceImpl implements AdminOrderService {
     private final OrderMapper orderMapper;
 
     @Override
+    /**
+     * 查询列表数据并返回结果。
+     */
     public List<AdminOrderVO> getOrderList(AdminOrderQueryDTO queryDTO) {
         List<Order> orderList = orderMapper.selectAdminList(queryDTO);
         if (orderList == null || orderList.isEmpty()) {
@@ -30,6 +33,9 @@ public class AdminOrderServiceImpl implements AdminOrderService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 将实体对象转换为前端返回 VO。
+     */
     private AdminOrderVO toAdminOrderVO(Order order) {
         if (order == null) {
             return null;

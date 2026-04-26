@@ -30,6 +30,9 @@ public class ChefServiceLocationServiceImpl implements ChefServiceLocationServic
     private final ChefMapper chefMapper;
 
     @Override
+    /**
+     * 获取当前登录厨师的服务位置列表。
+     */
     public List<ChefServiceLocationVO> getCurrentChefServiceLocationList() {
         Long chefId = requireCurrentChefId();
         requireChefExists(chefId);
@@ -43,11 +46,17 @@ public class ChefServiceLocationServiceImpl implements ChefServiceLocationServic
     }
 
     @Override
+    /**
+     * 获取当前登录厨师名下的服务位置详情。
+     */
     public ChefServiceLocationVO getCurrentChefServiceLocationById(Long id) {
         return toChefServiceLocationVO(getOwnedLocation(id));
     }
 
     @Override
+    /**
+     * 为当前登录厨师新增服务位置。
+     */
     public ChefServiceLocationVO createCurrentChefServiceLocation(ChefServiceLocationCreateDTO chefServiceLocationCreateDTO) {
         Long chefId = requireCurrentChefId();
         requireChefExists(chefId);
@@ -84,6 +93,9 @@ public class ChefServiceLocationServiceImpl implements ChefServiceLocationServic
     }
 
     @Override
+    /**
+     * 更新当前登录厨师名下的服务位置。
+     */
     public ChefServiceLocationVO updateCurrentChefServiceLocation(Long id, ChefServiceLocationUpdateDTO chefServiceLocationUpdateDTO) {
         validateLocationFields(
                 chefServiceLocationUpdateDTO.getProvince(),
@@ -113,6 +125,9 @@ public class ChefServiceLocationServiceImpl implements ChefServiceLocationServic
     }
 
     @Override
+    /**
+     * 删除当前登录厨师名下的服务位置。
+     */
     public ChefServiceLocationVO deleteCurrentChefServiceLocation(Long id) {
         ChefServiceLocation existingLocation = getOwnedLocation(id);
         int rows = chefServiceLocationMapper.deleteById(id, existingLocation.getChefId());
@@ -124,6 +139,9 @@ public class ChefServiceLocationServiceImpl implements ChefServiceLocationServic
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    /**
+     * 启用当前登录厨师指定的服务位置。
+     */
     public ChefServiceLocationVO activateCurrentChefServiceLocation(Long id) {
         ChefServiceLocation existingLocation = getOwnedLocation(id);
         LocalDateTime now = LocalDateTime.now();
@@ -136,6 +154,9 @@ public class ChefServiceLocationServiceImpl implements ChefServiceLocationServic
     }
 
     @Override
+    /**
+     * 获取指定厨师的服务位置列表。
+     */
     public List<ChefServiceLocationVO> getChefServiceLocationListByChefId(Long chefId) {
         requireChefExists(chefId);
         List<ChefServiceLocation> chefServiceLocationList = chefServiceLocationMapper.selectListByChefId(chefId);
@@ -147,6 +168,9 @@ public class ChefServiceLocationServiceImpl implements ChefServiceLocationServic
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 获取并校验当前登录厨师的 ID。
+     */
     private Long requireCurrentChefId() {
         Long chefId = LoginUserContext.getChefId();
         if (chefId == null) {
@@ -155,6 +179,9 @@ public class ChefServiceLocationServiceImpl implements ChefServiceLocationServic
         return chefId;
     }
 
+    /**
+     * 处理 r eq ui re ch ef ex is ts 相关逻辑。
+     */
     private void requireChefExists(Long chefId) {
         Chef chef = chefMapper.selectById(chefId);
         if (chef == null) {
@@ -162,6 +189,9 @@ public class ChefServiceLocationServiceImpl implements ChefServiceLocationServic
         }
     }
 
+    /**
+     * 处理 g et ow ne dl oc at io n 相关逻辑。
+     */
     private ChefServiceLocation getOwnedLocation(Long id) {
         Long chefId = requireCurrentChefId();
         requireChefExists(chefId);
@@ -172,6 +202,9 @@ public class ChefServiceLocationServiceImpl implements ChefServiceLocationServic
         return chefServiceLocation;
     }
 
+    /**
+     * 校验输入参数或业务状态是否合法。
+     */
     private void validateLocationFields(String province,
                                         String city,
                                         String district,
@@ -198,10 +231,16 @@ public class ChefServiceLocationServiceImpl implements ChefServiceLocationServic
         }
     }
 
+    /**
+     * 处理 n or ma li ze te xt 相关逻辑。
+     */
     private String normalizeText(String text) {
         return StringUtils.hasText(text) ? text.trim() : null;
     }
 
+    /**
+     * 将实体对象转换为前端返回 VO。
+     */
     private ChefServiceLocationVO toChefServiceLocationVO(ChefServiceLocation chefServiceLocation) {
         if (chefServiceLocation == null) {
             return null;

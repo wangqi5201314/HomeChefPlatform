@@ -47,6 +47,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
+    /**
+     * 创建订单并在同一事务中锁定对应档期。
+     */
     public OrderDetailVO createOrder(OrderCreateDTO orderCreateDTO) {
         LocalDateTime now = LocalDateTime.now();
         String timeSlot = normalizeTimeSlot(orderCreateDTO.getTimeSlot());
@@ -102,11 +105,17 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    /**
+     * 根据 ID 查询对应数据。
+     */
     public OrderDetailVO getById(Long id) {
         return toOrderDetailVO(orderMapper.selectById(id));
     }
 
     @Override
+    /**
+     * 查询列表数据并返回结果。
+     */
     public List<OrderListVO> getOrderList(OrderQueryDTO queryDTO) {
         List<Order> orderList = orderMapper.selectList(queryDTO);
         if (orderList == null || orderList.isEmpty()) {
@@ -119,6 +128,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
+    /**
+     * 取消指定订单并释放已锁定的档期。
+     */
     public OrderDetailVO cancelById(Long id, OrderCancelDTO orderCancelDTO) {
         Order existingOrder = orderMapper.selectById(id);
         if (existingOrder == null) {
@@ -147,11 +159,17 @@ public class OrderServiceImpl implements OrderService {
         return toOrderDetailVO(orderMapper.selectById(id));
     }
 
+    /**
+     * 处理 c an ca nc el by us er 相关逻辑。
+     */
     private boolean canCancelByUser(String orderStatus) {
         return OrderStatusEnum.PENDING_CONFIRM.equalsCode(orderStatus)
                 || OrderStatusEnum.WAIT_PAY.equalsCode(orderStatus);
     }
 
+    /**
+     * 将实体对象转换为前端返回 VO。
+     */
     private OrderListVO toOrderListVO(Order order) {
         if (order == null) {
             return null;
@@ -176,6 +194,9 @@ public class OrderServiceImpl implements OrderService {
                 .build();
     }
 
+    /**
+     * 将实体对象转换为前端返回 VO。
+     */
     private OrderDetailVO toOrderDetailVO(Order order) {
         if (order == null) {
             return null;
@@ -214,15 +235,24 @@ public class OrderServiceImpl implements OrderService {
                 .build();
     }
 
+    /**
+     * 生成业务订单编号。
+     */
     private String generateOrderNo() {
         return "ORD" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
                 + ThreadLocalRandom.current().nextInt(1000, 10000);
     }
 
+    /**
+     * 生成订单确认码。
+     */
     private String generateConfirmCode() {
         return String.valueOf(ThreadLocalRandom.current().nextInt(100000, 1000000));
     }
 
+    /**
+     * 标准化并校验时段枚举值。
+     */
     private String normalizeTimeSlot(String timeSlot) {
         TimeSlotEnum timeSlotEnum = TimeSlotEnum.fromCode(timeSlot);
         if (timeSlotEnum == null) {
@@ -231,6 +261,9 @@ public class OrderServiceImpl implements OrderService {
         return timeSlotEnum.getCode();
     }
 
+    /**
+     * 处理 l oc ka va il ab le sc he du le 相关逻辑。
+     */
     private ChefSchedule lockAvailableSchedule(Long chefId, java.time.LocalDate serviceDate, String timeSlot) {
         // 当前方法必须在事务中调用，否则 MySQL 行锁会在查询结束后立刻释放，无法保护后续创建订单操作。
         ChefSchedule chefSchedule = chefScheduleMapper.selectAvailableByChefIdAndDateAndTimeSlotForUpdate(
@@ -244,6 +277,9 @@ public class OrderServiceImpl implements OrderService {
         return chefSchedule;
     }
 
+    /**
+     * 校验输入参数或业务状态是否合法。
+     */
     private void validateServiceRange(OrderCreateDTO orderCreateDTO) {
         UserAddress userAddress = userAddressMapper.selectById(orderCreateDTO.getAddressId());
         if (userAddress == null) {

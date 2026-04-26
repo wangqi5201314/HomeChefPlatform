@@ -22,6 +22,9 @@ public class UserAddressServiceImpl implements UserAddressService {
     private final UserAddressMapper userAddressMapper;
 
     @Override
+    /**
+     * 查询列表数据并返回结果。
+     */
     public List<UserAddressVO> getAddressList(UserAddressQueryDTO queryDTO) {
         List<UserAddress> userAddressList = userAddressMapper.selectList(queryDTO);
         if (userAddressList == null || userAddressList.isEmpty()) {
@@ -33,16 +36,25 @@ public class UserAddressServiceImpl implements UserAddressService {
     }
 
     @Override
+    /**
+     * 处理 g et de fa ul ta dd re ss 相关逻辑。
+     */
     public UserAddressVO getDefaultAddress(Long userId) {
         return toUserAddressVO(userAddressMapper.selectDefaultByUserId(userId));
     }
 
     @Override
+    /**
+     * 根据 ID 查询对应数据。
+     */
     public UserAddressVO getById(Long id) {
         return toUserAddressVO(userAddressMapper.selectById(id));
     }
 
     @Override
+    /**
+     * 创建数据并返回处理结果。
+     */
     public UserAddressVO create(UserAddressCreateDTO userAddressCreateDTO) {
         LocalDateTime now = LocalDateTime.now();
         int activeCount = userAddressMapper.countActiveByUserId(userAddressCreateDTO.getUserId());
@@ -83,6 +95,9 @@ public class UserAddressServiceImpl implements UserAddressService {
     }
 
     @Override
+    /**
+     * 根据 ID 更新数据。
+     */
     public UserAddressVO updateById(Long id, UserAddressUpdateDTO userAddressUpdateDTO) {
         UserAddress existingUserAddress = userAddressMapper.selectById(id);
         if (existingUserAddress == null) {
@@ -119,6 +134,9 @@ public class UserAddressServiceImpl implements UserAddressService {
     }
 
     @Override
+    /**
+     * 将指定记录设置为默认项。
+     */
     public UserAddressVO setDefaultById(Long id, Long userId) {
         UserAddress existingUserAddress = userAddressMapper.selectById(id);
         if (existingUserAddress == null) {
@@ -138,6 +156,9 @@ public class UserAddressServiceImpl implements UserAddressService {
     }
 
     @Override
+    /**
+     * 根据 ID 删除指定数据。
+     */
     public UserAddressVO deleteById(Long id) {
         UserAddress existingUserAddress = userAddressMapper.selectById(id);
         if (existingUserAddress == null) {
@@ -151,6 +172,9 @@ public class UserAddressServiceImpl implements UserAddressService {
         return toUserAddressVO(existingUserAddress);
     }
 
+    /**
+     * 将实体对象转换为前端返回 VO。
+     */
     private UserAddressVO toUserAddressVO(UserAddress userAddress) {
         if (userAddress == null) {
             return null;

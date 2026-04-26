@@ -49,6 +49,9 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
     private final GeoDistanceService geoDistanceService;
 
     @Override
+    /**
+     * 按筛选条件和排序规则推荐厨师列表。
+     */
     public List<ChefRecommendVO> recommend(ChefRecommendQueryDTO chefRecommendQueryDTO) {
         validateIngredientMode(chefRecommendQueryDTO.getIngredientMode());
         String timeSlot = normalizeTimeSlot(chefRecommendQueryDTO.getTimeSlot());
@@ -79,6 +82,9 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
     }
 
     @Override
+    /**
+     * 返回首页默认推荐的厨师列表。
+     */
     public List<ChefRecommendVO> recommendDefault(Long userId, Long addressId) {
         UserAddress userAddress = requireUserAddress(userId, addressId);
         List<Chef> chefList = requireRecommendCandidates();
@@ -104,6 +110,9 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
         return recommendVOList;
     }
 
+    /**
+     * 获取可参与推荐的厨师候选集。
+     */
     private List<Chef> requireRecommendCandidates() {
         List<Chef> chefList = chefMapper.selectRecommendCandidates();
         if (chefList == null || chefList.isEmpty()) {
@@ -112,6 +121,9 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
         return chefList;
     }
 
+    /**
+     * 从厨师列表中提取厨师 ID 集合。
+     */
     private List<Long> extractChefIds(List<Chef> chefList) {
         if (chefList == null || chefList.isEmpty()) {
             return Collections.emptyList();
@@ -121,6 +133,9 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 构建厨师启用服务位置的映射关系。
+     */
     private Map<Long, ChefServiceLocation> buildActiveLocationMap(List<Long> chefIds) {
         if (chefIds == null || chefIds.isEmpty()) {
             return Collections.emptyMap();
@@ -138,6 +153,9 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
         ));
     }
 
+    /**
+     * 构建每个厨师最近可预约档期的映射关系。
+     */
     private Map<Long, ChefSchedule> buildNearestScheduleMap(List<Long> chefIds) {
         if (chefIds == null || chefIds.isEmpty()) {
             return Collections.emptyMap();
@@ -164,6 +182,9 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
         return nearestScheduleMap;
     }
 
+    /**
+     * 构建指定日期和时段下有可用档期的厨师 ID 集合。
+     */
     private Set<Long> buildAvailableChefIdSet(LocalDate serviceDate, String timeSlot) {
         List<Long> availableChefIds = chefScheduleMapper.selectAvailableChefIdsByDateAndTimeSlot(serviceDate, timeSlot);
         if (availableChefIds == null || availableChefIds.isEmpty()) {
@@ -172,6 +193,9 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
         return Set.copyOf(availableChefIds);
     }
 
+    /**
+     * 获取并校验用户地址信息。
+     */
     private UserAddress requireUserAddress(Long userId, Long addressId) {
         UserAddress userAddress = userAddressMapper.selectByIdAndUserId(addressId, userId);
         if (userAddress == null) {
@@ -183,6 +207,9 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
         return userAddress;
     }
 
+    /**
+     * 将实体对象转换为前端返回 VO。
+     */
     private ChefRecommendVO toChefRecommendVO(Chef chef, ChefServiceLocation chefServiceLocation, UserAddress userAddress) {
         if (chef == null || chefServiceLocation == null) {
             return null;
@@ -222,6 +249,9 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
                 .build();
     }
 
+    /**
+     * 将实体对象转换为前端返回 VO。
+     */
     private ChefRecommendVO toDefaultChefRecommendVO(
             Chef chef,
             ChefServiceLocation chefServiceLocation,
@@ -238,6 +268,9 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
         return chefRecommendVO;
     }
 
+    /**
+     * 根据排序类型构建厨师推荐排序器。
+     */
     private Comparator<ChefRecommendVO> buildComparator(String sortType) {
         Comparator<ChefRecommendVO> defaultComparator = Comparator
                 .comparing(ChefRecommendVO::getDistanceKm, this::compareBigDecimalAsc)
@@ -266,6 +299,9 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
         };
     }
 
+    /**
+     * 构建首页默认推荐使用的综合排序器。
+     */
     private Comparator<ChefRecommendVO> buildDefaultHomeComparator() {
         // 首页默认排序优先让用户看到“最近可约”的厨师，再兼顾距离、评分、订单量和好评率。
         return Comparator
@@ -276,26 +312,44 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
                 .thenComparing(ChefRecommendVO::getGoodReviewRate, this::compareBigDecimalDesc);
     }
 
+    /**
+     * 按升序比较两个数值字段。
+     */
     private int compareBigDecimalAsc(BigDecimal left, BigDecimal right) {
         return defaultBigDecimal(left).compareTo(defaultBigDecimal(right));
     }
 
+    /**
+     * 按降序比较两个数值字段。
+     */
     private int compareBigDecimalDesc(BigDecimal left, BigDecimal right) {
         return defaultBigDecimal(right).compareTo(defaultBigDecimal(left));
     }
 
+    /**
+     * 按降序比较两个整数指标。
+     */
     private int compareIntegerDesc(Integer left, Integer right) {
         return Integer.compare(defaultInteger(right), defaultInteger(left));
     }
 
+    /**
+     * 为空值数值字段提供默认值。
+     */
     private BigDecimal defaultBigDecimal(BigDecimal value) {
         return value == null ? BigDecimal.ZERO : value;
     }
 
+    /**
+     * 为空值整数字段提供默认值。
+     */
     private Integer defaultInteger(Integer value) {
         return value == null ? 0 : value;
     }
 
+    /**
+     * 判断厨师是否支持当前食材模式。
+     */
     private boolean supportsIngredientMode(Integer serviceMode, Integer ingredientMode) {
         if (serviceMode == null || ingredientMode == null) {
             return false;
@@ -309,12 +363,18 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
         return false;
     }
 
+    /**
+     * 校验食材模式参数是否合法。
+     */
     private void validateIngredientMode(Integer ingredientMode) {
         if (ingredientMode == null || (ingredientMode != 1 && ingredientMode != 2)) {
             throw new BusinessException(ResultCodeEnum.PARAM_ERROR, "ingredientMode 取值非法，只能为 1 或 2");
         }
     }
 
+    /**
+     * 标准化并校验时段枚举值。
+     */
     private String normalizeTimeSlot(String timeSlot) {
         TimeSlotEnum timeSlotEnum = TimeSlotEnum.fromCode(timeSlot);
         if (timeSlotEnum == null) {
@@ -323,6 +383,9 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
         return timeSlotEnum.getCode();
     }
 
+    /**
+     * 标准化排序类型参数。
+     */
     private String normalizeSortType(String sortType) {
         if (!StringUtils.hasText(sortType)) {
             return SORT_DEFAULT;
@@ -330,6 +393,9 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
         return sortType.trim().toUpperCase(Locale.ROOT);
     }
 
+    /**
+     * 拼接服务区域的文本摘要。
+     */
     private String buildServiceAreaText(ChefServiceLocation chefServiceLocation) {
         if (chefServiceLocation == null) {
             return null;
@@ -342,6 +408,9 @@ public class ChefRecommendServiceImpl implements ChefRecommendService {
         return builder.length() == 0 ? null : builder.toString();
     }
 
+    /**
+     * 向区域摘要中追加一段非空文本。
+     */
     private void appendAreaPart(StringBuilder builder, String areaPart) {
         if (StringUtils.hasText(areaPart)) {
             builder.append(areaPart.trim());

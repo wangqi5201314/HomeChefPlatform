@@ -27,6 +27,9 @@ public class ChefScheduleServiceImpl implements ChefScheduleService {
     private final ChefScheduleMapper chefScheduleMapper;
 
     @Override
+    /**
+     * 查询列表数据并返回结果。
+     */
     public List<ChefScheduleVO> getScheduleList(ChefScheduleQueryDTO queryDTO) {
         List<ChefSchedule> chefScheduleList = chefScheduleMapper.selectList(queryDTO);
         if (chefScheduleList == null || chefScheduleList.isEmpty()) {
@@ -38,11 +41,17 @@ public class ChefScheduleServiceImpl implements ChefScheduleService {
     }
 
     @Override
+    /**
+     * 根据 ID 查询对应数据。
+     */
     public ChefScheduleVO getById(Long id) {
         return toChefScheduleVO(chefScheduleMapper.selectById(id));
     }
 
     @Override
+    /**
+     * 创建数据并返回处理结果。
+     */
     public ChefScheduleVO create(Long chefId, ChefScheduleCreateDTO chefScheduleCreateDTO) {
         LocalDateTime now = LocalDateTime.now();
         Integer isAvailable = chefScheduleCreateDTO.getIsAvailable();
@@ -72,6 +81,9 @@ public class ChefScheduleServiceImpl implements ChefScheduleService {
     }
 
     @Override
+    /**
+     * 根据 ID 更新数据。
+     */
     public ChefScheduleVO updateById(Long id, ChefScheduleUpdateDTO chefScheduleUpdateDTO) {
         ChefSchedule existingChefSchedule = chefScheduleMapper.selectById(id);
         if (existingChefSchedule == null) {
@@ -100,6 +112,9 @@ public class ChefScheduleServiceImpl implements ChefScheduleService {
     }
 
     @Override
+    /**
+     * 根据 ID 更新指定数据。
+     */
     public ChefScheduleVO updateAvailabilityById(Long id, Integer isAvailable) {
         ChefSchedule existingChefSchedule = chefScheduleMapper.selectById(id);
         if (existingChefSchedule == null) {
@@ -114,6 +129,9 @@ public class ChefScheduleServiceImpl implements ChefScheduleService {
     }
 
     @Override
+    /**
+     * 根据 ID 删除指定数据。
+     */
     public ChefScheduleVO deleteById(Long id) {
         ChefSchedule existingChefSchedule = chefScheduleMapper.selectById(id);
         if (existingChefSchedule == null) {
@@ -128,6 +146,9 @@ public class ChefScheduleServiceImpl implements ChefScheduleService {
     }
 
     @Override
+    /**
+     * 判断指定条件的数据是否存在。
+     */
     public boolean existsDuplicate(Long chefId, LocalDate serviceDate, String timeSlot, Long excludeId) {
         if (excludeId == null) {
             return chefScheduleMapper.countDuplicate(chefId, serviceDate, timeSlot) > 0;
@@ -136,12 +157,18 @@ public class ChefScheduleServiceImpl implements ChefScheduleService {
     }
 
     @Override
+    /**
+     * 查询列表数据并返回结果。
+     */
     public List<ChefScheduleVO> getCurrentChefScheduleList(ChefScheduleQueryDTO queryDTO) {
         queryDTO.setChefId(requireCurrentChefId());
         return getScheduleList(queryDTO);
     }
 
     @Override
+    /**
+     * 处理 c re at ec ur re nt ch ef sc he du le 相关逻辑。
+     */
     public ChefScheduleVO createCurrentChefSchedule(ChefScheduleCreateDTO chefScheduleCreateDTO) {
         Long chefId = requireCurrentChefId();
         String timeSlot = normalizeTimeSlot(chefScheduleCreateDTO.getTimeSlot());
@@ -153,6 +180,9 @@ public class ChefScheduleServiceImpl implements ChefScheduleService {
     }
 
     @Override
+    /**
+     * 更新当前登录主体的资料信息。
+     */
     public ChefScheduleVO updateCurrentChefSchedule(Long id, ChefScheduleUpdateDTO chefScheduleUpdateDTO) {
         ChefSchedule existingChefSchedule = getOwnedSchedule(id);
         String timeSlot = normalizeTimeSlot(chefScheduleUpdateDTO.getTimeSlot());
@@ -170,6 +200,9 @@ public class ChefScheduleServiceImpl implements ChefScheduleService {
     }
 
     @Override
+    /**
+     * 处理 d el et ec ur re nt ch ef sc he du le 相关逻辑。
+     */
     public ChefScheduleVO deleteCurrentChefSchedule(Long id) {
         ChefSchedule existingChefSchedule = getOwnedSchedule(id);
         if (existingChefSchedule.getLockedOrderId() != null) {
@@ -179,6 +212,9 @@ public class ChefScheduleServiceImpl implements ChefScheduleService {
     }
 
     @Override
+    /**
+     * 更新当前登录主体的资料信息。
+     */
     public ChefScheduleVO updateCurrentChefScheduleAvailability(Long id, Integer isAvailable) {
         ChefSchedule existingChefSchedule = getOwnedSchedule(id);
         if (existingChefSchedule.getLockedOrderId() != null && Integer.valueOf(0).equals(isAvailable)) {
@@ -188,6 +224,9 @@ public class ChefScheduleServiceImpl implements ChefScheduleService {
     }
 
     @Override
+    /**
+     * 批量禁用所有已过期且仍可预约的档期。
+     */
     public int disableExpiredAvailableSchedules() {
         LocalDate currentDate = LocalDate.now();
         LocalDateTime updatedAt = LocalDateTime.now();
@@ -195,6 +234,9 @@ public class ChefScheduleServiceImpl implements ChefScheduleService {
     }
 
     @Override
+    /**
+     * 禁用当前登录厨师已过期且仍可预约的档期。
+     */
     public int disableCurrentChefExpiredAvailableSchedules() {
         LocalDateTime currentTime = LocalDateTime.now();
         LocalDateTime updatedAt = LocalDateTime.now();
@@ -202,12 +244,18 @@ public class ChefScheduleServiceImpl implements ChefScheduleService {
     }
 
     @Override
+    /**
+     * 禁用指定厨师已过期且仍可预约的档期。
+     */
     public int disableExpiredAvailableSchedulesByChefId(Long chefId) {
         LocalDateTime currentTime = LocalDateTime.now();
         LocalDateTime updatedAt = LocalDateTime.now();
         return chefScheduleMapper.disableExpiredAvailableSchedulesByChefId(chefId, currentTime, updatedAt);
     }
 
+    /**
+     * 获取并校验当前登录厨师的 ID。
+     */
     private Long requireCurrentChefId() {
         Long chefId = LoginUserContext.getChefId();
         if (chefId == null) {
@@ -216,6 +264,9 @@ public class ChefScheduleServiceImpl implements ChefScheduleService {
         return chefId;
     }
 
+    /**
+     * 处理 g et ow ne ds ch ed ul e 相关逻辑。
+     */
     private ChefSchedule getOwnedSchedule(Long id) {
         Long chefId = requireCurrentChefId();
         ChefSchedule chefSchedule = chefScheduleMapper.selectById(id);
@@ -225,6 +276,9 @@ public class ChefScheduleServiceImpl implements ChefScheduleService {
         return chefSchedule;
     }
 
+    /**
+     * 将实体对象转换为前端返回 VO。
+     */
     private ChefScheduleVO toChefScheduleVO(ChefSchedule chefSchedule) {
         if (chefSchedule == null) {
             return null;
@@ -243,6 +297,9 @@ public class ChefScheduleServiceImpl implements ChefScheduleService {
                 .build();
     }
 
+    /**
+     * 标准化并校验时段枚举值。
+     */
     private String normalizeTimeSlot(String timeSlot) {
         TimeSlotEnum timeSlotEnum = TimeSlotEnum.fromCode(timeSlot);
         if (timeSlotEnum == null) {

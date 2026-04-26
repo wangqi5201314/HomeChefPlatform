@@ -30,6 +30,9 @@ public class UploadServiceImpl implements UploadService {
     private final OssProperties ossProperties;
 
     @Override
+    /**
+     * 上传图片并返回可访问的文件信息。
+     */
     public FileUploadVO uploadImage(MultipartFile file) {
         validateFile(file);
 
@@ -57,6 +60,9 @@ public class UploadServiceImpl implements UploadService {
                 .build();
     }
 
+    /**
+     * 校验输入参数或业务状态是否合法。
+     */
     private void validateFile(MultipartFile file) {
         if (file == null || file.isEmpty()) {
             throw new BusinessException(ResultCodeEnum.PARAM_ERROR, "file is empty");
@@ -73,6 +79,9 @@ public class UploadServiceImpl implements UploadService {
         }
     }
 
+    /**
+     * 获取当前允许上传的文件类型集合。
+     */
     private Set<String> getAllowedTypes() {
         if (!StringUtils.hasText(ossProperties.getAllowedTypes())) {
             return DEFAULT_ALLOWED_TYPES;
@@ -83,6 +92,9 @@ public class UploadServiceImpl implements UploadService {
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
+    /**
+     * 生成上传到对象存储时使用的对象路径。
+     */
     private String buildObjectKey(String fileName) {
         String prefix = trimSlashes(ossProperties.getUploadPrefix());
         if (!StringUtils.hasText(prefix)) {
@@ -91,6 +103,9 @@ public class UploadServiceImpl implements UploadService {
         return prefix + "/" + fileName;
     }
 
+    /**
+     * 根据对象路径拼接文件访问地址。
+     */
     private String buildFileUrl(String objectKey) {
         if (StringUtils.hasText(ossProperties.getCustomDomain())) {
             return trimTrailingSlash(ossProperties.getCustomDomain()) + "/" + objectKey;
@@ -98,6 +113,9 @@ public class UploadServiceImpl implements UploadService {
         return "https://" + ossProperties.getBucketName() + "." + trimProtocol(ossProperties.getEndpoint()) + "/" + objectKey;
     }
 
+    /**
+     * 提取文件扩展名。
+     */
     private String getExtension(String fileName) {
         if (!StringUtils.hasText(fileName) || !fileName.contains(".")) {
             throw new BusinessException(ResultCodeEnum.PARAM_ERROR, "invalid file name");
@@ -105,6 +123,9 @@ public class UploadServiceImpl implements UploadService {
         return fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase(Locale.ROOT);
     }
 
+    /**
+     * 确定上传文件的内容类型。
+     */
     private String resolveContentType(String extension, String contentType) {
         if (StringUtils.hasText(contentType)) {
             return contentType;
@@ -117,6 +138,9 @@ public class UploadServiceImpl implements UploadService {
         };
     }
 
+    /**
+     * 去除字符串首尾多余的斜杠。
+     */
     private String trimSlashes(String value) {
         if (!StringUtils.hasText(value)) {
             return "";
@@ -131,6 +155,9 @@ public class UploadServiceImpl implements UploadService {
         return result;
     }
 
+    /**
+     * 去除字符串末尾的斜杠。
+     */
     private String trimTrailingSlash(String value) {
         if (!StringUtils.hasText(value)) {
             return "";
@@ -142,6 +169,9 @@ public class UploadServiceImpl implements UploadService {
         return result;
     }
 
+    /**
+     * 去除地址中的协议头。
+     */
     private String trimProtocol(String endpoint) {
         String result = endpoint.trim();
         if (result.startsWith("https://")) {

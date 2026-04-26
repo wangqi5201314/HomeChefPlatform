@@ -41,6 +41,9 @@ public class ChefServiceImpl implements ChefService {
     private final BCryptPasswordEncoder passwordEncoder;
 
     @Override
+    /**
+     * 查询列表数据并返回结果。
+     */
     public List<ChefListVO> getChefList(ChefQueryDTO queryDTO) {
         List<Chef> chefList = chefMapper.selectList(queryDTO);
         if (chefList == null || chefList.isEmpty()) {
@@ -52,11 +55,17 @@ public class ChefServiceImpl implements ChefService {
     }
 
     @Override
+    /**
+     * 根据 ID 查询对应数据。
+     */
     public ChefDetailVO getById(Long id) {
         return toChefDetailVO(chefMapper.selectById(id));
     }
 
     @Override
+    /**
+     * 根据 ID 更新数据。
+     */
     public ChefDetailVO updateById(Long id, ChefUpdateDTO chefUpdateDTO) {
         Chef existingChef = chefMapper.selectById(id);
         if (existingChef == null) {
@@ -89,6 +98,9 @@ public class ChefServiceImpl implements ChefService {
     }
 
     @Override
+    /**
+     * 执行登录校验并返回登录结果。
+     */
     public ChefVO login(ChefLoginDTO chefLoginDTO) {
         Chef chef = chefMapper.selectByPhone(chefLoginDTO.getPhone());
         if (chef == null) {
@@ -107,6 +119,9 @@ public class ChefServiceImpl implements ChefService {
     }
 
     @Override
+    /**
+     * 执行注册流程并返回注册结果。
+     */
     public ChefVO register(ChefRegisterDTO chefRegisterDTO) {
         validateRegister(chefRegisterDTO);
         ensurePhoneAvailable(chefRegisterDTO.getPhone(), null);
@@ -143,6 +158,9 @@ public class ChefServiceImpl implements ChefService {
     }
 
     @Override
+    /**
+     * 获取当前登录主体的资料信息。
+     */
     public ChefVO getCurrentChef() {
         Long currentChefId = LoginUserContext.getChefId();
         if (currentChefId == null) {
@@ -152,6 +170,9 @@ public class ChefServiceImpl implements ChefService {
     }
 
     @Override
+    /**
+     * 更新当前登录主体的资料信息。
+     */
     public ChefVO updateCurrentChef(ChefUpdateDTO chefUpdateDTO) {
         Long currentChefId = LoginUserContext.getChefId();
         if (currentChefId == null) {
@@ -188,6 +209,9 @@ public class ChefServiceImpl implements ChefService {
         return toChefVO(chefMapper.selectById(currentChefId));
     }
 
+    /**
+     * 按需将输入值应用到目标对象。
+     */
     private void applyPhoneIfPresent(Chef existingChef, String phone) {
         if (!StringUtils.hasText(phone)) {
             return;
@@ -197,6 +221,9 @@ public class ChefServiceImpl implements ChefService {
         existingChef.setPhone(normalizedPhone);
     }
 
+    /**
+     * 校验并确保当前业务条件成立。
+     */
     private void ensurePhoneAvailable(String phone, Long currentChefId) {
         if (!StringUtils.hasText(phone)) {
             return;
@@ -220,6 +247,9 @@ public class ChefServiceImpl implements ChefService {
     }
 
     @Override
+    /**
+     * 修改当前主体的登录密码。
+     */
     public void changePassword(ChefChangePasswordDTO chefChangePasswordDTO) {
         Long currentChefId = LoginUserContext.getChefId();
         if (currentChefId == null) {
@@ -250,12 +280,18 @@ public class ChefServiceImpl implements ChefService {
         }
     }
 
+    /**
+     * 校验输入参数或业务状态是否合法。
+     */
     private void validateRegister(ChefRegisterDTO chefRegisterDTO) {
         if (!chefRegisterDTO.getPassword().equals(chefRegisterDTO.getConfirmPassword())) {
             throw new BusinessException(ResultCodeEnum.PARAM_ERROR, "confirmPassword does not match password");
         }
     }
 
+    /**
+     * 生成厨师展示名称。
+     */
     private String buildChefName(String phone, String name) {
         if (StringUtils.hasText(name)) {
             return name.trim();
@@ -266,12 +302,18 @@ public class ChefServiceImpl implements ChefService {
         return phone;
     }
 
+    /**
+     * 校验输入参数或业务状态是否合法。
+     */
     private void validateServiceMode(Integer serviceMode) {
         if (serviceMode != null && !ChefServiceModeEnum.isValid(serviceMode)) {
             throw new BusinessException(ResultCodeEnum.PARAM_ERROR, "serviceMode 取值非法，只能为 1、2、3");
         }
     }
 
+    /**
+     * 将实体对象转换为前端返回 VO。
+     */
     private ChefListVO toChefListVO(Chef chef) {
         if (chef == null) {
             return null;
@@ -290,6 +332,9 @@ public class ChefServiceImpl implements ChefService {
                 .build();
     }
 
+    /**
+     * 将实体对象转换为前端返回 VO。
+     */
     private ChefDetailVO toChefDetailVO(Chef chef) {
         if (chef == null) {
             return null;
@@ -325,22 +370,37 @@ public class ChefServiceImpl implements ChefService {
                 .build();
     }
 
+    /**
+     * 处理 g et se rv ic ea re ap ro vi nc e 相关逻辑。
+     */
     private String getServiceAreaProvince(ChefServiceLocation chefServiceLocation) {
         return chefServiceLocation == null ? null : chefServiceLocation.getProvince();
     }
 
+    /**
+     * 处理 g et se rv ic ea re ac it y 相关逻辑。
+     */
     private String getServiceAreaCity(ChefServiceLocation chefServiceLocation) {
         return chefServiceLocation == null ? null : chefServiceLocation.getCity();
     }
 
+    /**
+     * 处理 g et se rv ic ea re ad is tr ic t 相关逻辑。
+     */
     private String getServiceAreaDistrict(ChefServiceLocation chefServiceLocation) {
         return chefServiceLocation == null ? null : chefServiceLocation.getDistrict();
     }
 
+    /**
+     * 处理 g et se rv ic ea re at ow n 相关逻辑。
+     */
     private String getServiceAreaTown(ChefServiceLocation chefServiceLocation) {
         return chefServiceLocation == null ? null : chefServiceLocation.getTown();
     }
 
+    /**
+     * 将实体对象转换为前端返回 VO。
+     */
     private ChefVO toChefVO(Chef chef) {
         if (chef == null) {
             return null;
@@ -370,6 +430,9 @@ public class ChefServiceImpl implements ChefService {
                 .build();
     }
 
+    /**
+     * 拼接服务区域的文本摘要。
+     */
     private String buildServiceAreaText(ChefServiceLocation chefServiceLocation) {
         if (chefServiceLocation == null) {
             return null;
@@ -382,6 +445,9 @@ public class ChefServiceImpl implements ChefService {
         return builder.length() == 0 ? null : builder.toString();
     }
 
+    /**
+     * 向区域摘要中追加一段非空文本。
+     */
     private void appendAreaPart(StringBuilder builder, String areaPart) {
         if (StringUtils.hasText(areaPart)) {
             builder.append(areaPart.trim());

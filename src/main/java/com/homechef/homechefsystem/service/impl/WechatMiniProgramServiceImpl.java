@@ -27,9 +27,15 @@ public class WechatMiniProgramServiceImpl implements WechatMiniProgramService {
 
     private final WechatMiniProgramProperties wechatMiniProgramProperties;
     private final ObjectMapper objectMapper;
+    /**
+     * 处理 r es tt em pl at e 相关逻辑。
+     */
     private final RestTemplate restTemplate = new RestTemplate();
 
     @Override
+    /**
+     * 调用微信接口根据 code 换取 session 信息。
+     */
     public WechatLoginInfo code2Session(String code) {
         if (!StringUtils.hasText(wechatMiniProgramProperties.getAppId())
                 || !StringUtils.hasText(wechatMiniProgramProperties.getAppSecret())) {
@@ -75,6 +81,9 @@ public class WechatMiniProgramServiceImpl implements WechatMiniProgramService {
         return new WechatLoginInfo(response.getOpenid(), response.getSessionKey(), response.getUnionid());
     }
 
+    /**
+     * 对敏感配置参数做脱敏处理。
+     */
     private String maskSecret(String requestUrl) {
         return requestUrl.replace(wechatMiniProgramProperties.getAppSecret(), "******");
     }

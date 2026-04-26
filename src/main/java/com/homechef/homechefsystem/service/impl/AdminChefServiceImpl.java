@@ -22,6 +22,9 @@ public class AdminChefServiceImpl implements AdminChefService {
     private final ChefMapper chefMapper;
 
     @Override
+    /**
+     * 处理 u pd at ec he fs ta tu s 相关逻辑。
+     */
     public void updateChefStatus(Long id, AdminStatusUpdateDTO statusUpdateDTO) {
         if (!ChefStatusEnum.isValid(statusUpdateDTO.getStatus())) {
             throw new BusinessException(ResultCodeEnum.PARAM_ERROR, "chef status 取值非法，只能为 0、1");
@@ -39,10 +42,16 @@ public class AdminChefServiceImpl implements AdminChefService {
     }
 
     @Override
+    /**
+     * 查询详情数据并返回结果。
+     */
     public AdminChefDetailVO getChefDetail(Long id) {
         return toAdminChefDetailVO(chefMapper.selectById(id));
     }
 
+    /**
+     * 将实体对象转换为前端返回 VO。
+     */
     private AdminChefDetailVO toAdminChefDetailVO(Chef chef) {
         if (chef == null) {
             return null;

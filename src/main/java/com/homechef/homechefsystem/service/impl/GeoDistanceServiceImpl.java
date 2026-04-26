@@ -17,6 +17,9 @@ public class GeoDistanceServiceImpl implements GeoDistanceService {
     private final TencentMapClient tencentMapClient;
 
     @Override
+    /**
+     * 计算两个坐标点之间的距离。
+     */
     public double distanceKm(BigDecimal fromLatitude,
                              BigDecimal fromLongitude,
                              BigDecimal toLatitude,

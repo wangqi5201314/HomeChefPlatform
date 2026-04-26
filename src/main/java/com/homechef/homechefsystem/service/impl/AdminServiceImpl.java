@@ -46,6 +46,9 @@ public class AdminServiceImpl implements AdminService {
     private final BCryptPasswordEncoder passwordEncoder;
 
     @Override
+    /**
+     * 执行登录校验并返回登录结果。
+     */
     public AdminLoginVO login(AdminLoginDTO adminLoginDTO) {
         Admin admin = adminMapper.selectByUsername(adminLoginDTO.getUsername());
         if (admin == null) {
@@ -61,6 +64,9 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    /**
+     * 修改当前主体的登录密码。
+     */
     public void changePassword(AdminChangePasswordDTO adminChangePasswordDTO) {
         Long currentAdminId = LoginUserContext.getAdminId();
         if (currentAdminId == null) {
@@ -92,6 +98,9 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    /**
+     * 查询列表数据并返回结果。
+     */
     public List<AdminUserVO> getUserList(AdminUserQueryDTO queryDTO) {
         List<User> userList = adminMapper.selectUserList(queryDTO);
         if (userList == null || userList.isEmpty()) {
@@ -103,6 +112,9 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    /**
+     * 处理 u pd at eu se rs ta tu s 相关逻辑。
+     */
     public AdminUserVO updateUserStatus(Long id, AdminStatusUpdateDTO statusUpdateDTO) {
         if (!UserStatusEnum.isValid(statusUpdateDTO.getStatus())) {
             throw new BusinessException(ResultCodeEnum.PARAM_ERROR, "user status 取值非法，只能为 0、1");
@@ -127,6 +139,9 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    /**
+     * 查询列表数据并返回结果。
+     */
     public List<AdminChefVO> getChefList(AdminChefQueryDTO queryDTO) {
         List<Chef> chefList = adminMapper.selectChefList(queryDTO);
         if (chefList == null || chefList.isEmpty()) {
@@ -138,6 +153,9 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    /**
+     * 处理 u pd at ec he fs ta tu s 相关逻辑。
+     */
     public AdminChefVO updateChefStatus(Long id, AdminStatusUpdateDTO statusUpdateDTO) {
         if (!ChefStatusEnum.isValid(statusUpdateDTO.getStatus())) {
             throw new BusinessException(ResultCodeEnum.PARAM_ERROR, "chef status 取值非法，只能为 0、1");
@@ -162,6 +180,9 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    /**
+     * 查询列表数据并返回结果。
+     */
     public List<AdminOrderVO> getOrderList(AdminOrderQueryDTO queryDTO) {
         List<Order> orderList = adminMapper.selectOrderList(queryDTO);
         if (orderList == null || orderList.isEmpty()) {
@@ -173,10 +194,16 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    /**
+     * 查询详情数据并返回结果。
+     */
     public OrderDetailVO getOrderDetail(Long id) {
         return toOrderDetailVO(orderMapper.selectById(id));
     }
 
+    /**
+     * 将实体对象转换为前端返回 VO。
+     */
     private AdminLoginVO toAdminLoginVO(Admin admin) {
         if (admin == null) {
             return null;
@@ -190,6 +217,9 @@ public class AdminServiceImpl implements AdminService {
                 .build();
     }
 
+    /**
+     * 比较原始密码和已存储密码是否匹配。
+     */
     private boolean passwordMatches(String rawPassword, String storedPassword) {
         if (!StringUtils.hasText(storedPassword)) {
             return false;
@@ -202,6 +232,9 @@ public class AdminServiceImpl implements AdminService {
         return storedPassword.equals(rawPassword);
     }
 
+    /**
+     * 将实体对象转换为前端返回 VO。
+     */
     private AdminUserVO toAdminUserVO(User user) {
         if (user == null) {
             return null;
@@ -218,6 +251,9 @@ public class AdminServiceImpl implements AdminService {
                 .build();
     }
 
+    /**
+     * 将实体对象转换为前端返回 VO。
+     */
     private AdminChefVO toAdminChefVO(Chef chef) {
         if (chef == null) {
             return null;
@@ -237,6 +273,9 @@ public class AdminServiceImpl implements AdminService {
                 .build();
     }
 
+    /**
+     * 将实体对象转换为前端返回 VO。
+     */
     private AdminOrderVO toAdminOrderVO(Order order) {
         if (order == null) {
             return null;
@@ -258,6 +297,9 @@ public class AdminServiceImpl implements AdminService {
                 .build();
     }
 
+    /**
+     * 将实体对象转换为前端返回 VO。
+     */
     private OrderDetailVO toOrderDetailVO(Order order) {
         if (order == null) {
             return null;
