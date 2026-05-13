@@ -20,9 +20,9 @@ public class AdminOrderServiceImpl implements AdminOrderService {
     private final OrderMapper orderMapper;
 
     /**
-     * 方法说明：查询符合条件的列表数据。
-     * 主要作用：它为 后台订单查询服务实现 提供页面列表、后台筛选或批量展示所需的数据集合。
-     * 实现逻辑：实现逻辑通常是根据查询条件调用 Mapper 获取记录列表，再按需要转换为 VO 集合；当结果为空时会返回空集合或由上层统一处理。
+     * 查询一组符合条件的列表数据。
+     * 这个方法主要给列表页面或管理页面使用，让调用方可以一次拿到需要的数据。
+     * 它会根据传入的条件查数据，如果需要的话还会把结果转成接口要返回的对象。
      */
     @Override
     public List<AdminOrderVO> getOrderList(AdminOrderQueryDTO queryDTO) {
@@ -36,9 +36,9 @@ public class AdminOrderServiceImpl implements AdminOrderService {
     }
 
     /**
-     * 方法说明：将实体对象或中间结果转换为接口返回所需的 VO 对象。
-     * 主要作用：该方法把 后台订单查询服务实现 中对外展示需要的字段映射集中在一起，避免多个业务入口重复编写相同的转换代码。
-     * 实现逻辑：实现时会先判断入参是否为空，然后逐项拷贝基础字段，必要时补充枚举描述、派生文本或关联展示信息后返回。
+     * 把数据对象转成接口要返回的格式。
+     * 这个方法让主流程不用反复写字段赋值逻辑，代码会更整洁。
+     * 它会从实体或中间对象里取出需要的字段，然后组装 VO 或其他返回对象。
      */
     private AdminOrderVO toAdminOrderVO(Order order) {
         if (order == null) {

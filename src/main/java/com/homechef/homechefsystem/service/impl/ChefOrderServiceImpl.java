@@ -32,9 +32,9 @@ public class ChefOrderServiceImpl implements ChefOrderService {
     private final ChefScheduleMapper chefScheduleMapper;
 
     /**
-     * 方法说明：查询符合条件的列表数据。
-     * 主要作用：它为 厨师端订单服务实现 提供页面列表、后台筛选或批量展示所需的数据集合。
-     * 实现逻辑：实现逻辑通常是根据查询条件调用 Mapper 获取记录列表，再按需要转换为 VO 集合；当结果为空时会返回空集合或由上层统一处理。
+     * 查询一组符合条件的列表数据。
+     * 这个方法主要给列表页面或管理页面使用，让调用方可以一次拿到需要的数据。
+     * 它会根据传入的条件查数据，如果需要的话还会把结果转成接口要返回的对象。
      */
     @Override
     public List<ChefOrderListVO> getCurrentChefOrderList(String orderStatus) {
@@ -53,9 +53,9 @@ public class ChefOrderServiceImpl implements ChefOrderService {
     }
 
     /**
-     * 方法说明：查询一条当前业务所需的详情数据。
-     * 主要作用：该方法用于 厨师端订单服务实现 中的详情展示、状态流转前校验或后续业务处理前的数据加载。
-     * 实现逻辑：实现时会根据主键、关联键或当前登录身份查出目标记录，再按需要转换成 VO，必要时会补充关联字段或做存在性校验。
+     * 查询一条详细数据。
+     * 这个方法主要用在详情页面或后续业务处理前的数据准备。
+     * 它会根据 id、当前登录人或其他条件去查数据，找到后再转成返回给前端的格式。
      */
     @Override
     public ChefOrderDetailVO getCurrentChefOrderDetail(Long id) {
@@ -63,9 +63,9 @@ public class ChefOrderServiceImpl implements ChefOrderService {
     }
 
     /**
-     * 方法说明：在 厨师端订单服务实现 中处理 accept 相关的业务逻辑。
-     * 主要作用：该方法用于承接当前模块中的一个独立职责点，帮助主流程保持清晰并减少重复代码。
-     * 实现逻辑：实现逻辑会围绕当前方法职责完成必要的数据查询、规则判断、字段加工或结果返回，并在发现异常场景时及时中断流程。
+     * 接受一笔待处理的订单。
+     * 这个方法主要给厨师接单使用，让订单从待确认进入下一步。
+     * 它会先检查订单归属和状态，再把订单更新成已接单后的状态。
      */
     @Override
     public ChefOrderDetailVO accept(Long id) {
@@ -76,9 +76,9 @@ public class ChefOrderServiceImpl implements ChefOrderService {
     }
 
     /**
-     * 方法说明：在 厨师端订单服务实现 中处理 reject 相关的业务逻辑。
-     * 主要作用：该方法用于承接当前模块中的一个独立职责点，帮助主流程保持清晰并减少重复代码。
-     * 实现逻辑：实现逻辑会围绕当前方法职责完成必要的数据查询、规则判断、字段加工或结果返回，并在发现异常场景时及时中断流程。
+     * 拒绝一笔待处理的订单。
+     * 这个方法主要给厨师无法接单时使用，同时还要把占用的档期释放掉。
+     * 它会先检查订单归属和状态，再更新拒单状态，最后释放相关档期。
      */
     @Override
     @Transactional
@@ -86,15 +86,14 @@ public class ChefOrderServiceImpl implements ChefOrderService {
         Order order = getOwnedOrder(id);
         ensureOrderStatus(order, OrderStatusEnum.PENDING_CONFIRM, "待确认订单之外不能拒单");
         updateOrderStatus(order, OrderStatusEnum.REJECTED.getCode(), chefOrderRejectDTO.getReason());
-        // 厨师拒单后，之前下单时锁住的档期需要恢复为可预约，供其他用户继续选择。
         chefScheduleMapper.releaseByLockedOrderId(order.getId(), LocalDateTime.now());
         return toChefOrderDetailVO(getOwnedOrder(id));
     }
 
     /**
-     * 方法说明：在 厨师端订单服务实现 中处理 start 相关的业务逻辑。
-     * 主要作用：该方法用于承接当前模块中的一个独立职责点，帮助主流程保持清晰并减少重复代码。
-     * 实现逻辑：实现逻辑会围绕当前方法职责完成必要的数据查询、规则判断、字段加工或结果返回，并在发现异常场景时及时中断流程。
+     * 把订单或服务标记为开始执行。
+     * 这个方法用于厨师真正开始上门服务时推进订单流程。
+     * 它会先检查当前状态是否允许开始，然后再更新订单状态。
      */
     @Override
     public ChefOrderDetailVO start(Long id) {
@@ -105,9 +104,9 @@ public class ChefOrderServiceImpl implements ChefOrderService {
     }
 
     /**
-     * 方法说明：在 厨师端订单服务实现 中处理 finish 相关的业务逻辑。
-     * 主要作用：该方法用于承接当前模块中的一个独立职责点，帮助主流程保持清晰并减少重复代码。
-     * 实现逻辑：实现逻辑会围绕当前方法职责完成必要的数据查询、规则判断、字段加工或结果返回，并在发现异常场景时及时中断流程。
+     * 把订单或服务标记为已经完成。
+     * 这个方法用于厨师完成服务后结束整个履约流程。
+     * 它会先检查订单当前状态，再把它更新为已完成。
      */
     @Override
     @Transactional
@@ -124,9 +123,9 @@ public class ChefOrderServiceImpl implements ChefOrderService {
     }
 
     /**
-     * 方法说明：获取当前业务必需的数据，并在取不到时立即中断流程。
-     * 主要作用：它把 厨师端订单服务实现 中“查询 + 非空校验”的重复套路合并成一个辅助方法，让主流程更聚焦业务本身。
-     * 实现逻辑：实现时会先根据身份信息或业务键查询目标数据，再补充坐标、状态或归属校验，不满足条件时直接抛出业务异常。
+     * 查出当前业务必须要用的数据。
+     * 这个方法用于把“先查数据，找不到就报错”这类逻辑集中到一起。
+     * 它会根据 id 或当前登录信息去查记录，如果查不到或不符合条件，就直接抛出异常。
      */
     private Long requireCurrentChefId() {
         Long chefId = LoginUserContext.getChefId();
@@ -137,9 +136,9 @@ public class ChefOrderServiceImpl implements ChefOrderService {
     }
 
     /**
-     * 方法说明：查询一条当前业务所需的详情数据。
-     * 主要作用：该方法用于 厨师端订单服务实现 中的详情展示、状态流转前校验或后续业务处理前的数据加载。
-     * 实现逻辑：实现时会根据主键、关联键或当前登录身份查出目标记录，再按需要转换成 VO，必要时会补充关联字段或做存在性校验。
+     * 查询一条详细数据。
+     * 这个方法主要用在详情页面或后续业务处理前的数据准备。
+     * 它会根据 id、当前登录人或其他条件去查数据，找到后再转成返回给前端的格式。
      */
     private Order getOwnedOrder(Long id) {
         Long chefId = requireCurrentChefId();
@@ -151,9 +150,9 @@ public class ChefOrderServiceImpl implements ChefOrderService {
     }
 
     /**
-     * 方法说明：确保当前业务状态满足继续执行的要求。
-     * 主要作用：它用于把 厨师端订单服务实现 中必须成立的约束条件显式收口，避免非法状态继续向后流转。
-     * 实现逻辑：实现时会读取当前对象的关键状态或字段，并与目标要求进行比较；若不满足则立即抛出业务异常。
+     * 确认当前数据状态是否满足继续执行的要求。
+     * 这个方法的作用，是把状态判断集中起来，避免主流程里到处写 if 判断。
+     * 它会检查状态是否和预期一致，如果不一致，就直接抛出业务异常。
      */
     private void ensureOrderStatus(Order order, OrderStatusEnum expectedStatus, String message) {
         if (!expectedStatus.equalsCode(order.getOrderStatus())) {
@@ -162,18 +161,18 @@ public class ChefOrderServiceImpl implements ChefOrderService {
     }
 
     /**
-     * 方法说明：更新一条当前业务场景下的数据记录或状态。
-     * 主要作用：该方法用于 厨师端订单服务实现 中的编辑、状态变更或流程推进，保证外部只能修改业务允许变动的部分。
-     * 实现逻辑：实现时会先查询原始数据并做归属或状态校验，再回填可编辑字段执行更新，必要时返回更新后的详情结果。
+     * 修改一条已有的业务数据。
+     * 这个方法用于更新详情信息、状态或某些可编辑字段。
+     * 它会先查出原始数据，再把新值写进去，最后保存并返回更新后的结果。
      */
     private void updateOrderStatus(Order order, String orderStatus, String reason) {
         updateOrderStatus(order, orderStatus, reason, LocalDateTime.now());
     }
 
     /**
-     * 方法说明：更新一条当前业务场景下的数据记录或状态。
-     * 主要作用：该方法用于 厨师端订单服务实现 中的编辑、状态变更或流程推进，保证外部只能修改业务允许变动的部分。
-     * 实现逻辑：实现时会先查询原始数据并做归属或状态校验，再回填可编辑字段执行更新，必要时返回更新后的详情结果。
+     * 修改一条已有的业务数据。
+     * 这个方法用于更新详情信息、状态或某些可编辑字段。
+     * 它会先查出原始数据，再把新值写进去，最后保存并返回更新后的结果。
      */
     private void updateOrderStatus(Order order, String orderStatus, String reason, LocalDateTime updatedAt) {
         int rows;
@@ -188,9 +187,9 @@ public class ChefOrderServiceImpl implements ChefOrderService {
     }
 
     /**
-     * 方法说明：将实体对象或中间结果转换为接口返回所需的 VO 对象。
-     * 主要作用：该方法把 厨师端订单服务实现 中对外展示需要的字段映射集中在一起，避免多个业务入口重复编写相同的转换代码。
-     * 实现逻辑：实现时会先判断入参是否为空，然后逐项拷贝基础字段，必要时补充枚举描述、派生文本或关联展示信息后返回。
+     * 把数据对象转成接口要返回的格式。
+     * 这个方法让主流程不用反复写字段赋值逻辑，代码会更整洁。
+     * 它会从实体或中间对象里取出需要的字段，然后组装 VO 或其他返回对象。
      */
     private ChefOrderListVO toChefOrderListVO(Order order) {
         if (order == null) {
@@ -216,9 +215,9 @@ public class ChefOrderServiceImpl implements ChefOrderService {
     }
 
     /**
-     * 方法说明：将实体对象或中间结果转换为接口返回所需的 VO 对象。
-     * 主要作用：该方法把 厨师端订单服务实现 中对外展示需要的字段映射集中在一起，避免多个业务入口重复编写相同的转换代码。
-     * 实现逻辑：实现时会先判断入参是否为空，然后逐项拷贝基础字段，必要时补充枚举描述、派生文本或关联展示信息后返回。
+     * 把数据对象转成接口要返回的格式。
+     * 这个方法让主流程不用反复写字段赋值逻辑，代码会更整洁。
+     * 它会从实体或中间对象里取出需要的字段，然后组装 VO 或其他返回对象。
      */
     private ChefOrderDetailVO toChefOrderDetailVO(Order order) {
         if (order == null) {

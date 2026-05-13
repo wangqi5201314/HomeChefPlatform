@@ -22,9 +22,9 @@ public class UserAddressServiceImpl implements UserAddressService {
     private final UserAddressMapper userAddressMapper;
 
     /**
-     * 方法说明：查询符合条件的列表数据。
-     * 主要作用：它为 用户地址服务实现 提供页面列表、后台筛选或批量展示所需的数据集合。
-     * 实现逻辑：实现逻辑通常是根据查询条件调用 Mapper 获取记录列表，再按需要转换为 VO 集合；当结果为空时会返回空集合或由上层统一处理。
+     * 查询一组符合条件的列表数据。
+     * 这个方法主要给列表页面或管理页面使用，让调用方可以一次拿到需要的数据。
+     * 它会根据传入的条件查数据，如果需要的话还会把结果转成接口要返回的对象。
      */
     @Override
     public List<UserAddressVO> getAddressList(UserAddressQueryDTO queryDTO) {
@@ -38,9 +38,9 @@ public class UserAddressServiceImpl implements UserAddressService {
     }
 
     /**
-     * 方法说明：查询一条当前业务所需的详情数据。
-     * 主要作用：该方法用于 用户地址服务实现 中的详情展示、状态流转前校验或后续业务处理前的数据加载。
-     * 实现逻辑：实现时会根据主键、关联键或当前登录身份查出目标记录，再按需要转换成 VO，必要时会补充关联字段或做存在性校验。
+     * 查询一条详细数据。
+     * 这个方法主要用在详情页面或后续业务处理前的数据准备。
+     * 它会根据 id、当前登录人或其他条件去查数据，找到后再转成返回给前端的格式。
      */
     @Override
     public UserAddressVO getDefaultAddress(Long userId) {
@@ -48,9 +48,9 @@ public class UserAddressServiceImpl implements UserAddressService {
     }
 
     /**
-     * 方法说明：查询一条当前业务所需的详情数据。
-     * 主要作用：该方法用于 用户地址服务实现 中的详情展示、状态流转前校验或后续业务处理前的数据加载。
-     * 实现逻辑：实现时会根据主键、关联键或当前登录身份查出目标记录，再按需要转换成 VO，必要时会补充关联字段或做存在性校验。
+     * 查询一条详细数据。
+     * 这个方法主要用在详情页面或后续业务处理前的数据准备。
+     * 它会根据 id、当前登录人或其他条件去查数据，找到后再转成返回给前端的格式。
      */
     @Override
     public UserAddressVO getById(Long id) {
@@ -58,9 +58,9 @@ public class UserAddressServiceImpl implements UserAddressService {
     }
 
     /**
-     * 方法说明：新增一条当前业务场景下的数据记录。
-     * 主要作用：它承担 用户地址服务实现 中的新增入口，把前端入参转换为可持久化的实体数据。
-     * 实现逻辑：实现逻辑通常会先校验关键字段和归属关系，再组装实体写入数据库，最后返回新增后的最新结果。
+     * 新建一条业务数据。
+     * 这个方法用于把前端提交的新信息正式写入数据库。
+     * 它会先做必要的检查和组装，再保存数据，最后返回新建后的结果。
      */
     @Override
     public UserAddressVO create(UserAddressCreateDTO userAddressCreateDTO) {
@@ -103,9 +103,9 @@ public class UserAddressServiceImpl implements UserAddressService {
     }
 
     /**
-     * 方法说明：更新一条当前业务场景下的数据记录或状态。
-     * 主要作用：该方法用于 用户地址服务实现 中的编辑、状态变更或流程推进，保证外部只能修改业务允许变动的部分。
-     * 实现逻辑：实现时会先查询原始数据并做归属或状态校验，再回填可编辑字段执行更新，必要时返回更新后的详情结果。
+     * 修改一条已有的业务数据。
+     * 这个方法用于更新详情信息、状态或某些可编辑字段。
+     * 它会先查出原始数据，再把新值写进去，最后保存并返回更新后的结果。
      */
     @Override
     public UserAddressVO updateById(Long id, UserAddressUpdateDTO userAddressUpdateDTO) {
@@ -144,9 +144,9 @@ public class UserAddressServiceImpl implements UserAddressService {
     }
 
     /**
-     * 方法说明：在 用户地址服务实现 中处理 setDefaultById 相关的业务逻辑。
-     * 主要作用：该方法用于承接当前模块中的一个独立职责点，帮助主流程保持清晰并减少重复代码。
-     * 实现逻辑：实现逻辑会围绕当前方法职责完成必要的数据查询、规则判断、字段加工或结果返回，并在发现异常场景时及时中断流程。
+     * 设置某个业务字段的最终状态。
+     * 这个方法通常用于切换默认值、启用状态或类似的标记位。
+     * 它会先确认目标记录没问题，再把指定字段更新成目标状态。
      */
     @Override
     public UserAddressVO setDefaultById(Long id, Long userId) {
@@ -168,9 +168,9 @@ public class UserAddressServiceImpl implements UserAddressService {
     }
 
     /**
-     * 方法说明：删除当前业务场景下指定的数据记录。
-     * 主要作用：它为 用户地址服务实现 提供清理数据的能力，同时确保删除动作仍然符合归属、状态或业务规则限制。
-     * 实现逻辑：实现逻辑通常会先查询并校验目标记录，再执行删除；若前端需要回显删除前信息，则会在删除前先转换出返回对象。
+     * 删除一条不再需要的数据。
+     * 这个方法主要用来清理记录，避免无效数据继续留在系统里。
+     * 它通常会先查询要删的数据，确认没问题后再执行删除。
      */
     @Override
     public UserAddressVO deleteById(Long id) {
@@ -187,9 +187,9 @@ public class UserAddressServiceImpl implements UserAddressService {
     }
 
     /**
-     * 方法说明：将实体对象或中间结果转换为接口返回所需的 VO 对象。
-     * 主要作用：该方法把 用户地址服务实现 中对外展示需要的字段映射集中在一起，避免多个业务入口重复编写相同的转换代码。
-     * 实现逻辑：实现时会先判断入参是否为空，然后逐项拷贝基础字段，必要时补充枚举描述、派生文本或关联展示信息后返回。
+     * 把数据对象转成接口要返回的格式。
+     * 这个方法让主流程不用反复写字段赋值逻辑，代码会更整洁。
+     * 它会从实体或中间对象里取出需要的字段，然后组装 VO 或其他返回对象。
      */
     private UserAddressVO toUserAddressVO(UserAddress userAddress) {
         if (userAddress == null) {

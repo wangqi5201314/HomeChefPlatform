@@ -13,9 +13,9 @@ public class OperationLogServiceImpl implements OperationLogService {
     private final OperationLogMapper operationLogMapper;
 
     /**
-     * 方法说明：在 操作日志服务实现 中处理 save 相关的业务逻辑。
-     * 主要作用：该方法用于承接当前模块中的一个独立职责点，帮助主流程保持清晰并减少重复代码。
-     * 实现逻辑：实现逻辑会围绕当前方法职责完成必要的数据查询、规则判断、字段加工或结果返回，并在发现异常场景时及时中断流程。
+     * 保存一条需要落库的业务记录。
+     * 这个方法主要用于把日志、快照或处理结果写进数据库。
+     * 它会先补齐必要字段，再调用 Mapper 完成保存。
      */
     @Override
     public void save(OperationLog operationLog) {

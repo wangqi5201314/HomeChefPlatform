@@ -30,9 +30,9 @@ public class UploadServiceImpl implements UploadService {
     private final OssProperties ossProperties;
 
     /**
-     * 方法说明：校验并上传图片文件到对象存储，随后返回可访问地址。
-     * 主要作用：它为头像、认证材料等上传场景提供统一入口，避免不同业务各自处理文件校验和 OSS 路径拼接。
-     * 实现逻辑：方法会先检查文件是否为空、格式是否合法，再生成对象键并上传到 OSS，最后拼接出外部访问 URL 返回给调用方。
+     * 上传一张图片到 OSS 存储。
+     * 这个方法给系统里的头像上传、材料上传等场景使用，负责生成新文件名并返回访问地址。
+     * 它会先检查文件是否合法，再生成 UUID 文件名和存储路径，接着上传到 OSS，最后拼出对外 URL。
      */
     @Override
     public FileUploadVO uploadImage(MultipartFile file) {
@@ -63,9 +63,9 @@ public class UploadServiceImpl implements UploadService {
     }
 
     /**
-     * 方法说明：校验当前业务输入或状态是否满足执行条件。
-     * 主要作用：它用于把 文件上传服务实现 中的前置规则集中收口，避免核心流程夹杂过多重复的条件判断。
-     * 实现逻辑：实现逻辑会逐项检查关键字段、状态或业务约束，一旦发现不满足条件的情况就立即抛出业务异常阻断流程。
+     * 检查当前传入的参数或业务状态是否合法。
+     * 这个方法的作用，是把不合条件的情况尽早拦住，不让错误数据继续往下执行。
+     * 它会根据规则逐项检查参数或状态，只要发现不满足条件，就直接抛出异常。
      */
     private void validateFile(MultipartFile file) {
         if (file == null || file.isEmpty()) {
@@ -84,9 +84,9 @@ public class UploadServiceImpl implements UploadService {
     }
 
     /**
-     * 方法说明：查询一条当前业务所需的详情数据。
-     * 主要作用：该方法用于 文件上传服务实现 中的详情展示、状态流转前校验或后续业务处理前的数据加载。
-     * 实现逻辑：实现时会根据主键、关联键或当前登录身份查出目标记录，再按需要转换成 VO，必要时会补充关联字段或做存在性校验。
+     * 查询一条详细数据。
+     * 这个方法主要用在详情页面或后续业务处理前的数据准备。
+     * 它会根据 id、当前登录人或其他条件去查数据，找到后再转成返回给前端的格式。
      */
     private Set<String> getAllowedTypes() {
         if (!StringUtils.hasText(ossProperties.getAllowedTypes())) {
@@ -99,9 +99,9 @@ public class UploadServiceImpl implements UploadService {
     }
 
     /**
-     * 方法说明：构建当前业务流程后续需要复用的中间结果。
-     * 主要作用：这个辅助方法把 文件上传服务实现 中重复使用的数据结构提前整理好，减少主流程中的重复计算和分支判断。
-     * 实现逻辑：实现逻辑通常会对输入参数做空值保护，再根据业务规则拼装映射、集合、文本或比较器，供后续步骤直接复用。
+     * 生成文件在 OSS 中保存时使用的完整路径。
+     * 这个方法的作用，是把配置里的上传目录前缀和文件名拼接起来。
+     * 它会先处理前缀里多余的斜杠，如果没有配置前缀，就直接返回文件名本身。
      */
     private String buildObjectKey(String fileName) {
         String prefix = trimSlashes(ossProperties.getUploadPrefix());
@@ -112,9 +112,9 @@ public class UploadServiceImpl implements UploadService {
     }
 
     /**
-     * 方法说明：构建当前业务流程后续需要复用的中间结果。
-     * 主要作用：这个辅助方法把 文件上传服务实现 中重复使用的数据结构提前整理好，减少主流程中的重复计算和分支判断。
-     * 实现逻辑：实现逻辑通常会对输入参数做空值保护，再根据业务规则拼装映射、集合、文本或比较器，供后续步骤直接复用。
+     * 构建一个后续会被重复使用的中间结果。
+     * 这个方法主要是为了把主流程里的细节拆出去，让主流程更容易看。
+     * 它会根据当前需要把集合、映射、路径、文本或比较器等内容先准备好。
      */
     private String buildFileUrl(String objectKey) {
         if (StringUtils.hasText(ossProperties.getCustomDomain())) {
@@ -124,9 +124,9 @@ public class UploadServiceImpl implements UploadService {
     }
 
     /**
-     * 方法说明：查询一条当前业务所需的详情数据。
-     * 主要作用：该方法用于 文件上传服务实现 中的详情展示、状态流转前校验或后续业务处理前的数据加载。
-     * 实现逻辑：实现时会根据主键、关联键或当前登录身份查出目标记录，再按需要转换成 VO，必要时会补充关联字段或做存在性校验。
+     * 查询一条详细数据。
+     * 这个方法主要用在详情页面或后续业务处理前的数据准备。
+     * 它会根据 id、当前登录人或其他条件去查数据，找到后再转成返回给前端的格式。
      */
     private String getExtension(String fileName) {
         if (!StringUtils.hasText(fileName) || !fileName.contains(".")) {
@@ -136,9 +136,9 @@ public class UploadServiceImpl implements UploadService {
     }
 
     /**
-     * 方法说明：在 文件上传服务实现 中处理 resolveContentType 相关的业务逻辑。
-     * 主要作用：该方法用于承接当前模块中的一个独立职责点，帮助主流程保持清晰并减少重复代码。
-     * 实现逻辑：实现逻辑会围绕当前方法职责完成必要的数据查询、规则判断、字段加工或结果返回，并在发现异常场景时及时中断流程。
+     * 根据当前条件解析出最终要使用的值。
+     * 这个方法主要用来把多个输入整理成一个标准结果。
+     * 它会结合参数和默认规则做判断，最后返回真正要用的内容。
      */
     private String resolveContentType(String extension, String contentType) {
         if (StringUtils.hasText(contentType)) {
@@ -153,9 +153,9 @@ public class UploadServiceImpl implements UploadService {
     }
 
     /**
-     * 方法说明：在 文件上传服务实现 中处理 trimSlashes 相关的业务逻辑。
-     * 主要作用：该方法用于承接当前模块中的一个独立职责点，帮助主流程保持清晰并减少重复代码。
-     * 实现逻辑：实现逻辑会围绕当前方法职责完成必要的数据查询、规则判断、字段加工或结果返回，并在发现异常场景时及时中断流程。
+     * 把字符串前后多余的部分清理掉。
+     * 这个方法主要用来处理路径、URL 或前缀，避免拼接后格式不对。
+     * 它会按当前方法的规则去掉多余斜杠、协议头或尾部分隔符。
      */
     private String trimSlashes(String value) {
         if (!StringUtils.hasText(value)) {
@@ -172,9 +172,9 @@ public class UploadServiceImpl implements UploadService {
     }
 
     /**
-     * 方法说明：在 文件上传服务实现 中处理 trimTrailingSlash 相关的业务逻辑。
-     * 主要作用：该方法用于承接当前模块中的一个独立职责点，帮助主流程保持清晰并减少重复代码。
-     * 实现逻辑：实现逻辑会围绕当前方法职责完成必要的数据查询、规则判断、字段加工或结果返回，并在发现异常场景时及时中断流程。
+     * 把字符串前后多余的部分清理掉。
+     * 这个方法主要用来处理路径、URL 或前缀，避免拼接后格式不对。
+     * 它会按当前方法的规则去掉多余斜杠、协议头或尾部分隔符。
      */
     private String trimTrailingSlash(String value) {
         if (!StringUtils.hasText(value)) {
@@ -188,9 +188,9 @@ public class UploadServiceImpl implements UploadService {
     }
 
     /**
-     * 方法说明：在 文件上传服务实现 中处理 trimProtocol 相关的业务逻辑。
-     * 主要作用：该方法用于承接当前模块中的一个独立职责点，帮助主流程保持清晰并减少重复代码。
-     * 实现逻辑：实现逻辑会围绕当前方法职责完成必要的数据查询、规则判断、字段加工或结果返回，并在发现异常场景时及时中断流程。
+     * 把字符串前后多余的部分清理掉。
+     * 这个方法主要用来处理路径、URL 或前缀，避免拼接后格式不对。
+     * 它会按当前方法的规则去掉多余斜杠、协议头或尾部分隔符。
      */
     private String trimProtocol(String endpoint) {
         String result = endpoint.trim();

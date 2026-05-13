@@ -46,18 +46,16 @@ public class OrderServiceImpl implements OrderService {
     private final GeoDistanceService geoDistanceService;
 
     /**
-     * 方法说明：根据用户提交的下单信息创建订单，并在同一事务中锁定对应档期。
-     * 主要作用：这是用户端下单的核心方法，用来防止同一档期在并发请求下被重复占用，同时把订单主数据一次性落库。
-     * 实现逻辑：方法会先规范化 timeSlot 并校验服务范围，然后通过 FOR UPDATE 锁住可预约档期；锁定成功后写入订单，再把档期更新为不可预约，任意一步失败都会随事务一起回滚。
+     * 根据用户提交的信息创建一笔新订单。
+     * 这个方法是下单流程的核心入口，负责避免并发重复下单、写入订单数据，并占用对应档期。
+     * 它会先检查服务范围和时段是否合法，然后加锁可用档期，接着写入订单，最后把档期更新为不可预约。
      */
     @Override
     @Transactional
     public OrderDetailVO createOrder(OrderCreateDTO orderCreateDTO) {
         LocalDateTime now = LocalDateTime.now();
         String timeSlot = normalizeTimeSlot(orderCreateDTO.getTimeSlot());
-        // 下单前先做服务范围校验，避免超出厨师服务半径的订单进入后续锁档期流程。
         validateServiceRange(orderCreateDTO);
-        // 这里会使用 SELECT ... FOR UPDATE 锁住对应档期行，防止并发请求同时抢到同一个档期。
         ChefSchedule lockedSchedule = lockAvailableSchedule(orderCreateDTO.getChefId(), orderCreateDTO.getServiceDate(), timeSlot);
 
         Order order = Order.builder()
@@ -98,7 +96,6 @@ public class OrderServiceImpl implements OrderService {
             throw new BusinessException(ResultCodeEnum.SYSTEM_ERROR, "create order failed");
         }
 
-        // 订单创建成功后立即占用档期，并记录 locked_order_id，后续取消/拒单可通过订单ID释放档期。
         int scheduleRows = chefScheduleMapper.lockById(lockedSchedule.getId(), order.getId(), now);
         if (scheduleRows <= 0) {
             throw new BusinessException(ResultCodeEnum.FAIL, "当前档期已不可预约，请刷新后重试");
@@ -107,9 +104,9 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * 方法说明：查询一条当前业务所需的详情数据。
-     * 主要作用：该方法用于 用户端订单服务实现 中的详情展示、状态流转前校验或后续业务处理前的数据加载。
-     * 实现逻辑：实现时会根据主键、关联键或当前登录身份查出目标记录，再按需要转换成 VO，必要时会补充关联字段或做存在性校验。
+     * 查询一条详细数据。
+     * 这个方法主要用在详情页面或后续业务处理前的数据准备。
+     * 它会根据 id、当前登录人或其他条件去查数据，找到后再转成返回给前端的格式。
      */
     @Override
     public OrderDetailVO getById(Long id) {
@@ -117,9 +114,9 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * 方法说明：查询符合条件的列表数据。
-     * 主要作用：它为 用户端订单服务实现 提供页面列表、后台筛选或批量展示所需的数据集合。
-     * 实现逻辑：实现逻辑通常是根据查询条件调用 Mapper 获取记录列表，再按需要转换为 VO 集合；当结果为空时会返回空集合或由上层统一处理。
+     * 查询一组符合条件的列表数据。
+     * 这个方法主要给列表页面或管理页面使用，让调用方可以一次拿到需要的数据。
+     * 它会根据传入的条件查数据，如果需要的话还会把结果转成接口要返回的对象。
      */
     @Override
     public List<OrderListVO> getOrderList(OrderQueryDTO queryDTO) {
@@ -133,9 +130,9 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * 方法说明：取消指定订单，并在需要时释放该订单占用的厨师档期。
-     * 主要作用：它用来处理用户主动取消订单的场景，确保订单状态变更后，之前被锁定的可预约资源能够重新开放。
-     * 实现逻辑：方法会先查询订单并校验当前状态是否允许取消，再补齐取消原因、更新订单状态，最后按照 lockedOrderId 释放对应档期。
+     * 取消一笔指定的订单。
+     * 这个方法主要用在用户不想继续订单时，同时把之前占用的档期释放回去。
+     * 它会先查询订单状态是否允许取消，再写入取消原因并更新状态，最后释放该订单锁定的档期。
      */
     @Override
     @Transactional
@@ -162,15 +159,14 @@ public class OrderServiceImpl implements OrderService {
         if (rows <= 0) {
             return null;
         }
-        // 用户取消待确认/待支付订单时，释放之前被该订单锁定的档期。
         chefScheduleMapper.releaseByLockedOrderId(id, LocalDateTime.now());
         return toOrderDetailVO(orderMapper.selectById(id));
     }
 
     /**
-     * 方法说明：在 用户端订单服务实现 中处理 canCancelByUser 相关的业务逻辑。
-     * 主要作用：该方法用于承接当前模块中的一个独立职责点，帮助主流程保持清晰并减少重复代码。
-     * 实现逻辑：实现逻辑会围绕当前方法职责完成必要的数据查询、规则判断、字段加工或结果返回，并在发现异常场景时及时中断流程。
+     * 处理 canCancelByUser 这个方法对应的业务逻辑。
+     * 这个方法主要是把当前模块里的某一段独立工作单独拆出来，让主流程更清楚。
+     * 它会围绕自己的职责去查询数据、处理规则，最后返回结果或更新状态。
      */
     private boolean canCancelByUser(String orderStatus) {
         return OrderStatusEnum.PENDING_CONFIRM.equalsCode(orderStatus)
@@ -178,9 +174,9 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * 方法说明：将实体对象或中间结果转换为接口返回所需的 VO 对象。
-     * 主要作用：该方法把 用户端订单服务实现 中对外展示需要的字段映射集中在一起，避免多个业务入口重复编写相同的转换代码。
-     * 实现逻辑：实现时会先判断入参是否为空，然后逐项拷贝基础字段，必要时补充枚举描述、派生文本或关联展示信息后返回。
+     * 把数据对象转成接口要返回的格式。
+     * 这个方法让主流程不用反复写字段赋值逻辑，代码会更整洁。
+     * 它会从实体或中间对象里取出需要的字段，然后组装 VO 或其他返回对象。
      */
     private OrderListVO toOrderListVO(Order order) {
         if (order == null) {
@@ -207,9 +203,9 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * 方法说明：将实体对象或中间结果转换为接口返回所需的 VO 对象。
-     * 主要作用：该方法把 用户端订单服务实现 中对外展示需要的字段映射集中在一起，避免多个业务入口重复编写相同的转换代码。
-     * 实现逻辑：实现时会先判断入参是否为空，然后逐项拷贝基础字段，必要时补充枚举描述、派生文本或关联展示信息后返回。
+     * 把数据对象转成接口要返回的格式。
+     * 这个方法让主流程不用反复写字段赋值逻辑，代码会更整洁。
+     * 它会从实体或中间对象里取出需要的字段，然后组装 VO 或其他返回对象。
      */
     private OrderDetailVO toOrderDetailVO(Order order) {
         if (order == null) {
@@ -250,9 +246,9 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * 方法说明：生成当前业务流程所需的编号、验证码或标识值。
-     * 主要作用：它为 用户端订单服务实现 提供统一的标识生成能力，避免在主流程中混入随机数或格式拼接细节。
-     * 实现逻辑：实现逻辑通常会结合时间、随机数或固定前缀构造结果，并确保生成值满足当前业务展示或唯一性需求。
+     * 生成一个新的业务标识或编号。
+     * 这个方法主要用来生成订单号、支付号、验证码这类不能手写的值。
+     * 它会按固定规则把时间、随机数或前缀拼起来，最后返回一个可直接使用的新值。
      */
     private String generateOrderNo() {
         return "ORD" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
@@ -260,18 +256,18 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * 方法说明：生成当前业务流程所需的编号、验证码或标识值。
-     * 主要作用：它为 用户端订单服务实现 提供统一的标识生成能力，避免在主流程中混入随机数或格式拼接细节。
-     * 实现逻辑：实现逻辑通常会结合时间、随机数或固定前缀构造结果，并确保生成值满足当前业务展示或唯一性需求。
+     * 生成一个新的业务标识或编号。
+     * 这个方法主要用来生成订单号、支付号、验证码这类不能手写的值。
+     * 它会按固定规则把时间、随机数或前缀拼起来，最后返回一个可直接使用的新值。
      */
     private String generateConfirmCode() {
         return String.valueOf(ThreadLocalRandom.current().nextInt(100000, 1000000));
     }
 
     /**
-     * 方法说明：对输入值做统一的格式化和规范化处理。
-     * 主要作用：该方法用于消除 用户端订单服务实现 中大小写、空白字符或别名写法带来的差异，保证后续逻辑按统一格式处理数据。
-     * 实现逻辑：实现时会先做空值判断，再进行 trim、大小写转换或枚举标准化，最终返回可直接参与业务判断的值。
+     * 把输入值整理成统一的格式。
+     * 这个方法可以避免因为大小写、空格或不同写法导致后面的业务判断出错。
+     * 它通常会先做 trim，再统一大小写，或者转成系统里约定好的标准值。
      */
     private String normalizeTimeSlot(String timeSlot) {
         TimeSlotEnum timeSlotEnum = TimeSlotEnum.fromCode(timeSlot);
@@ -282,12 +278,11 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * 方法说明：锁定指定厨师在指定日期和时段下仍可预约的档期记录。
-     * 主要作用：这个辅助方法用于控制并发下单，保证同一档期在同一时刻只会被一个事务成功占用。
-     * 实现逻辑：实现时会按厨师、服务日期和时段查询可预约档期，并通过 FOR UPDATE 加行锁；如果未查到记录，则直接提示当前档期不可预约。
+     * 锁住一条当前仍然可以预约的档期记录。
+     * 这个方法的作用，是防止多个人同时抢到同一个厨师档期。
+     * 它会按厨师、日期和时段去查可用档期，并通过数据库行锁把这条记录锁住。
      */
     private ChefSchedule lockAvailableSchedule(Long chefId, java.time.LocalDate serviceDate, String timeSlot) {
-        // 当前方法必须在事务中调用，否则 MySQL 行锁会在查询结束后立刻释放，无法保护后续创建订单操作。
         ChefSchedule chefSchedule = chefScheduleMapper.selectAvailableByChefIdAndDateAndTimeSlotForUpdate(
                 chefId,
                 serviceDate,
@@ -300,9 +295,9 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * 方法说明：校验本次下单地址是否处于厨师当前服务半径范围内。
-     * 主要作用：它负责在订单正式创建前拦截超出服务范围的请求，避免无效订单继续进入档期锁定和支付流程。
-     * 实现逻辑：方法会依次加载用户地址、厨师信息和启用中的服务位置，检查经纬度及服务半径配置，再调用距离服务计算两点距离并与服务半径比较。
+     * 检查用户的地址是否在厨师的服务范围内。
+     * 这个方法用来避免用户下单后才发现距离过远，提前把不符合条件的请求拦住。
+     * 它会分别查用户地址、厨师信息和启用中的服务位置，然后计算距离，再与服务半径做比较。
      */
     private void validateServiceRange(OrderCreateDTO orderCreateDTO) {
         UserAddress userAddress = userAddressMapper.selectById(orderCreateDTO.getAddressId());
@@ -329,7 +324,6 @@ public class OrderServiceImpl implements OrderService {
             throw new BusinessException(ResultCodeEnum.FAIL, "厨师启用中的服务位置缺少坐标信息");
         }
 
-        // 优先使用腾讯地图导航距离，失败时 GeoDistanceService 内部会自动回退为 Haversine 直线距离。
         double distanceKm = geoDistanceService.distanceKm(
                 userAddress.getLatitude(),
                 userAddress.getLongitude(),

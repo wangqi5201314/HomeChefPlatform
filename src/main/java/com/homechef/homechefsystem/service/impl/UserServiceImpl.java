@@ -33,9 +33,9 @@ public class UserServiceImpl implements UserService {
     private final WechatMiniProgramService wechatMiniProgramService;
 
     /**
-     * 方法说明：在 用户服务实现 中处理 login 相关的业务逻辑。
-     * 主要作用：该方法用于承接当前模块中的一个独立职责点，帮助主流程保持清晰并减少重复代码。
-     * 实现逻辑：实现逻辑会围绕当前方法职责完成必要的数据查询、规则判断、字段加工或结果返回，并在发现异常场景时及时中断流程。
+     * 处理一次登录请求。
+     * 这个方法负责校验身份信息，并在登录成功后返回系统需要的登录结果。
+     * 它会先查账号或第三方身份，再检查状态和密码，最后生成登录返回数据。
      */
     @Override
     public UserVO login(UserLoginDTO userLoginDTO) {
@@ -55,9 +55,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 方法说明：通过微信小程序登录态完成平台用户登录或自动注册。
-     * 主要作用：它让用户可以用微信 code 直接进入系统，减少传统账号密码登录门槛。
-     * 实现逻辑：方法会先调用微信登录服务换取 openid，再按 openid 查询本地用户；若用户不存在则自动创建，最后统一执行登录收尾并返回 token。
+     * 处理一次登录请求。
+     * 这个方法负责校验身份信息，并在登录成功后返回系统需要的登录结果。
+     * 它会先查账号或第三方身份，再检查状态和密码，最后生成登录返回数据。
      */
     @Override
     public UserVO loginByWechat(UserWechatLoginDTO userWechatLoginDTO) {
@@ -75,9 +75,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 方法说明：在 用户服务实现 中处理 register 相关的业务逻辑。
-     * 主要作用：该方法用于承接当前模块中的一个独立职责点，帮助主流程保持清晰并减少重复代码。
-     * 实现逻辑：实现逻辑会围绕当前方法职责完成必要的数据查询、规则判断、字段加工或结果返回，并在发现异常场景时及时中断流程。
+     * 完成一次新账号注册。
+     * 这个方法主要负责把注册信息转成系统里的正式用户或厨师数据。
+     * 它会先做重复和格式检查，再保存数据并返回注册结果。
      */
     @Override
     public UserVO register(UserRegisterDTO userRegisterDTO) {
@@ -104,9 +104,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 方法说明：在 用户服务实现 中处理 changePassword 相关的业务逻辑。
-     * 主要作用：该方法用于承接当前模块中的一个独立职责点，帮助主流程保持清晰并减少重复代码。
-     * 实现逻辑：实现逻辑会围绕当前方法职责完成必要的数据查询、规则判断、字段加工或结果返回，并在发现异常场景时及时中断流程。
+     * 修改当前账号的登录密码。
+     * 这个方法让用户、厨师或管理员可以安全地更新自己的密码。
+     * 它会先检查旧密码是否正确，再校验新密码，最后把加密后的新密码保存起来。
      */
     @Override
     public void changePassword(UserChangePasswordDTO userChangePasswordDTO) {
@@ -139,9 +139,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 方法说明：查询一条当前业务所需的详情数据。
-     * 主要作用：该方法用于 用户服务实现 中的详情展示、状态流转前校验或后续业务处理前的数据加载。
-     * 实现逻辑：实现时会根据主键、关联键或当前登录身份查出目标记录，再按需要转换成 VO，必要时会补充关联字段或做存在性校验。
+     * 查询一条详细数据。
+     * 这个方法主要用在详情页面或后续业务处理前的数据准备。
+     * 它会根据 id、当前登录人或其他条件去查数据，找到后再转成返回给前端的格式。
      */
     @Override
     public UserVO getById(Long id) {
@@ -149,9 +149,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 方法说明：查询一条当前业务所需的详情数据。
-     * 主要作用：该方法用于 用户服务实现 中的详情展示、状态流转前校验或后续业务处理前的数据加载。
-     * 实现逻辑：实现时会根据主键、关联键或当前登录身份查出目标记录，再按需要转换成 VO，必要时会补充关联字段或做存在性校验。
+     * 查询一条详细数据。
+     * 这个方法主要用在详情页面或后续业务处理前的数据准备。
+     * 它会根据 id、当前登录人或其他条件去查数据，找到后再转成返回给前端的格式。
      */
     @Override
     public UserVO getCurrentUser() {
@@ -163,9 +163,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 方法说明：修改当前登录用户的个人资料。
-     * 主要作用：它把昵称、头像、手机号和紧急联系人等个人信息更新集中到一个入口，方便前端统一提交。
-     * 实现逻辑：方法会先查询当前用户，再分别处理手机号和紧急联系人手机号的唯一性校验，最后更新实体并返回最新用户资料。
+     * 修改一条已有的业务数据。
+     * 这个方法用于更新详情信息、状态或某些可编辑字段。
+     * 它会先查出原始数据，再把新值写进去，最后保存并返回更新后的结果。
      */
     @Override
     public UserVO updateCurrentUser(UserUpdateDTO userUpdateDTO) {
@@ -199,9 +199,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 方法说明：在 用户服务实现 中处理 applyPhoneIfPresent 相关的业务逻辑。
-     * 主要作用：该方法用于承接当前模块中的一个独立职责点，帮助主流程保持清晰并减少重复代码。
-     * 实现逻辑：实现逻辑会围绕当前方法职责完成必要的数据查询、规则判断、字段加工或结果返回，并在发现异常场景时及时中断流程。
+     * 把一个可选参数按规则写回到目标对象里。
+     * 这个方法主要是为了减少重复的判空和赋值代码。
+     * 它会先判断参数有没有值，有值时再更新到目标对象上。
      */
     private void applyPhoneIfPresent(User existingUser, String phone) {
         if (!StringUtils.hasText(phone)) {
@@ -213,9 +213,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 方法说明：确保当前业务状态满足继续执行的要求。
-     * 主要作用：它用于把 用户服务实现 中必须成立的约束条件显式收口，避免非法状态继续向后流转。
-     * 实现逻辑：实现时会读取当前对象的关键状态或字段，并与目标要求进行比较；若不满足则立即抛出业务异常。
+     * 确认当前数据状态是否满足继续执行的要求。
+     * 这个方法的作用，是把状态判断集中起来，避免主流程里到处写 if 判断。
+     * 它会检查状态是否和预期一致，如果不一致，就直接抛出业务异常。
      */
     private void ensurePhoneAvailable(String phone, Long currentUserId) {
         if (!StringUtils.hasText(phone)) {
@@ -240,9 +240,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 方法说明：校验当前业务输入或状态是否满足执行条件。
-     * 主要作用：它用于把 用户服务实现 中的前置规则集中收口，避免核心流程夹杂过多重复的条件判断。
-     * 实现逻辑：实现逻辑会逐项检查关键字段、状态或业务约束，一旦发现不满足条件的情况就立即抛出业务异常阻断流程。
+     * 检查当前传入的参数或业务状态是否合法。
+     * 这个方法的作用，是把不合条件的情况尽早拦住，不让错误数据继续往下执行。
+     * 它会根据规则逐项检查参数或状态，只要发现不满足条件，就直接抛出异常。
      */
     private void validateEmergencyContactPhone(String emergencyContactPhone, Long currentUserId, String currentUserPhone) {
         if (!StringUtils.hasText(emergencyContactPhone)) {
@@ -271,9 +271,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 方法说明：新增一条当前业务场景下的数据记录。
-     * 主要作用：它承担 用户服务实现 中的新增入口，把前端入参转换为可持久化的实体数据。
-     * 实现逻辑：实现逻辑通常会先校验关键字段和归属关系，再组装实体写入数据库，最后返回新增后的最新结果。
+     * 新建一条业务数据。
+     * 这个方法用于把前端提交的新信息正式写入数据库。
+     * 它会先做必要的检查和组装，再保存数据，最后返回新建后的结果。
      */
     private User createWechatUser(WechatMiniProgramService.WechatLoginInfo wechatLoginInfo) {
         LocalDateTime now = LocalDateTime.now();
@@ -303,9 +303,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 方法说明：在 用户服务实现 中处理 finishLogin 相关的业务逻辑。
-     * 主要作用：该方法用于承接当前模块中的一个独立职责点，帮助主流程保持清晰并减少重复代码。
-     * 实现逻辑：实现逻辑会围绕当前方法职责完成必要的数据查询、规则判断、字段加工或结果返回，并在发现异常场景时及时中断流程。
+     * 处理 finishLogin 这个方法对应的业务逻辑。
+     * 这个方法主要是把当前模块里的某一段独立工作单独拆出来，让主流程更清楚。
+     * 它会围绕自己的职责去查询数据、处理规则，最后返回结果或更新状态。
      */
     private UserVO finishLogin(User user) {
         LocalDateTime now = LocalDateTime.now();
@@ -314,9 +314,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 方法说明：校验当前业务输入或状态是否满足执行条件。
-     * 主要作用：它用于把 用户服务实现 中的前置规则集中收口，避免核心流程夹杂过多重复的条件判断。
-     * 实现逻辑：实现逻辑会逐项检查关键字段、状态或业务约束，一旦发现不满足条件的情况就立即抛出业务异常阻断流程。
+     * 检查当前传入的参数或业务状态是否合法。
+     * 这个方法的作用，是把不合条件的情况尽早拦住，不让错误数据继续往下执行。
+     * 它会根据规则逐项检查参数或状态，只要发现不满足条件，就直接抛出异常。
      */
     private void validateUserForLogin(User user) {
         if (user.getStatus() == null || !UserStatusEnum.NORMAL.getCode().equals(user.getStatus())) {
@@ -325,9 +325,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 方法说明：校验当前业务输入或状态是否满足执行条件。
-     * 主要作用：它用于把 用户服务实现 中的前置规则集中收口，避免核心流程夹杂过多重复的条件判断。
-     * 实现逻辑：实现逻辑会逐项检查关键字段、状态或业务约束，一旦发现不满足条件的情况就立即抛出业务异常阻断流程。
+     * 检查当前传入的参数或业务状态是否合法。
+     * 这个方法的作用，是把不合条件的情况尽早拦住，不让错误数据继续往下执行。
+     * 它会根据规则逐项检查参数或状态，只要发现不满足条件，就直接抛出异常。
      */
     private void validateRegister(UserRegisterDTO userRegisterDTO) {
         if (!userRegisterDTO.getPassword().equals(userRegisterDTO.getConfirmPassword())) {
@@ -336,9 +336,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 方法说明：校验当前业务输入或状态是否满足执行条件。
-     * 主要作用：它用于把 用户服务实现 中的前置规则集中收口，避免核心流程夹杂过多重复的条件判断。
-     * 实现逻辑：实现逻辑会逐项检查关键字段、状态或业务约束，一旦发现不满足条件的情况就立即抛出业务异常阻断流程。
+     * 检查当前传入的参数或业务状态是否合法。
+     * 这个方法的作用，是把不合条件的情况尽早拦住，不让错误数据继续往下执行。
+     * 它会根据规则逐项检查参数或状态，只要发现不满足条件，就直接抛出异常。
      */
     private void validateChangePassword(UserChangePasswordDTO userChangePasswordDTO) {
         if (!userChangePasswordDTO.getNewPassword().equals(userChangePasswordDTO.getConfirmPassword())) {
@@ -347,9 +347,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 方法说明：构建当前业务流程后续需要复用的中间结果。
-     * 主要作用：这个辅助方法把 用户服务实现 中重复使用的数据结构提前整理好，减少主流程中的重复计算和分支判断。
-     * 实现逻辑：实现逻辑通常会对输入参数做空值保护，再根据业务规则拼装映射、集合、文本或比较器，供后续步骤直接复用。
+     * 构建一个后续会被重复使用的中间结果。
+     * 这个方法主要是为了把主流程里的细节拆出去，让主流程更容易看。
+     * 它会根据当前需要把集合、映射、路径、文本或比较器等内容先准备好。
      */
     private String buildPhoneNickname(String phone, String nickname) {
         if (StringUtils.hasText(nickname)) {
@@ -362,9 +362,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 方法说明：构建当前业务流程后续需要复用的中间结果。
-     * 主要作用：这个辅助方法把 用户服务实现 中重复使用的数据结构提前整理好，减少主流程中的重复计算和分支判断。
-     * 实现逻辑：实现逻辑通常会对输入参数做空值保护，再根据业务规则拼装映射、集合、文本或比较器，供后续步骤直接复用。
+     * 构建一个后续会被重复使用的中间结果。
+     * 这个方法主要是为了把主流程里的细节拆出去，让主流程更容易看。
+     * 它会根据当前需要把集合、映射、路径、文本或比较器等内容先准备好。
      */
     private String buildWechatNickname(String openid) {
         if (!StringUtils.hasText(openid)) {
@@ -377,9 +377,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 方法说明：将实体对象或中间结果转换为接口返回所需的 VO 对象。
-     * 主要作用：该方法把 用户服务实现 中对外展示需要的字段映射集中在一起，避免多个业务入口重复编写相同的转换代码。
-     * 实现逻辑：实现时会先判断入参是否为空，然后逐项拷贝基础字段，必要时补充枚举描述、派生文本或关联展示信息后返回。
+     * 把数据对象转成接口要返回的格式。
+     * 这个方法让主流程不用反复写字段赋值逻辑，代码会更整洁。
+     * 它会从实体或中间对象里取出需要的字段，然后组装 VO 或其他返回对象。
      */
     private UserVO toUserVO(User user) {
         if (user == null) {

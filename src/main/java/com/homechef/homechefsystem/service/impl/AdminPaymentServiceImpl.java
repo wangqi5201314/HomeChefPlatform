@@ -24,9 +24,9 @@ public class AdminPaymentServiceImpl implements AdminPaymentService {
     private final PaymentMapper paymentMapper;
 
     /**
-     * 方法说明：查询一条当前业务所需的详情数据。
-     * 主要作用：该方法用于 后台支付管理服务实现 中的详情展示、状态流转前校验或后续业务处理前的数据加载。
-     * 实现逻辑：实现时会根据主键、关联键或当前登录身份查出目标记录，再按需要转换成 VO，必要时会补充关联字段或做存在性校验。
+     * 查询一条详细数据。
+     * 这个方法主要用在详情页面或后续业务处理前的数据准备。
+     * 它会根据 id、当前登录人或其他条件去查数据，找到后再转成返回给前端的格式。
      */
     @Override
     public AdminPaymentDetailVO getPaymentDetailByOrderId(Long orderId) {
@@ -34,9 +34,9 @@ public class AdminPaymentServiceImpl implements AdminPaymentService {
     }
 
     /**
-     * 方法说明：查询符合条件的列表数据。
-     * 主要作用：它为 后台支付管理服务实现 提供页面列表、后台筛选或批量展示所需的数据集合。
-     * 实现逻辑：实现逻辑通常是根据查询条件调用 Mapper 获取记录列表，再按需要转换为 VO 集合；当结果为空时会返回空集合或由上层统一处理。
+     * 查询一组符合条件的列表数据。
+     * 这个方法主要给列表页面或管理页面使用，让调用方可以一次拿到需要的数据。
+     * 它会根据传入的条件查数据，如果需要的话还会把结果转成接口要返回的对象。
      */
     @Override
     public List<AdminPaymentVO> getPaymentList(AdminPaymentQueryDTO queryDTO) {
@@ -52,9 +52,9 @@ public class AdminPaymentServiceImpl implements AdminPaymentService {
     }
 
     /**
-     * 方法说明：校验当前业务输入或状态是否满足执行条件。
-     * 主要作用：它用于把 后台支付管理服务实现 中的前置规则集中收口，避免核心流程夹杂过多重复的条件判断。
-     * 实现逻辑：实现逻辑会逐项检查关键字段、状态或业务约束，一旦发现不满足条件的情况就立即抛出业务异常阻断流程。
+     * 检查当前传入的参数或业务状态是否合法。
+     * 这个方法的作用，是把不合条件的情况尽早拦住，不让错误数据继续往下执行。
+     * 它会根据规则逐项检查参数或状态，只要发现不满足条件，就直接抛出异常。
      */
     private void validateQuery(AdminPaymentQueryDTO queryDTO) {
         if (queryDTO == null) {
@@ -73,9 +73,9 @@ public class AdminPaymentServiceImpl implements AdminPaymentService {
     }
 
     /**
-     * 方法说明：将实体对象或中间结果转换为接口返回所需的 VO 对象。
-     * 主要作用：该方法把 后台支付管理服务实现 中对外展示需要的字段映射集中在一起，避免多个业务入口重复编写相同的转换代码。
-     * 实现逻辑：实现时会先判断入参是否为空，然后逐项拷贝基础字段，必要时补充枚举描述、派生文本或关联展示信息后返回。
+     * 把数据对象转成接口要返回的格式。
+     * 这个方法让主流程不用反复写字段赋值逻辑，代码会更整洁。
+     * 它会从实体或中间对象里取出需要的字段，然后组装 VO 或其他返回对象。
      */
     private AdminPaymentVO toAdminPaymentVO(Payment payment) {
         if (payment == null) {
@@ -96,9 +96,9 @@ public class AdminPaymentServiceImpl implements AdminPaymentService {
     }
 
     /**
-     * 方法说明：将实体对象或中间结果转换为接口返回所需的 VO 对象。
-     * 主要作用：该方法把 后台支付管理服务实现 中对外展示需要的字段映射集中在一起，避免多个业务入口重复编写相同的转换代码。
-     * 实现逻辑：实现时会先判断入参是否为空，然后逐项拷贝基础字段，必要时补充枚举描述、派生文本或关联展示信息后返回。
+     * 把数据对象转成接口要返回的格式。
+     * 这个方法让主流程不用反复写字段赋值逻辑，代码会更整洁。
+     * 它会从实体或中间对象里取出需要的字段，然后组装 VO 或其他返回对象。
      */
     private AdminPaymentDetailVO toAdminPaymentDetailVO(Payment payment) {
         if (payment == null) {

@@ -17,9 +17,9 @@ public class GeoDistanceServiceImpl implements GeoDistanceService {
     private final TencentMapClient tencentMapClient;
 
     /**
-     * 方法说明：优先使用腾讯地图服务计算导航距离，失败时回退为本地直线距离。
-     * 主要作用：这个方法把外部地图能力和本地兜底策略统一封装起来，供下单服务范围校验和首页推荐排序共同复用。
-     * 实现逻辑：实现时会先判断腾讯地图配置是否启用，若启用则尝试请求导航距离；调用失败或返回异常时，再回退到 Haversine 公式计算直线距离。
+     * 计算两个坐标之间的距离，单位是公里。
+     * 这个方法主要给推荐和下单校验使用，用来判断用户地址是否在厨师的服务范围内。
+     * 它会优先尝试调用腾讯地图计算导航距离，如果调用失败，就自动退回到本地 Haversine 直线距离计算。
      */
     @Override
     public double distanceKm(BigDecimal fromLatitude,
@@ -30,7 +30,6 @@ public class GeoDistanceServiceImpl implements GeoDistanceService {
             throw new IllegalArgumentException("coordinates must not be null");
         }
 
-        // 业务上更希望使用道路导航距离；腾讯地图不可用时回退直线距离，避免下单/推荐被第三方服务阻断。
         return tencentMapClient.getDrivingDistanceKm(fromLatitude, fromLongitude, toLatitude, toLongitude)
                 .orElseGet(() -> {
                     log.debug("fallback to haversine distance");

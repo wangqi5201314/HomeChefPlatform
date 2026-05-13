@@ -33,9 +33,9 @@ public class WechatMiniProgramServiceImpl implements WechatMiniProgramService {
     private final RestTemplate restTemplate = new RestTemplate();
 
     /**
-     * 方法说明：调用微信官方 code2Session 接口换取小程序用户的 openid 和会话信息。
-     * 主要作用：这是微信小程序登录流程的基础能力，后续的免密登录、用户创建和身份绑定都依赖这一结果。
-     * 实现逻辑：方法会先拼接带有 appId、secret 和 code 的请求地址，再发起 HTTP 请求并解析返回值；若微信返回错误码或关键字段缺失，则抛出业务异常。
+     * 处理 code2Session 这个方法对应的业务逻辑。
+     * 这个方法主要是把当前模块里的某一段独立工作单独拆出来，让主流程更清楚。
+     * 它会围绕自己的职责去查询数据、处理规则，最后返回结果或更新状态。
      */
     @Override
     public WechatLoginInfo code2Session(String code) {
@@ -84,9 +84,9 @@ public class WechatMiniProgramServiceImpl implements WechatMiniProgramService {
     }
 
     /**
-     * 方法说明：在 微信小程序登录服务实现 中处理 maskSecret 相关的业务逻辑。
-     * 主要作用：该方法用于承接当前模块中的一个独立职责点，帮助主流程保持清晰并减少重复代码。
-     * 实现逻辑：实现逻辑会围绕当前方法职责完成必要的数据查询、规则判断、字段加工或结果返回，并在发现异常场景时及时中断流程。
+     * 对敏感内容做脱敏处理。
+     * 这个方法主要是为了避免日志里直接打印完整密钥或敏感信息。
+     * 它会保留必要内容，其余部分用掩码替换掉。
      */
     private String maskSecret(String requestUrl) {
         return requestUrl.replace(wechatMiniProgramProperties.getAppSecret(), "******");
