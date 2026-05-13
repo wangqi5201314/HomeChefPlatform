@@ -159,6 +159,15 @@ public interface ChefScheduleMapper {
 
     @Update("""
             UPDATE chef_schedule
+            SET locked_order_id = NULL,
+                updated_at = #{updatedAt}
+            WHERE locked_order_id = #{orderId}
+            """)
+    int clearLockedOrderIdByOrderId(@Param("orderId") Long orderId,
+                                    @Param("updatedAt") LocalDateTime updatedAt);
+
+    @Update("""
+            UPDATE chef_schedule
             SET is_available = 0,
                 updated_at = #{updatedAt}
             WHERE service_date < #{currentDate}

@@ -1,13 +1,16 @@
 package com.homechef.homechefsystem.service.impl;
 
 import com.homechef.homechefsystem.common.enums.ResultCodeEnum;
+import com.homechef.homechefsystem.common.enums.OrderStatusEnum;
 import com.homechef.homechefsystem.common.enums.TimeSlotEnum;
 import com.homechef.homechefsystem.common.exception.BusinessException;
 import com.homechef.homechefsystem.dto.ChefScheduleCreateDTO;
 import com.homechef.homechefsystem.dto.ChefScheduleQueryDTO;
 import com.homechef.homechefsystem.dto.ChefScheduleUpdateDTO;
 import com.homechef.homechefsystem.entity.ChefSchedule;
+import com.homechef.homechefsystem.entity.Order;
 import com.homechef.homechefsystem.mapper.ChefScheduleMapper;
+import com.homechef.homechefsystem.mapper.OrderMapper;
 import com.homechef.homechefsystem.service.ChefScheduleService;
 import com.homechef.homechefsystem.utils.LoginUserContext;
 import com.homechef.homechefsystem.vo.ChefScheduleVO;
@@ -25,6 +28,7 @@ import java.util.stream.Collectors;
 public class ChefScheduleServiceImpl implements ChefScheduleService {
 
     private final ChefScheduleMapper chefScheduleMapper;
+    private final OrderMapper orderMapper;
 
     /**
      * 查询一组符合条件的列表数据。
@@ -213,7 +217,7 @@ public class ChefScheduleServiceImpl implements ChefScheduleService {
                 id)) {
             throw new BusinessException(ResultCodeEnum.FAIL, "schedule already exists");
         }
-        if (existingChefSchedule.getLockedOrderId() != null && Integer.valueOf(0).equals(chefScheduleUpdateDTO.getIsAvailable())) {
+        if (hasActiveLockedOrder(existingChefSchedule) && Integer.valueOf(0).equals(chefScheduleUpdateDTO.getIsAvailable())) {
             throw new BusinessException(ResultCodeEnum.FAIL, "schedule is locked by order");
         }
         return updateById(id, chefScheduleUpdateDTO);
@@ -227,7 +231,7 @@ public class ChefScheduleServiceImpl implements ChefScheduleService {
     @Override
     public ChefScheduleVO deleteCurrentChefSchedule(Long id) {
         ChefSchedule existingChefSchedule = getOwnedSchedule(id);
-        if (existingChefSchedule.getLockedOrderId() != null) {
+        if (hasActiveLockedOrder(existingChefSchedule)) {
             throw new BusinessException(ResultCodeEnum.FAIL, "schedule is locked by order");
         }
         return deleteById(id);
@@ -241,7 +245,7 @@ public class ChefScheduleServiceImpl implements ChefScheduleService {
     @Override
     public ChefScheduleVO updateCurrentChefScheduleAvailability(Long id, Integer isAvailable) {
         ChefSchedule existingChefSchedule = getOwnedSchedule(id);
-        if (existingChefSchedule.getLockedOrderId() != null && Integer.valueOf(0).equals(isAvailable)) {
+        if (hasActiveLockedOrder(existingChefSchedule) && Integer.valueOf(0).equals(isAvailable)) {
             throw new BusinessException(ResultCodeEnum.FAIL, "schedule is locked by order");
         }
         return updateAvailabilityById(id, isAvailable);
@@ -308,6 +312,38 @@ public class ChefScheduleServiceImpl implements ChefScheduleService {
             throw new BusinessException(ResultCodeEnum.NOT_FOUND, "schedule not found");
         }
         return chefSchedule;
+    }
+
+    /**
+     * 判断档期当前是否仍然被一个进行中的订单占用。
+     * 这个方法的作用，是把“旧锁”和“有效锁”区分开，避免历史完成订单残留的 lockedOrderId 一直挡住删除和修改。
+     * 它会先查关联订单；如果订单已经完成、取消、拒绝、退款，或者订单本身都不存在了，就自动清掉这把旧锁并返回 false。
+     */
+    private boolean hasActiveLockedOrder(ChefSchedule chefSchedule) {
+        Long lockedOrderId = chefSchedule.getLockedOrderId();
+        if (lockedOrderId == null) {
+            return false;
+        }
+
+        Order order = orderMapper.selectById(lockedOrderId);
+        if (order == null) {
+            chefScheduleMapper.clearLockedOrderIdByOrderId(lockedOrderId, LocalDateTime.now());
+            chefSchedule.setLockedOrderId(null);
+            return false;
+        }
+
+        String orderStatus = order.getOrderStatus();
+        boolean isActive = OrderStatusEnum.PENDING_CONFIRM.equalsCode(orderStatus)
+                || OrderStatusEnum.WAIT_PAY.equalsCode(orderStatus)
+                || OrderStatusEnum.PAID.equalsCode(orderStatus)
+                || OrderStatusEnum.IN_SERVICE.equalsCode(orderStatus);
+        if (isActive) {
+            return true;
+        }
+
+        chefScheduleMapper.clearLockedOrderIdByOrderId(lockedOrderId, LocalDateTime.now());
+        chefSchedule.setLockedOrderId(null);
+        return false;
     }
 
     /**

@@ -119,6 +119,7 @@ public class ChefOrderServiceImpl implements ChefOrderService {
         if (rows <= 0) {
             throw new BusinessException(ResultCodeEnum.SYSTEM_ERROR, "update chef order count failed");
         }
+        chefScheduleMapper.clearLockedOrderIdByOrderId(order.getId(), now);
         return toChefOrderDetailVO(getOwnedOrder(id));
     }
 
