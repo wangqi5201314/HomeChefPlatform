@@ -1,6 +1,7 @@
 package com.homechef.homechefsystem.service;
 
 import com.homechef.homechefsystem.dto.UserChangePasswordDTO;
+import com.homechef.homechefsystem.dto.EmailLoginDTO;
 import com.homechef.homechefsystem.dto.UserLoginDTO;
 import com.homechef.homechefsystem.dto.UserRegisterDTO;
 import com.homechef.homechefsystem.dto.UserUpdateDTO;
@@ -13,6 +14,8 @@ public interface UserService {
      * 执行登录并返回登录结果。
      */
     UserVO login(UserLoginDTO userLoginDTO);
+
+    UserVO loginByEmail(EmailLoginDTO emailLoginDTO);
 
     /**
      * 使用微信登录信息完成登录。

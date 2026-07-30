@@ -27,7 +27,7 @@ public interface UserMapper {
     List<User> selectAdminList(AdminUserQueryDTO queryDTO);
 
     @Select("""
-            SELECT id, openid, unionid, phone, password, nickname, avatar, gender, birthday,
+            SELECT id, openid, unionid, phone, email, password, nickname, avatar, gender, birthday,
                    taste_preference, allergy_info, emergency_contact_name, emergency_contact_phone,
                    status, last_login_time, created_at, updated_at
             FROM `user`
@@ -36,7 +36,7 @@ public interface UserMapper {
     User selectById(@Param("id") Long id);
 
     @Select("""
-            SELECT id, openid, unionid, phone, password, nickname, avatar, gender, birthday,
+            SELECT id, openid, unionid, phone, email, password, nickname, avatar, gender, birthday,
                    taste_preference, allergy_info, emergency_contact_name, emergency_contact_phone,
                    status, last_login_time, created_at, updated_at
             FROM `user`
@@ -47,7 +47,18 @@ public interface UserMapper {
     User selectByPhone(@Param("phone") String phone);
 
     @Select("""
-            SELECT id, openid, unionid, phone, password, nickname, avatar, gender, birthday,
+            SELECT id, openid, unionid, phone, email, password, nickname, avatar, gender, birthday,
+                   taste_preference, allergy_info, emergency_contact_name, emergency_contact_phone,
+                   status, last_login_time, created_at, updated_at
+            FROM `user`
+            WHERE email = #{email}
+            ORDER BY id DESC
+            LIMIT 1
+            """)
+    User selectByEmail(@Param("email") String email);
+
+    @Select("""
+            SELECT id, openid, unionid, phone, email, password, nickname, avatar, gender, birthday,
                    taste_preference, allergy_info, emergency_contact_name, emergency_contact_phone,
                    status, last_login_time, created_at, updated_at
             FROM `user`
@@ -58,7 +69,7 @@ public interface UserMapper {
     User selectByEmergencyContactPhone(@Param("emergencyContactPhone") String emergencyContactPhone);
 
     @Select("""
-            SELECT id, openid, unionid, phone, password, nickname, avatar, gender, birthday,
+            SELECT id, openid, unionid, phone, email, password, nickname, avatar, gender, birthday,
                    taste_preference, allergy_info, emergency_contact_name, emergency_contact_phone,
                    status, last_login_time, created_at, updated_at
             FROM `user`
@@ -70,10 +81,10 @@ public interface UserMapper {
 
     @Insert("""
             INSERT INTO `user` (
-                openid, unionid, phone, password, nickname, avatar, gender, status,
+                openid, unionid, phone, email, password, nickname, avatar, gender, status,
                 last_login_time, created_at, updated_at
             ) VALUES (
-                #{openid}, #{unionid}, #{phone}, #{password}, #{nickname}, #{avatar}, #{gender}, #{status},
+                #{openid}, #{unionid}, #{phone}, #{email}, #{password}, #{nickname}, #{avatar}, #{gender}, #{status},
                 #{lastLoginTime}, #{createdAt}, #{updatedAt}
             )
             """)

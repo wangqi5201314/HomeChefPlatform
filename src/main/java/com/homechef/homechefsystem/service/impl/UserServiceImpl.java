@@ -4,6 +4,7 @@ import com.homechef.homechefsystem.common.enums.ResultCodeEnum;
 import com.homechef.homechefsystem.common.enums.UserStatusEnum;
 import com.homechef.homechefsystem.common.exception.BusinessException;
 import com.homechef.homechefsystem.dto.UserChangePasswordDTO;
+import com.homechef.homechefsystem.dto.EmailLoginDTO;
 import com.homechef.homechefsystem.dto.UserLoginDTO;
 import com.homechef.homechefsystem.dto.UserRegisterDTO;
 import com.homechef.homechefsystem.dto.UserUpdateDTO;
@@ -13,6 +14,7 @@ import com.homechef.homechefsystem.entity.User;
 import com.homechef.homechefsystem.mapper.ChefMapper;
 import com.homechef.homechefsystem.mapper.UserMapper;
 import com.homechef.homechefsystem.service.UserService;
+import com.homechef.homechefsystem.service.EmailVerificationService;
 import com.homechef.homechefsystem.service.WechatMiniProgramService;
 import com.homechef.homechefsystem.utils.LoginUserContext;
 import com.homechef.homechefsystem.vo.UserVO;
@@ -22,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.util.Locale;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +34,7 @@ public class UserServiceImpl implements UserService {
     private final ChefMapper chefMapper;
     private final BCryptPasswordEncoder passwordEncoder;
     private final WechatMiniProgramService wechatMiniProgramService;
+    private final EmailVerificationService emailVerificationService;
 
     /**
      * 处理一次登录请求。
@@ -49,6 +53,21 @@ public class UserServiceImpl implements UserService {
         }
         if (!passwordEncoder.matches(userLoginDTO.getPassword(), user.getPassword())) {
             throw new BusinessException(ResultCodeEnum.UNAUTHORIZED, "phone or password is incorrect");
+        }
+
+        return finishLogin(user);
+    }
+
+    @Override
+    public UserVO loginByEmail(EmailLoginDTO emailLoginDTO) {
+        String email = normalizeEmail(emailLoginDTO.getEmail());
+        emailVerificationService.verifyLoginCode(email, emailLoginDTO.getCode());
+
+        User user = userMapper.selectByEmail(email);
+        if (user == null) {
+            user = createEmailUser(email);
+        } else {
+            validateUserForLogin(user);
         }
 
         return finishLogin(user);
@@ -302,6 +321,32 @@ public class UserServiceImpl implements UserService {
         return createdUser;
     }
 
+    private User createEmailUser(String email) {
+        LocalDateTime now = LocalDateTime.now();
+        User user = User.builder()
+                .email(email)
+                .phone(null)
+                .password(null)
+                .nickname("Email user")
+                .avatar("")
+                .gender(0)
+                .status(UserStatusEnum.NORMAL.getCode())
+                .lastLoginTime(now)
+                .createdAt(now)
+                .updatedAt(now)
+                .build();
+
+        int rows = userMapper.insert(user);
+        if (rows <= 0) {
+            throw new BusinessException(ResultCodeEnum.SYSTEM_ERROR, "email register failed");
+        }
+        User createdUser = userMapper.selectById(user.getId());
+        if (createdUser == null) {
+            throw new BusinessException(ResultCodeEnum.SYSTEM_ERROR, "email register failed");
+        }
+        return createdUser;
+    }
+
     /**
      * 处理 finishLogin 这个方法对应的业务逻辑。
      * 这个方法主要是把当前模块里的某一段独立工作单独拆出来，让主流程更清楚。
@@ -361,6 +406,10 @@ public class UserServiceImpl implements UserService {
         return phone;
     }
 
+    private String normalizeEmail(String email) {
+        return email == null ? null : email.trim().toLowerCase(Locale.ROOT);
+    }
+
     /**
      * 构建一个后续会被重复使用的中间结果。
      * 这个方法主要是为了把主流程里的细节拆出去，让主流程更容易看。
@@ -388,6 +437,7 @@ public class UserServiceImpl implements UserService {
         return UserVO.builder()
                 .id(user.getId())
                 .phone(user.getPhone())
+                .email(user.getEmail())
                 .nickname(user.getNickname())
                 .avatar(user.getAvatar())
                 .gender(user.getGender())
