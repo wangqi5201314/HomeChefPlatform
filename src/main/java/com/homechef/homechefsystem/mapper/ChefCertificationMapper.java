@@ -6,9 +6,6 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Result;
-import org.apache.ibatis.annotations.ResultMap;
-import org.apache.ibatis.annotations.Results;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.SelectProvider;
 import org.apache.ibatis.annotations.Update;
@@ -50,20 +47,6 @@ public interface ChefCertificationMapper {
             ORDER BY id DESC
             LIMIT 1
             """)
-    @Results(id = "chefCertificationResultMap", value = {
-            @Result(property = "id", column = "id"),
-            @Result(property = "chefId", column = "chef_id"),
-            @Result(property = "realName", column = "real_name"),
-            @Result(property = "idCardNo", column = "id_card_no"),
-            @Result(property = "healthCertUrl", column = "health_cert_url"),
-            @Result(property = "skillCertUrl", column = "skill_cert_url"),
-            @Result(property = "serviceCertUrl", column = "service_cert_url"),
-            @Result(property = "advancedCertUrl", column = "advanced_cert_url"),
-            @Result(property = "auditStatus", column = "audit_status"),
-            @Result(property = "auditRemark", column = "audit_remark"),
-            @Result(property = "submittedAt", column = "submitted_at"),
-            @Result(property = "auditedAt", column = "audited_at")
-    })
     ChefCertification selectByChefId(@Param("chefId") Long chefId);
 
     @Select("""
@@ -73,11 +56,9 @@ public interface ChefCertificationMapper {
             FROM chef_certification
             WHERE id = #{id}
             """)
-    @ResultMap("chefCertificationResultMap")
     ChefCertification selectById(@Param("id") Long id);
 
     @SelectProvider(type = ChefCertificationSqlProvider.class, method = "buildSelectListSql")
-    @ResultMap("chefCertificationResultMap")
     List<ChefCertification> selectList(ChefCertificationQueryDTO queryDTO);
 
     @Update("""
@@ -133,3 +114,4 @@ public interface ChefCertificationMapper {
         }
     }
 }
+

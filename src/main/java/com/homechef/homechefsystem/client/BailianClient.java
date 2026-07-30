@@ -162,6 +162,7 @@ public class BailianClient {
             return;
         }
         String trimmedLine = line.trim();
+        // 百炼流式接口按 SSE 格式返回，只有 data: 行才是真正需要解析的模型数据。
         if (!trimmedLine.startsWith("data:")) {
             return;
         }
@@ -181,6 +182,7 @@ public class BailianClient {
                 );
             }
 
+            // 流式响应每次只返回增量文本，前端收到后拼接即可形成完整回答。
             JsonNode deltaContentNode = body.path("choices").path(0).path("delta").path("content");
             if (deltaContentNode.isMissingNode() || deltaContentNode.isNull()) {
                 return;

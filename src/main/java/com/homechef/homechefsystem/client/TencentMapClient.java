@@ -29,6 +29,7 @@ public class TencentMapClient {
                                                  BigDecimal fromLongitude,
                                                  BigDecimal toLatitude,
                                                  BigDecimal toLongitude) {
+        // 未开启或未配置 key 时直接返回 empty，由上层统一回退为本地距离计算。
         if (!isAvailable()) {
             return Optional.empty();
         }
@@ -50,6 +51,7 @@ public class TencentMapClient {
                 return Optional.empty();
             }
 
+            // 腾讯地图距离矩阵返回的 distance 单位是米，项目统一对外使用公里。
             JsonNode distanceNode = root.path("result").path("rows").path(0).path("elements").path(0).path("distance");
             if (distanceNode.isMissingNode() || distanceNode.isNull()) {
                 return Optional.empty();
@@ -88,6 +90,7 @@ public class TencentMapClient {
     }
 
     private RestTemplate buildRestTemplate() {
+        // 每次构造带超时的 RestTemplate，避免地图接口慢响应拖住下单和首页推荐接口。
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
         requestFactory.setConnectTimeout(tencentMapProperties.getConnectTimeoutMs());
         requestFactory.setReadTimeout(tencentMapProperties.getReadTimeoutMs());

@@ -30,6 +30,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
                         "/api/chef/login",
                         "/api/user/login",
                         "/api/user/login/wechat",
+                        "/api/user/login/email",
+                        "/api/user/email-code",
                         "/api/user/register",
                         "/api/user/wx-login",
                         "/api/admin/login",

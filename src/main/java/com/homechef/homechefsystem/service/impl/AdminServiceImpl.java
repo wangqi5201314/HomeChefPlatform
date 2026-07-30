@@ -45,6 +45,11 @@ public class AdminServiceImpl implements AdminService {
 
     private final BCryptPasswordEncoder passwordEncoder;
 
+    /**
+     * 处理一次登录请求。
+     * 这个方法负责校验身份信息，并在登录成功后返回系统需要的登录结果。
+     * 它会先查账号或第三方身份，再检查状态和密码，最后生成登录返回数据。
+     */
     @Override
     public AdminLoginVO login(AdminLoginDTO adminLoginDTO) {
         Admin admin = adminMapper.selectByUsername(adminLoginDTO.getUsername());
@@ -60,6 +65,11 @@ public class AdminServiceImpl implements AdminService {
         return toAdminLoginVO(adminMapper.selectByUsername(adminLoginDTO.getUsername()));
     }
 
+    /**
+     * 修改当前账号的登录密码。
+     * 这个方法让用户、厨师或管理员可以安全地更新自己的密码。
+     * 它会先检查旧密码是否正确，再校验新密码，最后把加密后的新密码保存起来。
+     */
     @Override
     public void changePassword(AdminChangePasswordDTO adminChangePasswordDTO) {
         Long currentAdminId = LoginUserContext.getAdminId();
@@ -91,6 +101,11 @@ public class AdminServiceImpl implements AdminService {
         }
     }
 
+    /**
+     * 查询一组符合条件的列表数据。
+     * 这个方法主要给列表页面或管理页面使用，让调用方可以一次拿到需要的数据。
+     * 它会根据传入的条件查数据，如果需要的话还会把结果转成接口要返回的对象。
+     */
     @Override
     public List<AdminUserVO> getUserList(AdminUserQueryDTO queryDTO) {
         List<User> userList = adminMapper.selectUserList(queryDTO);
@@ -102,6 +117,11 @@ public class AdminServiceImpl implements AdminService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 修改一条已有的业务数据。
+     * 这个方法用于更新详情信息、状态或某些可编辑字段。
+     * 它会先查出原始数据，再把新值写进去，最后保存并返回更新后的结果。
+     */
     @Override
     public AdminUserVO updateUserStatus(Long id, AdminStatusUpdateDTO statusUpdateDTO) {
         if (!UserStatusEnum.isValid(statusUpdateDTO.getStatus())) {
@@ -126,6 +146,11 @@ public class AdminServiceImpl implements AdminService {
         return toAdminUserVO(targetUser);
     }
 
+    /**
+     * 查询一组符合条件的列表数据。
+     * 这个方法主要给列表页面或管理页面使用，让调用方可以一次拿到需要的数据。
+     * 它会根据传入的条件查数据，如果需要的话还会把结果转成接口要返回的对象。
+     */
     @Override
     public List<AdminChefVO> getChefList(AdminChefQueryDTO queryDTO) {
         List<Chef> chefList = adminMapper.selectChefList(queryDTO);
@@ -137,6 +162,11 @@ public class AdminServiceImpl implements AdminService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 修改一条已有的业务数据。
+     * 这个方法用于更新详情信息、状态或某些可编辑字段。
+     * 它会先查出原始数据，再把新值写进去，最后保存并返回更新后的结果。
+     */
     @Override
     public AdminChefVO updateChefStatus(Long id, AdminStatusUpdateDTO statusUpdateDTO) {
         if (!ChefStatusEnum.isValid(statusUpdateDTO.getStatus())) {
@@ -161,6 +191,11 @@ public class AdminServiceImpl implements AdminService {
         return toAdminChefVO(targetChef);
     }
 
+    /**
+     * 查询一组符合条件的列表数据。
+     * 这个方法主要给列表页面或管理页面使用，让调用方可以一次拿到需要的数据。
+     * 它会根据传入的条件查数据，如果需要的话还会把结果转成接口要返回的对象。
+     */
     @Override
     public List<AdminOrderVO> getOrderList(AdminOrderQueryDTO queryDTO) {
         List<Order> orderList = adminMapper.selectOrderList(queryDTO);
@@ -172,11 +207,21 @@ public class AdminServiceImpl implements AdminService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 查询一条详细数据。
+     * 这个方法主要用在详情页面或后续业务处理前的数据准备。
+     * 它会根据 id、当前登录人或其他条件去查数据，找到后再转成返回给前端的格式。
+     */
     @Override
     public OrderDetailVO getOrderDetail(Long id) {
         return toOrderDetailVO(orderMapper.selectById(id));
     }
 
+    /**
+     * 把数据对象转成接口要返回的格式。
+     * 这个方法让主流程不用反复写字段赋值逻辑，代码会更整洁。
+     * 它会从实体或中间对象里取出需要的字段，然后组装 VO 或其他返回对象。
+     */
     private AdminLoginVO toAdminLoginVO(Admin admin) {
         if (admin == null) {
             return null;
@@ -190,6 +235,11 @@ public class AdminServiceImpl implements AdminService {
                 .build();
     }
 
+    /**
+     * 处理 passwordMatches 这个方法对应的业务逻辑。
+     * 这个方法主要是把当前模块里的某一段独立工作单独拆出来，让主流程更清楚。
+     * 它会围绕自己的职责去查询数据、处理规则，最后返回结果或更新状态。
+     */
     private boolean passwordMatches(String rawPassword, String storedPassword) {
         if (!StringUtils.hasText(storedPassword)) {
             return false;
@@ -202,6 +252,11 @@ public class AdminServiceImpl implements AdminService {
         return storedPassword.equals(rawPassword);
     }
 
+    /**
+     * 把数据对象转成接口要返回的格式。
+     * 这个方法让主流程不用反复写字段赋值逻辑，代码会更整洁。
+     * 它会从实体或中间对象里取出需要的字段，然后组装 VO 或其他返回对象。
+     */
     private AdminUserVO toAdminUserVO(User user) {
         if (user == null) {
             return null;
@@ -218,6 +273,11 @@ public class AdminServiceImpl implements AdminService {
                 .build();
     }
 
+    /**
+     * 把数据对象转成接口要返回的格式。
+     * 这个方法让主流程不用反复写字段赋值逻辑，代码会更整洁。
+     * 它会从实体或中间对象里取出需要的字段，然后组装 VO 或其他返回对象。
+     */
     private AdminChefVO toAdminChefVO(Chef chef) {
         if (chef == null) {
             return null;
@@ -237,6 +297,11 @@ public class AdminServiceImpl implements AdminService {
                 .build();
     }
 
+    /**
+     * 把数据对象转成接口要返回的格式。
+     * 这个方法让主流程不用反复写字段赋值逻辑，代码会更整洁。
+     * 它会从实体或中间对象里取出需要的字段，然后组装 VO 或其他返回对象。
+     */
     private AdminOrderVO toAdminOrderVO(Order order) {
         if (order == null) {
             return null;
@@ -258,6 +323,11 @@ public class AdminServiceImpl implements AdminService {
                 .build();
     }
 
+    /**
+     * 把数据对象转成接口要返回的格式。
+     * 这个方法让主流程不用反复写字段赋值逻辑，代码会更整洁。
+     * 它会从实体或中间对象里取出需要的字段，然后组装 VO 或其他返回对象。
+     */
     private OrderDetailVO toOrderDetailVO(Order order) {
         if (order == null) {
             return null;

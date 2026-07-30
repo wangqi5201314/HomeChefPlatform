@@ -6,9 +6,6 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Result;
-import org.apache.ibatis.annotations.ResultMap;
-import org.apache.ibatis.annotations.Results;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.SelectProvider;
 import org.apache.ibatis.annotations.Update;
@@ -27,29 +24,6 @@ public interface ChefMapper {
     int countAll();
 
     @SelectProvider(type = ChefSqlProvider.class, method = "buildSelectListSql")
-    @Results(id = "chefResultMap", value = {
-            @Result(property = "id", column = "id"),
-            @Result(property = "name", column = "name"),
-            @Result(property = "phone", column = "phone"),
-            @Result(property = "password", column = "password"),
-            @Result(property = "avatar", column = "avatar"),
-            @Result(property = "gender", column = "gender"),
-            @Result(property = "age", column = "age"),
-            @Result(property = "introduction", column = "introduction"),
-            @Result(property = "specialtyCuisine", column = "specialty_cuisine"),
-            @Result(property = "specialtyTags", column = "specialty_tags"),
-            @Result(property = "yearsOfExperience", column = "years_of_experience"),
-            @Result(property = "serviceRadiusKm", column = "service_radius_km"),
-            @Result(property = "serviceMode", column = "service_mode"),
-            @Result(property = "ratingAvg", column = "rating_avg"),
-            @Result(property = "orderCount", column = "order_count"),
-            @Result(property = "onTimeRate", column = "on_time_rate"),
-            @Result(property = "goodReviewRate", column = "good_review_rate"),
-            @Result(property = "certStatus", column = "cert_status"),
-            @Result(property = "status", column = "status"),
-            @Result(property = "createdAt", column = "created_at"),
-            @Result(property = "updatedAt", column = "updated_at")
-    })
     List<Chef> selectList(ChefQueryDTO queryDTO);
 
     @Select("""
@@ -60,29 +34,6 @@ public interface ChefMapper {
             FROM chef
             WHERE id = #{id}
             """)
-    @Results(id = "chefDetailResultMap", value = {
-            @Result(property = "id", column = "id"),
-            @Result(property = "name", column = "name"),
-            @Result(property = "phone", column = "phone"),
-            @Result(property = "password", column = "password"),
-            @Result(property = "avatar", column = "avatar"),
-            @Result(property = "gender", column = "gender"),
-            @Result(property = "age", column = "age"),
-            @Result(property = "introduction", column = "introduction"),
-            @Result(property = "specialtyCuisine", column = "specialty_cuisine"),
-            @Result(property = "specialtyTags", column = "specialty_tags"),
-            @Result(property = "yearsOfExperience", column = "years_of_experience"),
-            @Result(property = "serviceRadiusKm", column = "service_radius_km"),
-            @Result(property = "serviceMode", column = "service_mode"),
-            @Result(property = "ratingAvg", column = "rating_avg"),
-            @Result(property = "orderCount", column = "order_count"),
-            @Result(property = "onTimeRate", column = "on_time_rate"),
-            @Result(property = "goodReviewRate", column = "good_review_rate"),
-            @Result(property = "certStatus", column = "cert_status"),
-            @Result(property = "status", column = "status"),
-            @Result(property = "createdAt", column = "created_at"),
-            @Result(property = "updatedAt", column = "updated_at")
-    })
     Chef selectById(@Param("id") Long id);
 
     @Select("""
@@ -95,29 +46,6 @@ public interface ChefMapper {
             ORDER BY id DESC
             LIMIT 1
             """)
-    @Results(id = "chefLoginResultMap", value = {
-            @Result(property = "id", column = "id"),
-            @Result(property = "name", column = "name"),
-            @Result(property = "phone", column = "phone"),
-            @Result(property = "password", column = "password"),
-            @Result(property = "avatar", column = "avatar"),
-            @Result(property = "gender", column = "gender"),
-            @Result(property = "age", column = "age"),
-            @Result(property = "introduction", column = "introduction"),
-            @Result(property = "specialtyCuisine", column = "specialty_cuisine"),
-            @Result(property = "specialtyTags", column = "specialty_tags"),
-            @Result(property = "yearsOfExperience", column = "years_of_experience"),
-            @Result(property = "serviceRadiusKm", column = "service_radius_km"),
-            @Result(property = "serviceMode", column = "service_mode"),
-            @Result(property = "ratingAvg", column = "rating_avg"),
-            @Result(property = "orderCount", column = "order_count"),
-            @Result(property = "onTimeRate", column = "on_time_rate"),
-            @Result(property = "goodReviewRate", column = "good_review_rate"),
-            @Result(property = "certStatus", column = "cert_status"),
-            @Result(property = "status", column = "status"),
-            @Result(property = "createdAt", column = "created_at"),
-            @Result(property = "updatedAt", column = "updated_at")
-    })
     Chef selectByPhone(@Param("phone") String phone);
 
     @Select("""
@@ -130,7 +58,6 @@ public interface ChefMapper {
               AND cert_status = 1
             ORDER BY id DESC
             """)
-    @ResultMap("chefDetailResultMap")
     List<Chef> selectRecommendCandidates();
 
     @Insert("""
@@ -257,3 +184,4 @@ public interface ChefMapper {
         }
     }
 }
+

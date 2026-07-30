@@ -6,9 +6,6 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Result;
-import org.apache.ibatis.annotations.ResultMap;
-import org.apache.ibatis.annotations.Results;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
@@ -24,21 +21,6 @@ public interface ChefServiceLocationMapper {
             FROM chef_service_location
             WHERE id = #{id}
             """)
-    @Results(id = "chefServiceLocationResultMap", value = {
-            @Result(property = "id", column = "id"),
-            @Result(property = "chefId", column = "chef_id"),
-            @Result(property = "locationName", column = "location_name"),
-            @Result(property = "province", column = "province"),
-            @Result(property = "city", column = "city"),
-            @Result(property = "district", column = "district"),
-            @Result(property = "town", column = "town"),
-            @Result(property = "detailAddress", column = "detail_address"),
-            @Result(property = "longitude", column = "longitude"),
-            @Result(property = "latitude", column = "latitude"),
-            @Result(property = "isActive", column = "is_active"),
-            @Result(property = "createdAt", column = "created_at"),
-            @Result(property = "updatedAt", column = "updated_at")
-    })
     ChefServiceLocation selectById(@Param("id") Long id);
 
     @Select("""
@@ -48,7 +30,6 @@ public interface ChefServiceLocationMapper {
             WHERE chef_id = #{chefId}
             ORDER BY is_active DESC, id DESC
             """)
-    @ResultMap("chefServiceLocationResultMap")
     List<ChefServiceLocation> selectListByChefId(@Param("chefId") Long chefId);
 
     @Select("""
@@ -58,7 +39,6 @@ public interface ChefServiceLocationMapper {
             WHERE chef_id = #{chefId}
               AND id = #{id}
             """)
-    @ResultMap("chefServiceLocationResultMap")
     ChefServiceLocation selectByChefIdAndId(@Param("chefId") Long chefId, @Param("id") Long id);
 
     @Select("""
@@ -70,7 +50,6 @@ public interface ChefServiceLocationMapper {
             ORDER BY id DESC
             LIMIT 1
             """)
-    @ResultMap("chefServiceLocationResultMap")
     ChefServiceLocation selectActiveByChefId(@Param("chefId") Long chefId);
 
     @Select({
@@ -86,7 +65,6 @@ public interface ChefServiceLocationMapper {
             "ORDER BY id DESC",
             "</script>"
     })
-    @ResultMap("chefServiceLocationResultMap")
     List<ChefServiceLocation> selectActiveListByChefIds(@Param("chefIds") List<Long> chefIds);
 
     @Insert("""
@@ -143,3 +121,4 @@ public interface ChefServiceLocationMapper {
                      @Param("chefId") Long chefId,
                      @Param("updatedAt") LocalDateTime updatedAt);
 }
+

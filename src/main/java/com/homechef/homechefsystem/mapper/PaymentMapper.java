@@ -6,9 +6,6 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Result;
-import org.apache.ibatis.annotations.ResultMap;
-import org.apache.ibatis.annotations.Results;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.SelectProvider;
 import org.apache.ibatis.annotations.Update;
@@ -44,26 +41,9 @@ public interface PaymentMapper {
             ORDER BY id DESC
             LIMIT 1
             """)
-    @Results(id = "paymentResultMap", value = {
-            @Result(property = "id", column = "id"),
-            @Result(property = "orderId", column = "order_id"),
-            @Result(property = "payNo", column = "pay_no"),
-            @Result(property = "payChannel", column = "pay_channel"),
-            @Result(property = "payAmount", column = "pay_amount"),
-            @Result(property = "payStatus", column = "pay_status"),
-            @Result(property = "transactionId", column = "transaction_id"),
-            @Result(property = "paidAt", column = "paid_at"),
-            @Result(property = "refundNo", column = "refund_no"),
-            @Result(property = "refundAmount", column = "refund_amount"),
-            @Result(property = "refundStatus", column = "refund_status"),
-            @Result(property = "refundAt", column = "refund_at"),
-            @Result(property = "createdAt", column = "created_at"),
-            @Result(property = "updatedAt", column = "updated_at")
-    })
     Payment selectByOrderId(@Param("orderId") Long orderId);
 
     @SelectProvider(type = PaymentSqlProvider.class, method = "buildSelectAdminListSql")
-    @ResultMap("paymentResultMap")
     List<Payment> selectAdminList(AdminPaymentQueryDTO queryDTO);
 
     @Update("""
@@ -121,3 +101,4 @@ public interface PaymentMapper {
         }
     }
 }
+

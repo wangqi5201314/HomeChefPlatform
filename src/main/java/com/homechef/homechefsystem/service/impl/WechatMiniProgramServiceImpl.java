@@ -27,8 +27,16 @@ public class WechatMiniProgramServiceImpl implements WechatMiniProgramService {
 
     private final WechatMiniProgramProperties wechatMiniProgramProperties;
     private final ObjectMapper objectMapper;
+    /**
+     * 处理 r es tt em pl at e 相关逻辑。
+     */
     private final RestTemplate restTemplate = new RestTemplate();
 
+    /**
+     * 处理 code2Session 这个方法对应的业务逻辑。
+     * 这个方法主要是把当前模块里的某一段独立工作单独拆出来，让主流程更清楚。
+     * 它会围绕自己的职责去查询数据、处理规则，最后返回结果或更新状态。
+     */
     @Override
     public WechatLoginInfo code2Session(String code) {
         if (!StringUtils.hasText(wechatMiniProgramProperties.getAppId())
@@ -75,6 +83,11 @@ public class WechatMiniProgramServiceImpl implements WechatMiniProgramService {
         return new WechatLoginInfo(response.getOpenid(), response.getSessionKey(), response.getUnionid());
     }
 
+    /**
+     * 对敏感内容做脱敏处理。
+     * 这个方法主要是为了避免日志里直接打印完整密钥或敏感信息。
+     * 它会保留必要内容，其余部分用掩码替换掉。
+     */
     private String maskSecret(String requestUrl) {
         return requestUrl.replace(wechatMiniProgramProperties.getAppSecret(), "******");
     }

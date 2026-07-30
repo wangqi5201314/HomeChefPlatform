@@ -7,9 +7,6 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Result;
-import org.apache.ibatis.annotations.ResultMap;
-import org.apache.ibatis.annotations.Results;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.SelectProvider;
 import org.apache.ibatis.annotations.Update;
@@ -23,19 +20,6 @@ import java.util.List;
 public interface ChefScheduleMapper {
 
     @SelectProvider(type = ChefScheduleSqlProvider.class, method = "buildSelectListSql")
-    @Results(id = "chefScheduleResultMap", value = {
-            @Result(property = "id", column = "id"),
-            @Result(property = "chefId", column = "chef_id"),
-            @Result(property = "serviceDate", column = "service_date"),
-            @Result(property = "timeSlot", column = "time_slot"),
-            @Result(property = "startTime", column = "start_time"),
-            @Result(property = "endTime", column = "end_time"),
-            @Result(property = "isAvailable", column = "is_available"),
-            @Result(property = "lockedOrderId", column = "locked_order_id"),
-            @Result(property = "remark", column = "remark"),
-            @Result(property = "createdAt", column = "created_at"),
-            @Result(property = "updatedAt", column = "updated_at")
-    })
     List<ChefSchedule> selectList(ChefScheduleQueryDTO queryDTO);
 
     @Select("""
@@ -44,7 +28,6 @@ public interface ChefScheduleMapper {
             FROM chef_schedule
             WHERE id = #{id}
             """)
-    @ResultMap("chefScheduleResultMap")
     ChefSchedule selectById(@Param("id") Long id);
 
     @Select("""
@@ -81,6 +64,41 @@ public interface ChefScheduleMapper {
     List<Long> selectAvailableChefIdsByDateAndTimeSlot(@Param("serviceDate") LocalDate serviceDate,
                                                        @Param("timeSlot") String timeSlot);
 
+    @Select("""
+            <script>
+            SELECT id, chef_id, service_date, time_slot, start_time, end_time,
+                   is_available, locked_order_id, remark, created_at, updated_at
+            FROM chef_schedule
+            WHERE is_available = 1
+              AND service_date <![CDATA[>=]]> #{startDate}
+              AND service_date <![CDATA[<=]]> #{endDate}
+              AND chef_id IN
+              <foreach collection="chefIds" item="chefId" open="(" separator="," close=")">
+                #{chefId}
+              </foreach>
+            ORDER BY service_date ASC, start_time ASC, time_slot ASC
+            </script>
+            """)
+    List<ChefSchedule> selectAvailableListByChefIdsAndDateRange(@Param("chefIds") List<Long> chefIds,
+                                                                @Param("startDate") LocalDate startDate,
+                                                                @Param("endDate") LocalDate endDate);
+
+    // 下单时使用 FOR UPDATE 锁住可用档期行，必须配合 Service 层事务才能防止并发重复下单。
+    @Select("""
+            SELECT id, chef_id, service_date, time_slot, start_time, end_time,
+                   is_available, locked_order_id, remark, created_at, updated_at
+            FROM chef_schedule
+            WHERE chef_id = #{chefId}
+              AND service_date = #{serviceDate}
+              AND time_slot = #{timeSlot}
+              AND is_available = 1
+            LIMIT 1
+            FOR UPDATE
+            """)
+    ChefSchedule selectAvailableByChefIdAndDateAndTimeSlotForUpdate(@Param("chefId") Long chefId,
+                                                                    @Param("serviceDate") LocalDate serviceDate,
+                                                                    @Param("timeSlot") String timeSlot);
+
     @Insert("""
             INSERT INTO chef_schedule (
                 chef_id, service_date, time_slot, start_time, end_time,
@@ -115,6 +133,38 @@ public interface ChefScheduleMapper {
     int updateAvailabilityById(@Param("id") Long id,
                                @Param("isAvailable") Integer isAvailable,
                                @Param("updatedAt") LocalDateTime updatedAt);
+
+    @Update("""
+            UPDATE chef_schedule
+            SET is_available = 0,
+                locked_order_id = #{orderId},
+                updated_at = #{updatedAt}
+            WHERE id = #{id}
+              AND is_available = 1
+            """)
+    int lockById(@Param("id") Long id,
+                 @Param("orderId") Long orderId,
+                 @Param("updatedAt") LocalDateTime updatedAt);
+
+    // 订单取消或厨师拒单时，通过 locked_order_id 找回被占用档期并恢复可预约。
+    @Update("""
+            UPDATE chef_schedule
+            SET is_available = 1,
+                locked_order_id = NULL,
+                updated_at = #{updatedAt}
+            WHERE locked_order_id = #{orderId}
+            """)
+    int releaseByLockedOrderId(@Param("orderId") Long orderId,
+                               @Param("updatedAt") LocalDateTime updatedAt);
+
+    @Update("""
+            UPDATE chef_schedule
+            SET locked_order_id = NULL,
+                updated_at = #{updatedAt}
+            WHERE locked_order_id = #{orderId}
+            """)
+    int clearLockedOrderIdByOrderId(@Param("orderId") Long orderId,
+                                    @Param("updatedAt") LocalDateTime updatedAt);
 
     @Update("""
             UPDATE chef_schedule
@@ -168,3 +218,4 @@ public interface ChefScheduleMapper {
         }
     }
 }
+

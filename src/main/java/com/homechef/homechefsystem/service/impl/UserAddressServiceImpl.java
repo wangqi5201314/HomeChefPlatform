@@ -21,6 +21,11 @@ public class UserAddressServiceImpl implements UserAddressService {
 
     private final UserAddressMapper userAddressMapper;
 
+    /**
+     * 查询一组符合条件的列表数据。
+     * 这个方法主要给列表页面或管理页面使用，让调用方可以一次拿到需要的数据。
+     * 它会根据传入的条件查数据，如果需要的话还会把结果转成接口要返回的对象。
+     */
     @Override
     public List<UserAddressVO> getAddressList(UserAddressQueryDTO queryDTO) {
         List<UserAddress> userAddressList = userAddressMapper.selectList(queryDTO);
@@ -32,16 +37,31 @@ public class UserAddressServiceImpl implements UserAddressService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 查询一条详细数据。
+     * 这个方法主要用在详情页面或后续业务处理前的数据准备。
+     * 它会根据 id、当前登录人或其他条件去查数据，找到后再转成返回给前端的格式。
+     */
     @Override
     public UserAddressVO getDefaultAddress(Long userId) {
         return toUserAddressVO(userAddressMapper.selectDefaultByUserId(userId));
     }
 
+    /**
+     * 查询一条详细数据。
+     * 这个方法主要用在详情页面或后续业务处理前的数据准备。
+     * 它会根据 id、当前登录人或其他条件去查数据，找到后再转成返回给前端的格式。
+     */
     @Override
     public UserAddressVO getById(Long id) {
         return toUserAddressVO(userAddressMapper.selectById(id));
     }
 
+    /**
+     * 新建一条业务数据。
+     * 这个方法用于把前端提交的新信息正式写入数据库。
+     * 它会先做必要的检查和组装，再保存数据，最后返回新建后的结果。
+     */
     @Override
     public UserAddressVO create(UserAddressCreateDTO userAddressCreateDTO) {
         LocalDateTime now = LocalDateTime.now();
@@ -82,6 +102,11 @@ public class UserAddressServiceImpl implements UserAddressService {
         return toUserAddressVO(userAddressMapper.selectById(userAddress.getId()));
     }
 
+    /**
+     * 修改一条已有的业务数据。
+     * 这个方法用于更新详情信息、状态或某些可编辑字段。
+     * 它会先查出原始数据，再把新值写进去，最后保存并返回更新后的结果。
+     */
     @Override
     public UserAddressVO updateById(Long id, UserAddressUpdateDTO userAddressUpdateDTO) {
         UserAddress existingUserAddress = userAddressMapper.selectById(id);
@@ -118,6 +143,11 @@ public class UserAddressServiceImpl implements UserAddressService {
         return toUserAddressVO(userAddressMapper.selectById(id));
     }
 
+    /**
+     * 设置某个业务字段的最终状态。
+     * 这个方法通常用于切换默认值、启用状态或类似的标记位。
+     * 它会先确认目标记录没问题，再把指定字段更新成目标状态。
+     */
     @Override
     public UserAddressVO setDefaultById(Long id, Long userId) {
         UserAddress existingUserAddress = userAddressMapper.selectById(id);
@@ -137,6 +167,11 @@ public class UserAddressServiceImpl implements UserAddressService {
         return toUserAddressVO(userAddressMapper.selectById(id));
     }
 
+    /**
+     * 删除一条不再需要的数据。
+     * 这个方法主要用来清理记录，避免无效数据继续留在系统里。
+     * 它通常会先查询要删的数据，确认没问题后再执行删除。
+     */
     @Override
     public UserAddressVO deleteById(Long id) {
         UserAddress existingUserAddress = userAddressMapper.selectById(id);
@@ -151,6 +186,11 @@ public class UserAddressServiceImpl implements UserAddressService {
         return toUserAddressVO(existingUserAddress);
     }
 
+    /**
+     * 把数据对象转成接口要返回的格式。
+     * 这个方法让主流程不用反复写字段赋值逻辑，代码会更整洁。
+     * 它会从实体或中间对象里取出需要的字段，然后组装 VO 或其他返回对象。
+     */
     private UserAddressVO toUserAddressVO(UserAddress userAddress) {
         if (userAddress == null) {
             return null;

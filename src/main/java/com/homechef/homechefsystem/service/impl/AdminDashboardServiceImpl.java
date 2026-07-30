@@ -23,6 +23,11 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
     private final ChefCertificationMapper chefCertificationMapper;
     private final OrderMapper orderMapper;
 
+    /**
+     * 查询一条详细数据。
+     * 这个方法主要用在详情页面或后续业务处理前的数据准备。
+     * 它会根据 id、当前登录人或其他条件去查数据，找到后再转成返回给前端的格式。
+     */
     @Override
     public AdminDashboardOverviewVO getOverview() {
         LocalDate today = LocalDate.now();

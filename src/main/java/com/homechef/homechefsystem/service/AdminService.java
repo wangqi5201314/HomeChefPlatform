@@ -16,19 +16,43 @@ import java.util.List;
 
 public interface AdminService {
 
+    /**
+     * 执行登录并返回登录结果。
+     */
     AdminLoginVO login(AdminLoginDTO adminLoginDTO);
 
+    /**
+     * 修改当前主体的登录密码。
+     */
     void changePassword(AdminChangePasswordDTO adminChangePasswordDTO);
 
+    /**
+     * 查询列表数据并返回结果。
+     */
     List<AdminUserVO> getUserList(AdminUserQueryDTO queryDTO);
 
+    /**
+     * 处理 u pd at eu se rs ta tu s 相关业务。
+     */
     AdminUserVO updateUserStatus(Long id, AdminStatusUpdateDTO statusUpdateDTO);
 
+    /**
+     * 查询列表数据并返回结果。
+     */
     List<AdminChefVO> getChefList(AdminChefQueryDTO queryDTO);
 
+    /**
+     * 处理 u pd at ec he fs ta tu s 相关业务。
+     */
     AdminChefVO updateChefStatus(Long id, AdminStatusUpdateDTO statusUpdateDTO);
 
+    /**
+     * 查询列表数据并返回结果。
+     */
     List<AdminOrderVO> getOrderList(AdminOrderQueryDTO queryDTO);
 
+    /**
+     * 查询详情数据并返回结果。
+     */
     OrderDetailVO getOrderDetail(Long id);
 }

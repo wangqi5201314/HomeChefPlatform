@@ -24,6 +24,11 @@ public class AdminUserServiceImpl implements AdminUserService {
 
     private final UserMapper userMapper;
 
+    /**
+     * 查询一组符合条件的列表数据。
+     * 这个方法主要给列表页面或管理页面使用，让调用方可以一次拿到需要的数据。
+     * 它会根据传入的条件查数据，如果需要的话还会把结果转成接口要返回的对象。
+     */
     @Override
     public List<AdminUserVO> getUserList(AdminUserQueryDTO queryDTO) {
         List<User> userList = userMapper.selectAdminList(queryDTO);
@@ -35,11 +40,21 @@ public class AdminUserServiceImpl implements AdminUserService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 查询一条详细数据。
+     * 这个方法主要用在详情页面或后续业务处理前的数据准备。
+     * 它会根据 id、当前登录人或其他条件去查数据，找到后再转成返回给前端的格式。
+     */
     @Override
     public AdminUserDetailVO getUserDetail(Long id) {
         return toAdminUserDetailVO(userMapper.selectById(id));
     }
 
+    /**
+     * 修改一条已有的业务数据。
+     * 这个方法用于更新详情信息、状态或某些可编辑字段。
+     * 它会先查出原始数据，再把新值写进去，最后保存并返回更新后的结果。
+     */
     @Override
     public AdminUserVO updateUserStatus(Long id, AdminStatusUpdateDTO statusUpdateDTO) {
         if (!UserStatusEnum.isValid(statusUpdateDTO.getStatus())) {
@@ -60,6 +75,11 @@ public class AdminUserServiceImpl implements AdminUserService {
         return toAdminUserVO(user);
     }
 
+    /**
+     * 把数据对象转成接口要返回的格式。
+     * 这个方法让主流程不用反复写字段赋值逻辑，代码会更整洁。
+     * 它会从实体或中间对象里取出需要的字段，然后组装 VO 或其他返回对象。
+     */
     private AdminUserVO toAdminUserVO(User user) {
         if (user == null) {
             return null;
@@ -77,6 +97,11 @@ public class AdminUserServiceImpl implements AdminUserService {
                 .build();
     }
 
+    /**
+     * 把数据对象转成接口要返回的格式。
+     * 这个方法让主流程不用反复写字段赋值逻辑，代码会更整洁。
+     * 它会从实体或中间对象里取出需要的字段，然后组装 VO 或其他返回对象。
+     */
     private AdminUserDetailVO toAdminUserDetailVO(User user) {
         if (user == null) {
             return null;

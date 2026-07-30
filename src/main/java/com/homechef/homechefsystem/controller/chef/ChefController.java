@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -52,6 +53,12 @@ public class ChefController {
     @PostMapping("/recommend")
     public Result<List<ChefRecommendVO>> recommend(@Valid @RequestBody ChefRecommendQueryDTO chefRecommendQueryDTO) {
         return Result.success(chefRecommendService.recommend(chefRecommendQueryDTO));
+    }
+
+    @Operation(summary = "首页默认推荐")
+    @GetMapping("/recommend/default")
+    public Result<List<ChefRecommendVO>> recommendDefault(@RequestParam Long userId, @RequestParam Long addressId) {
+        return Result.success(chefRecommendService.recommendDefault(userId, addressId));
     }
 
     @Operation(summary = "修改厨师信息")

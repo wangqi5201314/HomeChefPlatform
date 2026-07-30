@@ -7,9 +7,6 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Result;
-import org.apache.ibatis.annotations.ResultMap;
-import org.apache.ibatis.annotations.Results;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.SelectProvider;
 import org.apache.ibatis.annotations.Update;
@@ -42,23 +39,6 @@ public interface ReviewMapper {
             FROM review
             WHERE id = #{id}
             """)
-    @Results(id = "reviewResultMap", value = {
-            @Result(property = "id", column = "id"),
-            @Result(property = "orderId", column = "order_id"),
-            @Result(property = "userId", column = "user_id"),
-            @Result(property = "chefId", column = "chef_id"),
-            @Result(property = "dishScore", column = "dish_score"),
-            @Result(property = "serviceScore", column = "service_score"),
-            @Result(property = "skillScore", column = "skill_score"),
-            @Result(property = "environmentScore", column = "environment_score"),
-            @Result(property = "overallScore", column = "overall_score"),
-            @Result(property = "content", column = "content"),
-            @Result(property = "imageUrls", column = "image_urls"),
-            @Result(property = "isAnonymous", column = "is_anonymous"),
-            @Result(property = "replyContent", column = "reply_content"),
-            @Result(property = "replyAt", column = "reply_at"),
-            @Result(property = "createdAt", column = "created_at")
-    })
     Review selectById(@Param("id") Long id);
 
     @Select("""
@@ -69,7 +49,6 @@ public interface ReviewMapper {
             WHERE order_id = #{orderId}
             LIMIT 1
             """)
-    @ResultMap("reviewResultMap")
     Review selectByOrderId(@Param("orderId") Long orderId);
 
     @Select("""
@@ -80,11 +59,9 @@ public interface ReviewMapper {
     int countByOrderId(@Param("orderId") Long orderId);
 
     @SelectProvider(type = ReviewSqlProvider.class, method = "buildSelectListSql")
-    @ResultMap("reviewResultMap")
     List<Review> selectList(ReviewQueryDTO queryDTO);
 
     @SelectProvider(type = ReviewSqlProvider.class, method = "buildSelectAdminListSql")
-    @ResultMap("reviewResultMap")
     List<Review> selectAdminList(AdminReviewQueryDTO queryDTO);
 
     @Update("""
@@ -141,3 +118,4 @@ public interface ReviewMapper {
         }
     }
 }
+

@@ -3,12 +3,15 @@ package com.homechef.homechefsystem.controller.user;
 import com.homechef.homechefsystem.annotation.RequireLogin;
 import com.homechef.homechefsystem.common.result.Result;
 import com.homechef.homechefsystem.dto.LoginTokenDTO;
+import com.homechef.homechefsystem.dto.EmailCodeRequestDTO;
+import com.homechef.homechefsystem.dto.EmailLoginDTO;
 import com.homechef.homechefsystem.dto.UserChangePasswordDTO;
 import com.homechef.homechefsystem.dto.UserLoginDTO;
 import com.homechef.homechefsystem.dto.UserRegisterDTO;
 import com.homechef.homechefsystem.dto.UserUpdateDTO;
 import com.homechef.homechefsystem.dto.UserWechatLoginDTO;
 import com.homechef.homechefsystem.service.UserService;
+import com.homechef.homechefsystem.service.EmailVerificationService;
 import com.homechef.homechefsystem.utils.JwtUtil;
 import com.homechef.homechefsystem.vo.UserVO;
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,11 +34,26 @@ public class UserController {
 
     private final UserService userService;
     private final JwtUtil jwtUtil;
+    private final EmailVerificationService emailVerificationService;
 
     @Operation(summary = "用户登录")
     @PostMapping("/login")
     public Result<LoginTokenDTO> login(@Valid @RequestBody UserLoginDTO userLoginDTO) {
         UserVO userVO = userService.login(userLoginDTO);
+        return Result.success(buildLoginToken(userVO.getId()));
+    }
+
+    @Operation(summary = "发送邮箱登录码")
+    @PostMapping("/email-code")
+    public Result<Void> sendEmailCode(@Valid @RequestBody EmailCodeRequestDTO request) {
+        emailVerificationService.sendLoginCode(request.getEmail());
+        return Result.success();
+    }
+
+    @Operation(summary = "验证邮箱登录码")
+    @PostMapping("/login/email")
+    public Result<LoginTokenDTO> loginByEmail(@Valid @RequestBody EmailLoginDTO request) {
+        UserVO userVO = userService.loginByEmail(request);
         return Result.success(buildLoginToken(userVO.getId()));
     }
 

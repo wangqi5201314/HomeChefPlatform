@@ -21,6 +21,11 @@ public class AdminChefServiceImpl implements AdminChefService {
 
     private final ChefMapper chefMapper;
 
+    /**
+     * 修改一条已有的业务数据。
+     * 这个方法用于更新详情信息、状态或某些可编辑字段。
+     * 它会先查出原始数据，再把新值写进去，最后保存并返回更新后的结果。
+     */
     @Override
     public void updateChefStatus(Long id, AdminStatusUpdateDTO statusUpdateDTO) {
         if (!ChefStatusEnum.isValid(statusUpdateDTO.getStatus())) {
@@ -38,11 +43,21 @@ public class AdminChefServiceImpl implements AdminChefService {
         }
     }
 
+    /**
+     * 查询一条详细数据。
+     * 这个方法主要用在详情页面或后续业务处理前的数据准备。
+     * 它会根据 id、当前登录人或其他条件去查数据，找到后再转成返回给前端的格式。
+     */
     @Override
     public AdminChefDetailVO getChefDetail(Long id) {
         return toAdminChefDetailVO(chefMapper.selectById(id));
     }
 
+    /**
+     * 把数据对象转成接口要返回的格式。
+     * 这个方法让主流程不用反复写字段赋值逻辑，代码会更整洁。
+     * 它会从实体或中间对象里取出需要的字段，然后组装 VO 或其他返回对象。
+     */
     private AdminChefDetailVO toAdminChefDetailVO(Chef chef) {
         if (chef == null) {
             return null;

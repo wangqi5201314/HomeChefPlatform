@@ -31,6 +31,11 @@ public class AiChatServiceImpl implements AiChatService {
 
     private final BailianClient bailianClient;
 
+    /**
+     * 接收前端的 AI 聊天请求，并返回一条流式对话连接。
+     * 这个方法让前端可以像聊天一样边发问题边看到 AI 一段段地回答。
+     * 它会先组装要发给模型的消息，然后创建 SSE 连接，再异步调用模型推流返回结果。
+     */
     @Override
     public SseEmitter chat(AiChatRequestDTO aiChatRequestDTO) {
         List<BailianClient.BailianMessage> messages = buildMessages(aiChatRequestDTO);
@@ -40,6 +45,11 @@ public class AiChatServiceImpl implements AiChatService {
         return emitter;
     }
 
+    /**
+     * 把消息发给大模型，并把返回内容一段段推给前端。
+     * 这个方法是 AI 对话真正开始运行的地方，负责把模型输出变成前端能直接接收的数据。
+     * 它会调用模型客户端进行流式请求，每收到一段文本就发送 message 事件，全部完成后再发送 done 事件。
+     */
     private void streamChat(SseEmitter emitter, List<BailianClient.BailianMessage> messages) {
         try {
             bailianClient.streamChat(messages, chunk -> sendMessageChunk(emitter, chunk));
@@ -52,6 +62,11 @@ public class AiChatServiceImpl implements AiChatService {
         }
     }
 
+    /**
+     * 构建一个后续会被重复使用的中间结果。
+     * 这个方法主要是为了把主流程里的细节拆出去，让主流程更容易看。
+     * 它会根据当前需要把集合、映射、路径、文本或比较器等内容先准备好。
+     */
     private List<BailianClient.BailianMessage> buildMessages(AiChatRequestDTO aiChatRequestDTO) {
         String message = aiChatRequestDTO.getMessage();
         if (!StringUtils.hasText(message)) {
@@ -71,6 +86,11 @@ public class AiChatServiceImpl implements AiChatService {
         return messages;
     }
 
+    /**
+     * 构建一个后续会被重复使用的中间结果。
+     * 这个方法主要是为了把主流程里的细节拆出去，让主流程更容易看。
+     * 它会根据当前需要把集合、映射、路径、文本或比较器等内容先准备好。
+     */
     private List<BailianClient.BailianMessage> buildHistoryMessages(List<AiHistoryMessageDTO> history) {
         if (history == null || history.isEmpty()) {
             return Collections.emptyList();
@@ -100,6 +120,11 @@ public class AiChatServiceImpl implements AiChatService {
         return messages;
     }
 
+    /**
+     * 发送一段要返回给外部的内容。
+     * 这个方法把重复的发送逻辑单独拿出来，主流程会更清楚。
+     * 它会先组装返回数据，再通过事件流或其他方式把内容发出去。
+     */
     private void sendMessageChunk(SseEmitter emitter, String chunk) {
         try {
             emitter.send(SseEmitter.event()
@@ -112,6 +137,11 @@ public class AiChatServiceImpl implements AiChatService {
         }
     }
 
+    /**
+     * 发送一段要返回给外部的内容。
+     * 这个方法把重复的发送逻辑单独拿出来，主流程会更清楚。
+     * 它会先组装返回数据，再通过事件流或其他方式把内容发出去。
+     */
     private void sendErrorEvent(SseEmitter emitter, Exception exception) {
         String message = exception instanceof BusinessException
                 ? exception.getMessage()

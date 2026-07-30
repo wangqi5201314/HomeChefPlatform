@@ -6,9 +6,6 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Result;
-import org.apache.ibatis.annotations.ResultMap;
-import org.apache.ibatis.annotations.Results;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.SelectProvider;
 import org.apache.ibatis.annotations.Update;
@@ -41,23 +38,6 @@ public interface UserAddressMapper {
             FROM user_address
             WHERE id = #{id} AND status = 1
             """)
-    @Results(id = "userAddressResultMap", value = {
-            @Result(property = "id", column = "id"),
-            @Result(property = "userId", column = "user_id"),
-            @Result(property = "contactName", column = "contact_name"),
-            @Result(property = "contactPhone", column = "contact_phone"),
-            @Result(property = "province", column = "province"),
-            @Result(property = "city", column = "city"),
-            @Result(property = "district", column = "district"),
-            @Result(property = "town", column = "town"),
-            @Result(property = "detailAddress", column = "detail_address"),
-            @Result(property = "longitude", column = "longitude"),
-            @Result(property = "latitude", column = "latitude"),
-            @Result(property = "isDefault", column = "is_default"),
-            @Result(property = "status", column = "status"),
-            @Result(property = "createdAt", column = "created_at"),
-            @Result(property = "updatedAt", column = "updated_at")
-    })
     UserAddress selectById(@Param("id") Long id);
 
     @Select("""
@@ -69,11 +49,9 @@ public interface UserAddressMapper {
               AND user_id = #{userId}
               AND status = 1
             """)
-    @ResultMap("userAddressResultMap")
     UserAddress selectByIdAndUserId(@Param("id") Long id, @Param("userId") Long userId);
 
     @SelectProvider(type = UserAddressSqlProvider.class, method = "buildSelectListSql")
-    @ResultMap("userAddressResultMap")
     List<UserAddress> selectList(UserAddressQueryDTO queryDTO);
 
     @Select("""
@@ -85,7 +63,6 @@ public interface UserAddressMapper {
             ORDER BY id DESC
             LIMIT 1
             """)
-    @ResultMap("userAddressResultMap")
     UserAddress selectDefaultByUserId(@Param("userId") Long userId);
 
     @Select("""
@@ -157,3 +134,4 @@ public interface UserAddressMapper {
         }
     }
 }
+
